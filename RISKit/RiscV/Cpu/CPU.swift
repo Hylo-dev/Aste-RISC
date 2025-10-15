@@ -46,25 +46,20 @@ class CPU {
         var nextProgramCounter = programCounter + 4
         
         let rawInstruction = fetch(optionsSource: optionsSource, mainMemory: mainMemory)
-        
-        print("RAW Instruction: \(rawInstruction)")
-        
+                
         if rawInstruction == -1 {
             return false
         }
         
-        let decodedInstruction = decode(UInt32(rawInstruction))
-        print("Decoded: \(decodedInstruction.immediate ?? -5)")
+        let decodedInstruction = decode(Int(rawInstruction))
         
         let controlUnitState   = getControlSignals(decodedInstruction.operationCode)
-        print("Operaction code: \(controlUnitState.reg_write ? 1 : 0)")
         
         let aluOperation       = alu.getOperation(
             controlUnitState.operation,
             funz3: decodedInstruction.funz3,
             funz7: decodedInstruction.funz7
         )
-        print("Alu operation: \(aluOperation)")
         
         if aluOperation == .unknown {
             print("Invalid operation")
@@ -80,9 +75,8 @@ class CPU {
             firstOperand = controlUnitState.operation == 0x17 ? Int(programCounter) : getValueRegister(register: Int(decodedInstruction.registerSource1))
             
             secondOperand = controlUnitState.alu_src ? decodedInstruction.immediate : getValueRegister(register: Int(decodedInstruction.registerSource2))
-            
+                        
             resultAlu = alu.execute(a: firstOperand, b: secondOperand, less: false, operation: aluOperation)
-            
         }
         
         // ADD FUNC TO SLEEP WHILE
@@ -125,11 +119,10 @@ class CPU {
         
         programCounter = nextProgramCounter
         
-        for reg in registers {
-            print("Reg: \(reg)")
-        }
-        print("----------")
-        print("----------")
+//        for (i, reg) in registers.enumerated() {
+//            print("x\(i) = 0x\(String(reg, radix: 16, uppercase: true))")
+//        }
+//        print("----------")
         return true
     }
     
@@ -154,7 +147,7 @@ class CPU {
         return read_ram32bit(mainMemory, UInt32(programCounter));
     }
     
-    private func decode(_ instruction: UInt32) -> DecodedInstruction {
+    private func decode(_ instruction: Int) -> DecodedInstruction {
         var decoded = DecodedInstruction(
             operationCode      : UInt8(extractBits(instruction, start: 0, end: 6)),
             registerSource1    : UInt8(extractBits(instruction, start: 15, end: 19)),
@@ -170,7 +163,7 @@ class CPU {
         case 0x67, 0x13, 0x03:
             let extractedBits = extractBits(instruction, start: 20, end: 31)
             decoded.immediate = signExtend(value: extractedBits, bits: 12)
-            
+                        
             // S-Type instruction
         case 0x23:
             let immediateAt11To5   = extractBits(instruction, start: 25, end: 31)
@@ -207,18 +200,18 @@ class CPU {
     }
     
     private func getValueRegister(register indexRegister: Int) -> Int {
-        if indexRegister <= 0 || indexRegister >= 32 { return -1 }
+        if indexRegister < 0 || indexRegister >= 32 { return -1 }
         
         return registers[indexRegister]
     }
     
-    private func extractBits(_ instruction: UInt32, start: Int, end: Int) -> UInt32 {
+    private func extractBits(_ instruction: Int, start: Int, end: Int) -> Int {
         return instruction >> start & ((1 << (end - start + 1)) - 1);
     }
     
-    private func signExtend(value: UInt32, bits: Int) -> Int {
+    private func signExtend(value: Int, bits: Int) -> Int {
         let shift = 32 - bits
-        return Int((value << shift) >> shift)
+        return (value << shift) >> shift
     }
     
     func loadEntryPoint(value: UInt) {
