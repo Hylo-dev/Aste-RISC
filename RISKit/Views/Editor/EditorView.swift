@@ -22,7 +22,6 @@ struct EditorView: View {
     // Tree file section
     @State private var treeRefreshTrigger : Bool
     @State private var selectedFile       : URL?
-    
     @State private var columnVisibility   : NavigationSplitViewVisibility = .all
     
     // C Structs
@@ -30,8 +29,13 @@ struct EditorView: View {
     @State private var assemblyData: AssemblyData?
     
     // Init virtual RAM for RISC-V Code
-    private var mainMemory: RAM
-    private var cpu       : CPU
+    @StateObject private var cpu: CPU = CPU(ram: new_ram(Int(DEFAULT_RAM_SIZE)))
+    
+    // Current instruction and map index
+    @State private var indexInstruction   : UInt?
+    @State private var indexesInstructions: [Int] = []
+    static private let instructionRegex           = try! NSRegularExpression(
+        pattern: #"^\s*(?!\.)(?:[A-Za-z_]\w*:)?([A-Za-z]{2,7})\b"#)
         
     init() {
         self.editorStatus       = .readyToBuild
@@ -42,9 +46,6 @@ struct EditorView: View {
         self._selectedFile      = State(initialValue: nil)
         
         self.opts               = nil
-        
-        self.mainMemory         = new_ram(Int(DEFAULT_RAM_SIZE))
-        self.cpu                = CPU(ram: self.mainMemory)
     }
 
     var body: some View {
@@ -59,6 +60,7 @@ struct EditorView: View {
                     
                 ) { url in
                     selectedFile = url
+                    
                 }
                 .onChange(of: editorStatus == .build) { _, newValue in
                     if newValue {
@@ -74,7 +76,6 @@ struct EditorView: View {
             
                                     
         } content: {
-            
             let projectPath = URL(fileURLWithPath: appState.navigationState.navigationItem.selectedProjectPath)
             let isEmptyPath = selectedFile == nil
             
@@ -94,11 +95,11 @@ struct EditorView: View {
                 
                 if  !isEmptyPath {
                     ContextView(
-//                        compilerProfile: appState.compilerProfile,
-                        projectRoot: projectPath,
-                        selectedFile: selectedFile!
+                        indexInstruction   : $indexInstruction,
+                        indexesInstructions: $indexesInstructions,
+                        projectRoot        : projectPath,
+                        selectedFile       : selectedFile!
                     )
-                    
                 }
             }
                 
@@ -107,13 +108,19 @@ struct EditorView: View {
                 Text("Test")
             }
         }
+        .onAppear(perform: {
+            self.indexInstruction = cpu.programCounter
+        })
+        .onChange(of: self.cpu.programCounter, { _, newValue in
+            self.indexInstruction = (newValue - UInt(opts!.pointee.text_vaddr)) / 4
+        })
         .onChange(of: selectedFile, { _, newValue in
             if newValue != nil {
                 selectedFile!.path.withCString { cUrl in
                     self.opts = start_options(UnsafeMutablePointer(mutating: cUrl))
                     
-                    load_binary_to_ram(mainMemory, opts!.pointee.data_data, opts!.pointee.data_size, opts!.pointee.data_vaddr)
-                    load_binary_to_ram(mainMemory, opts!.pointee.text_data, opts!.pointee.text_size, opts!.pointee.text_vaddr)
+                    load_binary_to_ram(cpu.ram, opts!.pointee.data_data, opts!.pointee.data_size, opts!.pointee.data_vaddr)
+                    load_binary_to_ram(cpu.ram, opts!.pointee.text_data, opts!.pointee.text_size, opts!.pointee.text_vaddr)
                     
                     self.cpu.loadEntryPoint(value: UInt(opts!.pointee.entry_point))
                     self.cpu.registers[2] = 0x100000
@@ -138,65 +145,71 @@ struct EditorView: View {
             
             // Section toolbar, this contains running execution button
             ToolbarItem(placement: .navigation) {
-                
-                GlassEffectContainer(spacing: 35) {
+                HStack(spacing: 10) {
                     
-                    HStack(spacing: 7.0) {
-                        Button {
-                            let _ = cpu.runStep(
-                                optionsSource: opts!.pointee,
-                                assemblyData: assemblyData!,
-                                mainMemory: mainMemory
-                            ) ? "true" : "false"
+                    // Run and stop button
+                    Button {
+                        if editorStatus == .readyToBuild || editorStatus == .stopped {
+                            self.cpu.loadEntryPoint(value: UInt(opts!.pointee.entry_point))
+                            self.cpu.registers[2] = 0x100000
                             
-                            withAnimation(.spring()) {
-                                if editorStatus == .readyToBuild || editorStatus == .stopped{
-                                    
-                                    editorStatus = .building
-                                    
-                                }
-                                
-                            }
+                            getIndexSourceAssembly()
                             
-                        } label: {
-                            Image(systemName: "play")
-                                .font(.system(size: 17))
-                            
-                        }
-                        .frame(width: 35.0, height: 35.0)
-                        .buttonStyle(.glass)
-                        
-                        if editorStatus != .readyToBuild && editorStatus != .stopped {
-                            
-                            Button {
-                                withAnimation(.spring()) {
-                                    
-                                    if editorStatus != .readyToBuild || editorStatus != .stopped {
-                                        
-                                        editorStatus = .stopped
-                                        
-                                    }
-                                    
-                                }
-                                
-                            } label: {
-                                Image(systemName: "stop.fill")
-                                    .font(.system(size: 17))
-                                
-                            }
-                            .frame(width: 35.0, height: 35.0)
-                            .buttonStyle(.glass)
-                            .transition(.move(edge: .leading).combined(with: .opacity))
+                            editorStatus = .running
                             
                         } else {
-                            Color.clear
-                                .frame(width: 35.0, height: 35.0)
-                                .allowsHitTesting(false)
+                            editorStatus = .stopped
+                            self.indexInstruction = nil
                             
                         }
+                        
+                    } label: {
+                        Image(systemName: editorStatus == .readyToBuild || editorStatus == .stopped ? "play" : "stop.fill")
+                            .font(.system(size: 17))
+                        
                     }
-                    .animation(.spring(), value: editorStatus)
+                    .frame(width: 35, height: 35)
+                    .buttonStyle(.glass)
+                    .disabled(opts == nil)
+
+                    if editorStatus == .running {
+                        GlassEffectContainer(spacing: 30) {
+                            HStack(spacing: 10) {
+                                Button {
+                                    let _ = cpu.runStep(
+                                        optionsSource: opts!.pointee,
+                                        mainMemory: cpu.ram
+                                    )
+                                } label: {
+                                    Image(systemName: "backward.fill")
+                                        .font(.title3)
+                                }
+                                .frame(width: 35, height: 35)
+                                .buttonStyle(.glass)
+
+                                Button {
+                                    let _ = cpu.runStep(
+                                        optionsSource: opts!.pointee,
+                                        mainMemory: cpu.ram
+                                    )
+                                    
+                                } label: {
+                                    Image(systemName: "forward.fill")
+                                        .font(.title3)
+                                }
+                                .frame(width: 35, height: 35)
+                                .buttonStyle(.glass)
+                            }
+                            .transition(.move(edge: .leading).combined(with: .opacity))
+                        }
+                        
+                    } else {
+                        Color.clear
+                            .frame(width: 80.0, height: 35.0)
+                            .allowsHitTesting(false)
+                    }
                 }
+                .animation(.spring(), value: editorStatus)
             }
             .sharedBackgroundVisibility(.hidden)
 
@@ -294,6 +307,24 @@ struct EditorView: View {
             }
             .sharedBackgroundVisibility(.hidden)
         }
+    }
+    
+    private func getIndexSourceAssembly() {
+        self.indexesInstructions.removeAll()
+        
+        let fileContent = (try? String(contentsOf: selectedFile!, encoding: .utf8)) ?? ""
+        
+        var controlTextSection = false
+
+        for (index, line) in fileContent.split(separator: "\n", omittingEmptySubsequences: false).enumerated() {
+            if line.contains(".text") { controlTextSection = true; continue }
+            if !controlTextSection { continue }
+            let range = NSRange(location: 0, length: line.utf16.count)
+            
+            if Self.instructionRegex.firstMatch(in: String(line), options: [], range: range) != nil {
+                self.indexesInstructions.append(index)
+            }
+        }        
     }
 }
 

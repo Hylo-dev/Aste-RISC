@@ -31,7 +31,7 @@ typedef struct {
 
     // Add options for load in memory the instructions
     // Instruction (.text)
-    uint8_t* text_data;      // binary buffer.text
+    uint8_t* text_data;       // binary buffer.text
     size_t text_size;         // byte
     uint32_t text_vaddr;      // virtual address .text
 

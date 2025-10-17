@@ -3,14 +3,19 @@ import AppKit
 
 struct ContextView: View {
 //    @ObservedObject var compilerProfile: CompilerProfileStore
-                   var projectRoot    : URL
     
+    // Params struct
+    @Binding var indexInstruction   : UInt?
+    @Binding var indexesInstructions: [Int]
+             var projectRoot        : URL
+             let selectedFile       : URL
+    
+    // Internal var struct for UI
     @State private var terminalHeight : CGFloat = 200
     @State private var isBottomVisible: Bool    = true
     @State private var text           : String  = ""
-    
            private let collapsedHeight: CGFloat = 48
-                   let selectedFile   : URL
+            
 
     var body: some View {
         GeometryReader { geo in
@@ -19,9 +24,10 @@ struct ContextView: View {
                 VStack {
                     CodeEditorView(
                         text: $text,
-//                        compilerProfile: compilerProfile,
-                        projectRoot: projectRoot,
-                        pathFile: selectedFile
+                        indexInstruction: $indexInstruction,
+                        indexesInstructions: $indexesInstructions,
+                        projectRoot: selectedFile,
+                        pathFile: projectRoot
                     )
                     
                     Spacer()
@@ -42,23 +48,18 @@ struct ContextView: View {
             .padding(.bottom, 16)
             .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
             .animation(.spring(), value: isBottomVisible)
-            .onChange(of: selectedFile) { _, _ in
-                loadSelectedFile()
-            }
-            .onAppear {
-                loadSelectedFile()
-            }
+            .onChange(of: selectedFile) { _, _ in loadSelectedFile() }
+            .onAppear { loadSelectedFile() }
         }
     }
     
-    private func loadSelectedFile() {
-        text = (try? String(contentsOf: selectedFile, encoding: .utf8)) ?? ""
-    }
+    private func loadSelectedFile() { self.text = (try? String(contentsOf: selectedFile, encoding: .utf8)) ?? "" }
     
     private func topHeight(totalHeight: CGFloat) -> CGFloat {
         if isBottomVisible {
             let top = totalHeight - terminalHeight - 18
             return max(top, 40)
+            
         } else {
             return totalHeight - collapsedHeight - 10
         }

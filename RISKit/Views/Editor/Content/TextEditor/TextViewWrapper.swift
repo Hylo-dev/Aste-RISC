@@ -10,9 +10,11 @@ import AppKit
 import STTextView
 
 struct TextViewWrapper: NSViewRepresentable {
-    @Binding var text: String
-    var viewModel: CodeEditorViewModel
-//    var language: Language
+    @Binding var text              : String
+    @Binding var indexInstruction  : UInt?
+    @Binding var indexesIstructions: [Int]
+    
+    var viewModel : CodeEditorViewModel
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -22,6 +24,9 @@ struct TextViewWrapper: NSViewRepresentable {
         if let textView = scrollView.documentView as? STTextView {
             textView.textDelegate = context.coordinator
             context.coordinator.textView = textView
+            
+            textView.isEditable = indexInstruction == nil
+            textView.isSelectable = true
         }
 
         return scrollView
@@ -29,6 +34,9 @@ struct TextViewWrapper: NSViewRepresentable {
 
     func updateNSView(_ nsView: NSScrollView, context: Context) {
         guard let textView = nsView.documentView as? STTextView else { return }
+        
+        textView.isEditable = indexInstruction == nil
+        textView.isSelectable = true
 
         if textView.textDelegate == nil {
             textView.textDelegate = context.coordinator
@@ -38,6 +46,13 @@ struct TextViewWrapper: NSViewRepresentable {
 
         if textView.text != text && !context.coordinator.isUpdatingText {
             context.coordinator.updateTextPreservingSelection(newText: text)
+        }
+            
+        if indexInstruction != nil && !indexesIstructions.isEmpty && indexInstruction! <= indexesIstructions.count {
+            context.coordinator.highlightLine(at: indexesIstructions[Int(indexInstruction ?? 0)])
+            
+        } else {
+            context.coordinator.highlightLine(clear: true)
         }
     }
 
@@ -52,7 +67,7 @@ struct TextViewWrapper: NSViewRepresentable {
         func textView(_ textView: STTextView, didChangeTextIn affectedRange: NSTextRange, replacementString: String) {
             guard let newText = textView.text else { return }
 
-            DispatchQueue.main.async { [weak self] in
+            Task { [weak self] in
                 guard let self = self else { return }
                 
                 if self.isUpdatingText { return }
@@ -66,10 +81,42 @@ struct TextViewWrapper: NSViewRepresentable {
                 }
                 self.lastString = newText
 
-//                self.parent.viewModel.handleCompletionInput()
+//              self.parent.viewModel.handleCompletionInput()
             }
         }
+        
+        func highlightLine(at index: Int = 0, clear isCleaning: Bool = false) {
+            guard let textView = textView, let text = textView.text else { return }
+            let nsText = text as NSString
 
+            // Resetta tutti i colori a default (bianco/nero, ecc.)
+            let fullRange = NSRange(location: 0, length: nsText.length)
+            let defaultColor = textView.backgroundColor ?? NSColor.textBackgroundColor
+            textView.addAttributes([.backgroundColor: defaultColor], range: fullRange)
+
+            if !isCleaning {
+                // Calcola linee
+                var lineStart = 0
+                var lineEnd = 0
+                var contentsEnd = 0
+                var currentLine: UInt = 0
+
+                while lineStart < nsText.length {
+                    nsText.getLineStart(&lineStart, end: &lineEnd, contentsEnd: &contentsEnd, for: NSRange(location: lineStart, length: 0))
+
+                    if currentLine == index {
+                        let highlightRange = NSRange(location: lineStart, length: lineEnd - lineStart)
+                        textView.addAttributes([.backgroundColor: NSColor.selectedTextBackgroundColor], range: highlightRange)
+                        textView.scrollRangeToVisible(highlightRange)
+                        break
+                    }
+
+                    currentLine += 1
+                    lineStart = lineEnd
+                }
+            }
+        }
+        
         func updateTextPreservingSelection(newText: String) {
             guard let textView = textView else { return }
 

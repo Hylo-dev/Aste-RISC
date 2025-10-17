@@ -5,8 +5,12 @@
 //  Created by Eliomar Alejandro Rodriguez Ferrer on 14/10/25.
 //
 
-class CPU {
-    private var programCounter: UInt
+import Foundation
+internal import Combine
+
+class CPU: ObservableObject {
+    @Published var programCounter: UInt
+    
     var registers             : [Int]
 
     private let resetFlag     : Int
@@ -24,14 +28,12 @@ class CPU {
     
     func runStep(
         optionsSource: options_t,
-        assemblyData : AssemblyData,
         mainMemory   : RAM
         
     ) -> Bool {
         if programCounter >= optionsSource.text_vaddr && programCounter < Int(optionsSource.text_vaddr) + optionsSource.text_size {
             
-            return execute(optionsSource: optionsSource, assemblyData: assemblyData, mainMemory: ram)
-            
+            return execute(optionsSource: optionsSource, mainMemory: ram)
         }
         
         return false
@@ -39,7 +41,6 @@ class CPU {
     
     private func execute(
         optionsSource: options_t,
-        assemblyData : AssemblyData,
         mainMemory   : RAM
         
     ) -> Bool {
