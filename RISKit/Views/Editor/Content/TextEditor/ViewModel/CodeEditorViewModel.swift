@@ -101,7 +101,7 @@ final class CodeEditorViewModel: ObservableObject {
         guard !didOpenSent,
 //            let lsp = lspClient,
             let tv = textView,
-            let text = tv.text else { return }
+            let _ = tv.text else { return }
 
 //        lsp.openDocument(uri: documentURI.absoluteString, languageId: Language.c.langId, text: text)
         didOpenSent = true
@@ -110,8 +110,8 @@ final class CodeEditorViewModel: ObservableObject {
     func textChanged(newText: String) {
 //        guard let lsp = lspClient else { return }
 
-        lastVersion += 1
-        let version = lastVersion
+//        lastVersion += 1
+//        let version = lastVersion
         
 //        lsp.changeDocument(uri: documentURI.absoluteString, text: newText, version: version)
 //
@@ -131,8 +131,8 @@ final class CodeEditorViewModel: ObservableObject {
             return
         }
         
-        let diagnosticsArray = params["diagnostics"] as? [[String: Any]] ?? []
-        let currentText = textView?.text ?? ""
+//        let diagnosticsArray = params["diagnostics"] as? [[String: Any]] ?? []
+//        let currentText = textView?.text ?? ""
 //        let parsedDiagnostics = diagnosticsArray.compactMap { LSPDiagnostic(from: $0, inText: currentText) }
         
         // Check if diagnostics have changed without using Equatable
@@ -157,23 +157,16 @@ final class CodeEditorViewModel: ObservableObject {
 //        return false
 //    }
 
-    private func scheduleHighlight(force: Bool = false) {
-        let extraDelay: TimeInterval = !force && textView?.window?.firstResponder === textView ?
-            Delays.highlightResponsive : 0
-        let delay = force ? 0.0 : Delays.highlight + extraDelay
+    func scheduleHighlight(force: Bool = false) {
         let captureVersion = lastVersion
-//        let captureDiagnostics = diagnostics
         
-        scheduleWork(for: "highlight", delay: delay) { [weak self] in
-            guard let self = self else { return }
+        Task { [weak self] in
+            guard let self = self,
+                  let textView = self.textView,
+                  force || self.lastVersion == captureVersion else { return }
             
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self,
-                      let tv = self.textView,
-                      force || self.lastVersion == captureVersion else { return }
-                
-//                SyntaxHighlighter.shared.applyHighlight(textView: tv, diagnostics: captureDiagnostics)
-            }
+            //SyntaxHighlighter.shared.applyHighlight(textView: tv, diagnostics: captureDiagnostics)
+            SyntaxHighlighter.shared.applyHighlight(textView: textView)
         }
     }
 

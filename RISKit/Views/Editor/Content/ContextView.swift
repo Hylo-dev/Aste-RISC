@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import SwiftTerm
 
 struct ContextView: View {
 //    @ObservedObject var compilerProfile: CompilerProfileStore
@@ -7,6 +8,7 @@ struct ContextView: View {
     // Params struct
     @Binding var indexInstruction   : UInt?
     @Binding var indexesInstructions: [Int]
+    @Binding var editorStatus       : EditorStatus
              var projectRoot        : URL
              let selectedFile       : URL
     
@@ -22,13 +24,19 @@ struct ContextView: View {
             VStack(spacing: 10) {
                 
                 VStack {
-                    CodeEditorView(
-                        text: $text,
-                        indexInstruction: $indexInstruction,
-                        indexesInstructions: $indexesInstructions,
-                        projectRoot: selectedFile,
-                        pathFile: projectRoot
-                    )
+                    if editorStatus == EditorStatus.running {
+                        CodeEditorView(
+                            text: $text,
+                            indexInstruction: $indexInstruction,
+                            indexesInstructions: $indexesInstructions,
+                            projectRoot: selectedFile,
+                            pathFile: projectRoot
+                        )
+                        
+                    } else {
+                        Terminal(pathFile: selectedFile.path)
+                        
+                    }
                     
                     Spacer()
                 }
@@ -39,8 +47,12 @@ struct ContextView: View {
                     alignment: .topLeading
                 )
                 .background(roundedBackground)
-                
-                TerminalView(terminalHeight: $terminalHeight, isBottomVisible: $isBottomVisible, collapsedHeight: collapsedHeight)
+                     
+                TerminalContainerView(
+                    terminalHeight: $terminalHeight,
+                    isBottomVisible: $isBottomVisible,
+                    collapsedHeight: collapsedHeight
+                )
                 
             }
             .padding(.leading, 16)

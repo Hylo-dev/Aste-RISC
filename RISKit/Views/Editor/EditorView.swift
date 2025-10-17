@@ -97,6 +97,7 @@ struct EditorView: View {
                     ContextView(
                         indexInstruction   : $indexInstruction,
                         indexesInstructions: $indexesInstructions,
+                        editorStatus       : $editorStatus,
                         projectRoot        : projectPath,
                         selectedFile       : selectedFile!
                     )

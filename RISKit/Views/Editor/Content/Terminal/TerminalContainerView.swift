@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct TerminalView: View {
+struct TerminalContainerView: View {
     @Binding var terminalHeight: CGFloat
     @Binding var isBottomVisible: Bool
     @State private var isDragging: Bool = false
@@ -23,7 +23,7 @@ struct TerminalView: View {
     private let highlightFadeDuration: Double = 0.25
     
     var body: some View {
-        
+                
         Rectangle()
             .fill(Color.clear)
             .frame(height: 4)

@@ -1,5 +1,4 @@
 import SwiftUI
-import STTextView
 
 struct CodeEditorView: View {
     @Binding var text               : String

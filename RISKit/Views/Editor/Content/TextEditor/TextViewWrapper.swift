@@ -25,8 +25,9 @@ struct TextViewWrapper: NSViewRepresentable {
             textView.textDelegate = context.coordinator
             context.coordinator.textView = textView
             
-            textView.isEditable = indexInstruction == nil
+            textView.isEditable = true //indexInstruction == nil
             textView.isSelectable = true
+            
         }
 
         return scrollView
@@ -35,7 +36,7 @@ struct TextViewWrapper: NSViewRepresentable {
     func updateNSView(_ nsView: NSScrollView, context: Context) {
         guard let textView = nsView.documentView as? STTextView else { return }
         
-        textView.isEditable = indexInstruction == nil
+        textView.isEditable = true //indexInstruction == nil
         textView.isSelectable = true
 
         if textView.textDelegate == nil {
@@ -53,7 +54,10 @@ struct TextViewWrapper: NSViewRepresentable {
             
         } else {
             context.coordinator.highlightLine(clear: true)
+            
         }
+        
+        viewModel.scheduleHighlight()
     }
 
     class Coordinator: NSObject, STTextViewDelegate {
@@ -78,6 +82,7 @@ struct TextViewWrapper: NSViewRepresentable {
                 if self.parent.text != newText {
                     self.parent.text = newText
                     self.parent.viewModel.textChanged(newText: newText)
+                    
                 }
                 self.lastString = newText
 

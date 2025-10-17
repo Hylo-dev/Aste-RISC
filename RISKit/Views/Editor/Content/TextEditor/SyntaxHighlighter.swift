@@ -18,24 +18,33 @@ final class SyntaxHighlighter {
     private var lastDiagnosticsSignature: Int = 0
 
     private init() {
-        guard let h = Highlightr() else {
+        
+        guard let highlightr = Highlightr() else {
             fatalError("Highlightr init failed")
         }
         
-        self.highlightr = h
+        self.highlightr = highlightr
         highlightr.setTheme(to: "atom-one-dark")
-        highlightr.theme.setCodeFont(.monospacedSystemFont(ofSize: 14, weight: .regular))
+        highlightr.theme.setCodeFont(
+            .monospacedSystemFont(
+                ofSize: 14,
+                weight: .regular
+            )
+        )
+        
     }
 
     // func applyHighlight(textView: STTextView, diagnostics: [LSPDiagnostic])
     func applyHighlight(textView: STTextView) {
 
-//        if !Thread.isMainThread {
-//            Task {
-//                self.applyHighlight(textView: textView, diagnostics: diagnostics)
-//            }
-//            return
-//        }
+        if !Thread.isMainThread {
+            Task {
+                //self.applyHighlight(textView: textView, diagnostics: diagnostics)
+                self.applyHighlight(textView: textView)
+            }
+            
+            return
+        }
         
 //        let diagSig = diagnostics.reduce(into: 0) { partial, d in
 //            partial = partial &* 31 &+ d.range.location &* 131 &+ d.range.length &+ severityScore(d.severity)
@@ -58,18 +67,28 @@ final class SyntaxHighlighter {
         let defaultFont = NSFont.monospacedSystemFont(ofSize: 14, weight: .regular)
 
         textView.setAttributes([.font: defaultFont, .foregroundColor: NSColor.textColor], range: fullRange)
-
+        
         if let highlighted = highlightr.highlight(code, as: "s") {
-            highlighted.enumerateAttributes(in: NSRange(location: 0, length: min(highlighted.length, fullRange.length)), options: []) { attrs, range, _ in
+            
+            highlighted.enumerateAttributes(
+                in: NSRange(
+                    location: 0,
+                    length: min(highlighted.length, fullRange.length)
+                ),
+                options: []
+                
+            ) { attrs, range, _ in
                 guard range.location + range.length <= fullRange.length else { return }
                 var filteredAttrs: [NSAttributedString.Key: Any] = [:]
                 
                 if let color = attrs[.foregroundColor] {
                     filteredAttrs[.foregroundColor] = color
                 }
+                
                 if !filteredAttrs.isEmpty {
                     textView.addAttributes(filteredAttrs, range: range)
                 }
+                
             }
         }
 
