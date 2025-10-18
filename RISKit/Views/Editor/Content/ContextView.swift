@@ -23,31 +23,25 @@ struct ContextView: View {
         GeometryReader { geo in
             VStack(spacing: 10) {
                 
-                VStack {
-                    if editorStatus == EditorStatus.running {
-                        CodeEditorView(
-                            text: $text,
-                            indexInstruction: $indexInstruction,
-                            indexesInstructions: $indexesInstructions,
-                            projectRoot: selectedFile,
-                            pathFile: projectRoot
-                        )
-                        
-                    } else {
-                        Terminal(pathFile: selectedFile.path)
-                 
-                    }
+                if editorStatus == EditorStatus.running {
+                    CodeEditorView(
+                        text: $text,
+                        indexInstruction: $indexInstruction,
+                        indexesInstructions: $indexesInstructions,
+                        projectRoot: selectedFile,
+                        pathFile: projectRoot
+                    )
+                    .frame(
+                        maxWidth: .infinity,
+                        maxHeight: topHeight(totalHeight: geo.size.height),
+                        alignment: .topLeading
+                    )
                     
-                    Spacer()
+                } else {
+                    Terminal(pathFile: selectedFile.path)
+                       
                 }
-                .padding()
-                .frame(
-                    maxWidth: .infinity,
-                    maxHeight: topHeight(totalHeight: geo.size.height),
-                    alignment: .topLeading
-                )
-                .background(roundedBackground)
-                     
+                                
                 TerminalContainerView(
                     terminalHeight: $terminalHeight,
                     isBottomVisible: $isBottomVisible,
@@ -77,10 +71,5 @@ struct ContextView: View {
         }
     }
     
-    private var roundedBackground: some View {
-        RoundedRectangle(cornerRadius: 26)
-            .fill(.ultraThinMaterial)
-            .shadow(color: .black.opacity(0.2), radius: 24, x: 0, y: 8)
-    }
 }
 

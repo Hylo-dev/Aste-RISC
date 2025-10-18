@@ -22,9 +22,16 @@ struct Terminal: NSViewRepresentable {
         let term = LocalProcessTerminalView(frame: .zero)
         term.getTerminal().setCursorStyle(.steadyBlock)
         
-        term.caretColor = .systemGreen
+        // Set color term
+        term.caretColor           = .systemGreen
         term.caretViewTracksFocus = true
-        term.processDelegate = context.coordinator
+        term.processDelegate      = context.coordinator
+        
+        // Corner radius on AppKit
+        term.wantsLayer           = true
+        term.layer?.cornerRadius  = 25
+        term.layer?.masksToBounds = true
+
     
         return term
     }
@@ -40,10 +47,9 @@ struct Terminal: NSViewRepresentable {
             nsView.startProcess(executable: "/opt/homebrew/bin/hx", args: [pathFile])
             nsView.window?.makeFirstResponder(nsView)
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                nsView.feed(text: "\u{1B}[?1000l\u{1B}[?1002l\u{1B}[?1006l")
-            }
-
+            try await Task.sleep(for: .milliseconds(100))
+            nsView.feed(text: "\u{1B}[?1000l\u{1B}[?1002l\u{1B}[?1006l")
+            
         }
     }
 
