@@ -6,7 +6,7 @@ struct ContextView: View {
 //    @ObservedObject var compilerProfile: CompilerProfileStore
     
     // Params struct
-    @Binding var indexInstruction   : UInt?
+    @Binding var indexInstruction   : UInt32?
     @Binding var indexesInstructions: [Int]
     @Binding var editorStatus       : EditorStatus
              var projectRoot        : URL

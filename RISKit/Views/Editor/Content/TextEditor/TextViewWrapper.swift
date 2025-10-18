@@ -11,7 +11,7 @@ import STTextView
 
 struct TextViewWrapper: NSViewRepresentable {
     @Binding var text              : String
-    @Binding var indexInstruction  : UInt?
+    @Binding var indexInstruction  : UInt32?
     @Binding var indexesIstructions: [Int]
     
     var viewModel : CodeEditorViewModel

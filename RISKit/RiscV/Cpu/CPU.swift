@@ -9,14 +9,12 @@ import Foundation
 internal import Combine
 
 class CPU: ObservableObject {
-    @Published var programCounter: UInt
+    @Published var programCounter: UInt32
     
-    var registers             : [Int]
-
-    private let resetFlag     : Int
-    private let alu           : ALU
-    
-    let ram                   : RAM
+            var registers: [Int]
+    private let resetFlag: Int
+    private let alu      : ALU
+            let ram      : RAM
     
     init(ram: RAM) {
         self.programCounter = 0
@@ -31,7 +29,8 @@ class CPU: ObservableObject {
         mainMemory   : RAM
         
     ) -> Bool {
-        if programCounter >= optionsSource.text_vaddr && programCounter < Int(optionsSource.text_vaddr) + optionsSource.text_size {
+        if programCounter >= optionsSource.text_vaddr &&
+            programCounter < optionsSource.text_vaddr + UInt32(optionsSource.text_size) {
             
             return execute(optionsSource: optionsSource, mainMemory: ram)
         }
@@ -91,7 +90,7 @@ class CPU: ObservableObject {
                 }
             }
             
-            nextProgramCounter = UInt(decodedInstruction.operationCode == 0x6F ?
+            nextProgramCounter = UInt32(decodedInstruction.operationCode == 0x6F ?
                                       Int(programCounter) + secondOperand & ~1:
                                       firstOperand + secondOperand & ~1)
             
@@ -215,7 +214,7 @@ class CPU: ObservableObject {
         return (value << shift) >> shift
     }
     
-    func loadEntryPoint(value: UInt) {
+    func loadEntryPoint(value: UInt32) {
         self.programCounter = value
     }
 }

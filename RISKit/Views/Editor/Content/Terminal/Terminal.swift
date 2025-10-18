@@ -21,7 +21,7 @@ struct Terminal: NSViewRepresentable {
     func makeNSView(context: Context) -> LocalProcessTerminalView {
         let term = LocalProcessTerminalView(frame: .zero)
         term.getTerminal().setCursorStyle(.steadyBlock)
-        
+
         // Set color term
         term.caretColor           = .systemGreen
         term.caretViewTracksFocus = true
@@ -31,7 +31,6 @@ struct Terminal: NSViewRepresentable {
         term.wantsLayer           = true
         term.layer?.cornerRadius  = 25
         term.layer?.masksToBounds = true
-
     
         return term
     }

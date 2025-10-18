@@ -2,14 +2,14 @@ import SwiftUI
 
 struct CodeEditorView: View {
     @Binding var text               : String
-    @Binding var indexInstruction   : UInt?
+    @Binding var indexInstruction   : UInt32?
     @Binding var indexesInstructions: [Int]
         
     @StateObject private var viewModel: CodeEditorViewModel
 
     init(
         text               : Binding<String>,
-        indexInstruction   : Binding<UInt?>,
+        indexInstruction   : Binding<UInt32?>,
         indexesInstructions: Binding<[Int]>,
         projectRoot        : URL,
         pathFile           : URL
