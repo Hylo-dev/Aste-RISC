@@ -7,36 +7,62 @@
 
 import SwiftUI
 import SwiftTerm
+import AppKit
 
 struct Terminal: NSViewRepresentable {
     let pathFile: String
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
     
+    init(pathFile: String) {
+        self.pathFile = pathFile
+    }
+
     func makeNSView(context: Context) -> LocalProcessTerminalView {
         let term = LocalProcessTerminalView(frame: .zero)
         term.getTerminal().setCursorStyle(.steadyBlock)
-        term.caretColor = .systemGreen
         
+        term.caretColor = .systemGreen
         term.caretViewTracksFocus = true
-
+        term.processDelegate = context.coordinator
+    
         return term
     }
 
     func updateNSView(_ nsView: LocalProcessTerminalView, context: Context) {
+        guard !context.coordinator.started else { return }
+        context.coordinator.started = true
 
-        if !context.coordinator.started {
-            context.coordinator.started = true
-            Task {
-                nsView.selectNone()
-                
-                nsView.startProcess(executable: "/opt/homebrew/bin/hx", args: [pathFile])
-                
+        Task {
+            
+            nsView.selectNone()
+
+            nsView.startProcess(executable: "/opt/homebrew/bin/hx", args: [pathFile])
+            nsView.window?.makeFirstResponder(nsView)
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                nsView.feed(text: "\u{1B}[?1000l\u{1B}[?1002l\u{1B}[?1006l")
             }
+
         }
     }
 
-    func makeCoordinator() -> Coordinator { Coordinator() }
-
-    class Coordinator {
+    class Coordinator: NSObject, LocalProcessTerminalViewDelegate {
         var started = false
+        var mouseUpMonitor: Any?
+
+        deinit {
+            if let m = mouseUpMonitor {
+                NSEvent.removeMonitor(m)
+                mouseUpMonitor = nil
+            }
+        }
+
+        func sizeChanged(source: LocalProcessTerminalView, newCols: Int, newRows: Int) {}
+        func setTerminalTitle(source: LocalProcessTerminalView, title: String) {}
+        func hostCurrentDirectoryUpdate(source: TerminalView, directory: String?) {}
+        func processTerminated(source: TerminalView, exitCode: Int32?) {
+            print("Process terminated: \(String(describing: exitCode))")
+        }
     }
 }

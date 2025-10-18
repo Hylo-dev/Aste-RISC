@@ -35,7 +35,7 @@ struct ContextView: View {
                         
                     } else {
                         Terminal(pathFile: selectedFile.path)
-                        
+                 
                     }
                     
                     Spacer()
