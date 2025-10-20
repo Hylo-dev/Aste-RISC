@@ -8,61 +8,49 @@
 import SwiftUI
 import AppKit
 
-struct EditorView: View {
+struct BodyEditorViem: View {
     
     @Environment(\.openWindow) private var openWindow
-    @EnvironmentObject         private var appState: AppState
     
-    // Searching File
-    @State private var searchFile         : Bool
+    // Application state, contains all view models
+    @EnvironmentObject private var appState: AppState // TODO -> Add manage CPU view model
     
-    // Runnig section
-    @State private var editorStatus       : EditorStatus
+    @State private var searchFile  : Bool         // Searching File
+    @State private var editorStatus: EditorStatus // Runnig section
+    @State private var selectedFile: URL?         // Tree file section
     
-    // Tree file section
-    @State private var treeRefreshTrigger : Bool
-    @State private var selectedFile       : URL?
-    @State private var columnVisibility   : NavigationSplitViewVisibility = .all
+    // RISC-V CPU Emulator
+    @StateObject private var cpu: CPU = CPU(ram: new_ram(Int(DEFAULT_RAM_SIZE))) // Init virtual RAM for RISC-V Code
     
-    // C Structs
-    @State private var opts        : UnsafeMutablePointer<options_t>?
-    @State private var assemblyData: AssemblyData?
-    
-    // Init virtual RAM for RISC-V Code
-    @StateObject private var cpu: CPU = CPU(ram: new_ram(Int(DEFAULT_RAM_SIZE)))
+    // C Strucs for emulator management
+    @State private var opts: UnsafeMutablePointer<options_t>?
     
     // Current instruction and map index
     @State private var indexInstruction   : UInt32?
     @State private var indexesInstructions: [Int] = []
         
     init() {
-        self.editorStatus       = .readyToBuild
+        self.editorStatus  = .readyToBuild
+        self.searchFile    = false
+        self._selectedFile = State(initialValue: nil)
+        self.opts          = nil
         
-        self.searchFile         = false
-        self.treeRefreshTrigger = false
-        
-        self._selectedFile      = State(initialValue: nil)
-        
-        self.opts               = nil
     }
 
     var body: some View {
         
-        NavigationSplitView(columnVisibility: $columnVisibility) {
-            treeSection // Show tree directory
+        NavigationSplitView() {
+            treeSection   // Show tree directory
                         
         } content: {
             editorContent // Principal content editor, code editor and show run section
                 
         } detail: {
-            VStack {
-                Text("Test")
-                
-            }
+            // More information, for example Stack, table registers
+            VStack { Text("Test") }
+            
         }
-        .onAppear(perform: {
-            self.indexInstruction = cpu.programCounter
-        })
+        .onAppear { self.indexInstruction = cpu.programCounter }
         .onChange(of: self.cpu.programCounter, { _, newValue in
             self.indexInstruction = (newValue - opts!.pointee.text_vaddr) / 4
         })
@@ -75,7 +63,7 @@ struct EditorView: View {
                     load_binary_to_ram(cpu.ram, opts!.pointee.data_data, opts!.pointee.data_size, opts!.pointee.data_vaddr)
                     load_binary_to_ram(cpu.ram, opts!.pointee.text_data, opts!.pointee.text_size, opts!.pointee.text_vaddr)
                     
-                    self.assemblyData = newAssemblyData(opts).pointee
+                    //self.assemblyData = newAssemblyData(opts).pointee
                 }
             }
         })
@@ -132,17 +120,11 @@ struct EditorView: View {
         return VStack {
             DirectoryTreeView(
                 rootURL       : URL(fileURLWithPath: appState.navigationState.navigationItem.selectedProjectPath),
-                refreshTrigger: treeRefreshTrigger,
                 currentFile   : $selectedFile
                 
             ) { url in
                 selectedFile = url
                 
-            }
-            .onChange(of: editorStatus == .build) { _, newValue in
-                if newValue {
-                    treeRefreshTrigger.toggle()
-                }
             }
             
             Spacer()
@@ -151,6 +133,7 @@ struct EditorView: View {
         .padding(.horizontal, 10)
     }
     
+    // MARK: Show content editor
     private var editorContent: some View {
         let projectPath = URL(fileURLWithPath: appState.navigationState.navigationItem.selectedProjectPath)
         let isEmptyPath = selectedFile == nil
@@ -183,6 +166,6 @@ struct EditorView: View {
 }
 
 #Preview {
-    EditorView()
+    BodyEditorViem()
 }
 

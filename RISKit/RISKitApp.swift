@@ -19,7 +19,7 @@ struct RISKitApp: App {
         .windowStyle(.hiddenTitleBar)
         
         WindowGroup(id: "editor") {
-            EditorView()
+            BodyEditorViem()
                 .environmentObject(self.appState)
         }
         .windowStyle(.hiddenTitleBar)

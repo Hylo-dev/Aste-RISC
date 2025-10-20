@@ -11,12 +11,16 @@ struct DirectoryTreeView: View {
     @StateObject private var rootNode: FileNode
     
     @Binding var currentFile: URL?
-    var onOpenFile: ((URL) -> Void)? = nil
-    var refreshTrigger: Bool
-
-    init(rootURL: URL, refreshTrigger: Bool, currentFile: Binding<URL?>, onOpenFile: ((URL) -> Void)? = nil) {
+             var onOpenFile : ((URL) -> Void)? = nil
+    
+    init(
+        rootURL       : URL,
+        currentFile   : Binding<URL?>,
+        onOpenFile    : ((URL) -> Void)? = nil
+    
+    ) {
         _rootNode = StateObject(wrappedValue: FileNode(url: rootURL))
-        self.refreshTrigger = refreshTrigger
+                
         self._currentFile = currentFile
         self.onOpenFile = onOpenFile
         
@@ -36,9 +40,6 @@ struct DirectoryTreeView: View {
         .onAppear {
             refresh()
             
-        }
-        .onChange(of: refreshTrigger) { _, _ in
-            refresh()
         }
     }
     
