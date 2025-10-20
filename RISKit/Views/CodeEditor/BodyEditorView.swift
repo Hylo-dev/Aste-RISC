@@ -139,7 +139,7 @@ struct BodyEditorView: View {
             }
             
             if  !isEmptyPath {
-                ContextView(
+                EditorAreaView(
                     mapInstruction: $mapInstruction,
                     projectRoot   : projectPath
                 )

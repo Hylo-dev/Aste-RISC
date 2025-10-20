@@ -2,7 +2,7 @@ import SwiftUI
 import AppKit
 import SwiftTerm
 
-struct ContextView: View {
+struct EditorAreaView: View {
 //    @ObservedObject var compilerProfile: CompilerProfileStore
     @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
     
