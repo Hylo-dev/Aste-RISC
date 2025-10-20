@@ -1,6 +1,4 @@
 import SwiftUI
-import AppKit
-import SwiftTerm
 
 struct EditorAreaView: View {
     @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
@@ -9,7 +7,8 @@ struct EditorAreaView: View {
     @State private var terminalHeight : CGFloat = 200
     @State private var isBottomVisible: Bool    = true
     @State private var text           : String  = ""
-           private let collapsedHeight: CGFloat = 48
+           
+    private static let collapsedHeight: CGFloat = 48
     
     var projectRoot   : URL
             
@@ -30,14 +29,13 @@ struct EditorAreaView: View {
                     )
                     
                 } else {
-                    Terminal(pathFile: self.bodyEditorViewModel.currentFileSelected!.path)
+                    EditorTerminalView(pathFile: self.bodyEditorViewModel.currentFileSelected!.path)
                        
                 }
                                 
                 TerminalContainerView(
-                    terminalHeight: $terminalHeight,
-                    isBottomVisible: $isBottomVisible,
-                    collapsedHeight: collapsedHeight
+                    terminalHeight:  $terminalHeight,
+                    isBottomVisible: $isBottomVisible
                 )
                 
             }
@@ -46,12 +44,12 @@ struct EditorAreaView: View {
             .padding(.bottom, 16)
             .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
             .animation(.spring(), value: isBottomVisible)
-            .onChange(of: self.bodyEditorViewModel.currentFileSelected) { _, _ in loadSelectedFile() }
-            .onAppear { loadSelectedFile() }
+            .onChange(of: self.bodyEditorViewModel.currentFileSelected, handleFileSelected)
+            .onAppear { handleFileSelected(oldValue: nil, newValue: nil) }
         }
     }
     
-    private func loadSelectedFile() {
+    private func handleFileSelected(oldValue: URL?, newValue: URL?) {
         self.text = (try? String(contentsOf: self.bodyEditorViewModel.currentFileSelected!, encoding: .utf8)) ?? ""
     }
     
@@ -61,7 +59,7 @@ struct EditorAreaView: View {
             return max(top, 40)
             
         } else {
-            return totalHeight - collapsedHeight - 10
+            return totalHeight - Self.collapsedHeight - 10
         }
     }
     

@@ -16,11 +16,12 @@ struct TerminalContainerView: View {
     @State private var showSliderHighlight: Bool = false
     @State private var highlightFadeWorkItem: DispatchWorkItem?
     
-    let collapsedHeight: CGFloat
     private let minTerminalHeight: CGFloat = 80
     private let maxTerminalHeight: CGFloat = 500
     private let highlightFadeDelay: TimeInterval = 2.0
     private let highlightFadeDuration: Double = 0.25
+    
+    private static let collapsedHeight: CGFloat = 48
     
     var body: some View {
                 
@@ -62,7 +63,7 @@ struct TerminalContainerView: View {
                         
                         let newHeight = terminalHeight - value.translation.height
                         
-                        if newHeight >= collapsedHeight {
+                        if newHeight >= Self.collapsedHeight {
                             if !isBottomVisible { isBottomVisible = true }
                             
                             isDragging = true
@@ -114,7 +115,7 @@ struct TerminalContainerView: View {
         .padding()
         .frame(
             maxWidth: .infinity,
-            maxHeight: isBottomVisible ? terminalHeight : collapsedHeight,
+            maxHeight: isBottomVisible ? terminalHeight : Self.collapsedHeight,
             alignment: .top
         )
         .background(roundedBackgroundTerminal)

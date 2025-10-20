@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftTerm
 import AppKit
 
-struct Terminal: NSViewRepresentable {
+struct EditorTerminalView: NSViewRepresentable {
     let pathFile: String
 
     func makeCoordinator() -> Coordinator { Coordinator() }
