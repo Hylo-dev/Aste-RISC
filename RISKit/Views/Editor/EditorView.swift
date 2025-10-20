@@ -49,58 +49,10 @@ struct EditorView: View {
     var body: some View {
         
         NavigationSplitView(columnVisibility: $columnVisibility) {
-            
-            VStack {
-                DirectoryTreeView(
-                    rootURL       : URL(fileURLWithPath: appState.navigationState.navigationItem.selectedProjectPath),
-                    refreshTrigger: treeRefreshTrigger,
-                    currentFile   : $selectedFile
-                    
-                ) { url in
-                    selectedFile = url
-                    
-                }
-                .onChange(of: editorStatus == .build) { _, newValue in
-                    if newValue {
-                        treeRefreshTrigger.toggle()
-                    }
-                }
-                
-                Spacer()
-                
-            }
-            .padding(.horizontal, 10)
-            
-            
-                                    
-        } content: {
-            let projectPath = URL(fileURLWithPath: appState.navigationState.navigationItem.selectedProjectPath)
-            let isEmptyPath = selectedFile == nil
-            
-            ZStack {
-                
-                if searchFile || isEmptyPath {
-                    
-                    FileSearchView(directory: projectPath) { currentFile in
-                        selectedFile = currentFile.url
-                        searchFile = false
+            treeSection // Show tree directory
                         
-                    }
-                    .transition(.opacity)
-                    .zIndex(1)
-                    
-                }
-                
-                if  !isEmptyPath {
-                    ContextView(
-                        indexInstruction   : $indexInstruction,
-                        indexesInstructions: $indexesInstructions,
-                        editorStatus       : $editorStatus,
-                        projectRoot        : projectPath,
-                        selectedFile       : selectedFile!
-                    )
-                }
-            }
+        } content: {
+            editorContent // Principal content editor, code editor and show run section
                 
         } detail: {
             VStack {
@@ -127,7 +79,6 @@ struct EditorView: View {
                 }
             }
         })
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onDisappear {
             withTransaction(Transaction(animation: nil)) {
                 appState.setEditorProjectPath(nil)
@@ -139,6 +90,7 @@ struct EditorView: View {
             }
             
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .toolbar {
             
             // Section toolbar, this contains running execution button
@@ -163,6 +115,7 @@ struct EditorView: View {
             }
             .sharedBackgroundVisibility(.hidden)
             
+            // Search button
             ToolbarItem(placement: .principal) {
                 ToolbarSearchView(
                     selectedFile: $selectedFile,
@@ -171,6 +124,60 @@ struct EditorView: View {
                 
             }
             .sharedBackgroundVisibility(.hidden)
+        }
+    }
+    
+    // MARK: Variable show tree directory project
+    private var treeSection: some View {
+        return VStack {
+            DirectoryTreeView(
+                rootURL       : URL(fileURLWithPath: appState.navigationState.navigationItem.selectedProjectPath),
+                refreshTrigger: treeRefreshTrigger,
+                currentFile   : $selectedFile
+                
+            ) { url in
+                selectedFile = url
+                
+            }
+            .onChange(of: editorStatus == .build) { _, newValue in
+                if newValue {
+                    treeRefreshTrigger.toggle()
+                }
+            }
+            
+            Spacer()
+            
+        }
+        .padding(.horizontal, 10)
+    }
+    
+    private var editorContent: some View {
+        let projectPath = URL(fileURLWithPath: appState.navigationState.navigationItem.selectedProjectPath)
+        let isEmptyPath = selectedFile == nil
+        
+        return ZStack {
+            
+            if searchFile || isEmptyPath {
+                
+                FileSearchView(directory: projectPath) { currentFile in
+                    selectedFile = currentFile.url
+                    searchFile = false
+                    
+                }
+                .transition(.opacity)
+                .zIndex(1)
+                
+            }
+            
+            if  !isEmptyPath {
+                ContextView(
+                    indexInstruction   : $indexInstruction,
+                    indexesInstructions: $indexesInstructions,
+                    editorStatus       : $editorStatus,
+                    projectRoot        : projectPath,
+                    selectedFile       : selectedFile!
+                )
+            }
         }
     }
 }
