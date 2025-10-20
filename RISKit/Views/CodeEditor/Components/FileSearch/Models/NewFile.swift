@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct CreationFile: Identifiable {
+struct NewFile: Identifiable {
     let id = UUID()
     
     let name: String

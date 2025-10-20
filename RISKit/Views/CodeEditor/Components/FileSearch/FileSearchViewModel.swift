@@ -6,37 +6,31 @@
 //
 
 import SwiftUI
-import AppKit
-import UniformTypeIdentifiers
 internal import Combine
 
-struct FileItem: Identifiable, Equatable {
-    let id = UUID()
-    let name: String
-    let url: URL
-}
-
 class FileSearchViewModel: ObservableObject {
-    @Published var searchText: String
-    @Published var results: [FileItem]
+    @Published var searchText       : String
+    @Published var fileSelectedIndex: Int
+    @Published var searchBarState   : SearchBarState
+    @Published var filesResult      : [FileItem]
     
     private var allFiles: [FileItem]
     private var cancellables: Set<AnyCancellable>
     
     init(directory: URL) {
-        self.searchText   = ""
-        self.results      = []
-        self.allFiles     = []
-        self.cancellables = Set<AnyCancellable>()
+        self.searchText        = ""
+        self.filesResult           = []
+        self.fileSelectedIndex = 0
+        self.searchBarState      = .SEARCH_FILE
+        self.allFiles          = []
+        self.cancellables      = Set<AnyCancellable>()
         
         loadFiles(from: directory)
         
         $searchText
             .debounce(for: .milliseconds(150), scheduler: RunLoop.main)
             .removeDuplicates()
-            .sink { [weak self] query in
-                self?.filterResults(for: query)
-            }
+            .sink { [weak self] query in self?.filterResults(for: query) }
             .store(in: &cancellables)
     }
     
@@ -58,11 +52,103 @@ class FileSearchViewModel: ObservableObject {
     
     private func filterResults(for query: String) {
         if query.isEmpty {
-            results = []
+            filesResult = []
             
         } else {
-            results = allFiles.filter { $0.name.localizedCaseInsensitiveContains(query) }
+            filesResult = allFiles.filter { $0.name.localizedCaseInsensitiveContains(query) }
             
+        }
+    }
+    
+    func keyboardState(
+        press keyPress: KeyPress,
+        onSelect      : (FileItem) -> Void
+        
+    ) -> KeyPress.Result {
+        switch keyPress.key {
+        case .downArrow:
+            
+            // Case File's loads
+            if searchBarState == .SHOW_LIST_FILES {
+                guard !filesResult.isEmpty else { return .ignored }
+                
+                if fileSelectedIndex < filesResult.count - 1 { fileSelectedIndex += 1 }
+                
+            } else if searchBarState == .CREATE_FILE && fileSelectedIndex < 2 {
+                fileSelectedIndex += 1
+                
+            }
+            
+            return .handled
+            
+        case .upArrow:
+            if searchBarState == .SHOW_LIST_FILES {
+                guard !filesResult.isEmpty else { return .ignored }
+            }
+            
+            if fileSelectedIndex > 0 { fileSelectedIndex -= 1
+            }
+            return .handled
+            
+        case .rightArrow:
+            if searchBarState  != .SHOW_CREATE_BUTTON &&
+                searchBarState != .SHOW_LIST_FILES    &&
+                searchBarState != .CREATE_FILE {
+                
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                    searchBarState    = .SHOW_CREATE_BUTTON
+                    fileSelectedIndex = 0
+                    
+                }
+            }
+            
+            return .handled
+            
+        case .leftArrow:
+            if searchBarState  != .SEARCH_FILE &&
+                searchBarState != .SHOW_LIST_FILES &&
+                searchBarState != .CREATE_FILE {
+                
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                    searchBarState    = .SEARCH_FILE
+                    fileSelectedIndex = 0
+                }
+            }
+            
+            return .handled
+            
+        case .return:
+            switch searchBarState {
+            case .SHOW_LIST_FILES:
+                guard !filesResult.isEmpty else { return .ignored }
+                                
+                onSelect(filesResult[fileSelectedIndex])
+                
+            case .SHOW_CREATE_BUTTON:
+                
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                    searchBarState = .CREATE_FILE
+                }
+            
+            default:
+                break
+            }
+            
+            return .handled
+            
+        case .escape:
+            if searchBarState == .CREATE_FILE {
+                
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                    searchBarState = .SHOW_CREATE_BUTTON
+                }
+                
+            }
+            
+            return .handled
+            
+        default:
+            return .ignored
         }
     }
 }

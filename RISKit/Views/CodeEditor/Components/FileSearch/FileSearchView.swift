@@ -8,24 +8,20 @@
 import SwiftUI
 
 struct FileSearchView: View {
-    @ObservedObject private var viewModel: FileSearchViewModel
-    var onSelect: (FileItem) -> Void
+    @StateObject private var fileSearchViewModel: FileSearchViewModel
     
-    @State private var selectedListIndex: Int
-    @State private var finderStatus     : FinderStatus
+    private let totalWidth: CGFloat
+    private let buttonSize: CGFloat
+    private var onSelect  : (FileItem) -> Void // CallBack function
     
-           private let totalWidth       : CGFloat
-           private let buttonSize       : CGFloat
-    
-    init(directory: URL, onSelect: @escaping (FileItem) -> Void) {
-        self.viewModel = FileSearchViewModel(directory: directory)
-        self.onSelect = onSelect
-        
-        self._selectedListIndex = State(initialValue: 0)
-        self._finderStatus      = State(initialValue: .SEARCH_FILE)
-        
-        self.totalWidth = 600
-        self.buttonSize = 65
+    init(
+        directory: URL,
+        onSelect: @escaping (FileItem) -> Void
+    ) {
+        self._fileSearchViewModel = StateObject(wrappedValue: FileSearchViewModel(directory: directory))
+        self.onSelect             = onSelect
+        self.totalWidth           = 600
+        self.buttonSize           = 65
     }
     
     var body: some View {
@@ -35,174 +31,45 @@ struct FileSearchView: View {
             GlassEffectContainer(spacing: 18) {
                 
                 HStack(alignment: .top, spacing: 15) {
-                    
-                    let textAreaWidth = finderStatus == .SHOW_CREATE_BUTTON ? totalWidth - buttonSize : totalWidth
+                    let searchBarState = self.fileSearchViewModel.searchBarState
+                    let textAreaWidth  = searchBarState == .SHOW_CREATE_BUTTON ?
+                    totalWidth - buttonSize :
+                    totalWidth
                     
                     // Spotlight and list
                     VStack(spacing: 15) {
                         
-                        HStack(spacing: 10) {
-                            
-                            switch finderStatus {
-                            case .CREATE_FILE:
-                                Image(systemName: "document.badge.plus")
-                                    .foregroundColor(.secondary)
-                                    .font(.title)
-                                
-                            default:
-                                Image(systemName: "magnifyingglass")
-                                    .foregroundColor(.secondary)
-                                    .font(.title)
-                                
-                            }
-                            
-                            TextField(
-                                finderStatus == .SEARCH_FILE || finderStatus == .SHOW_LIST_FILES ? "Search File" : "Add File", text: $viewModel.searchText
-                            )
-                                .font(.title)
-                                .textFieldStyle(.plain)
-                                .onSubmit { selectCurrent() }
-                            
-                        }
-                    
-                        if finderStatus == .SHOW_LIST_FILES || finderStatus == .CREATE_FILE {
+                        // Contains text field for search element on project
+                        textFieldSearch
                         
-                            Divider() // Fino A Ieri -- Drast
-                            
-                            ListFilesView(
-                                viewModel        : viewModel,
-                                selectedListIndex: $selectedListIndex,
-                                typeListShow     : $finderStatus
-                                    
-                            ) { file in
-                                onSelect(file)
-                            }
-                        }
-                                    
+                        // Lists element
+                        listElementsSearched
+                        
                     }
                     .padding()
                     .glassEffect(in: .rect(cornerRadius: 36))
                     .frame(width: textAreaWidth)
                     .onKeyPress { keyPress in
-                        
-                        switch keyPress.key {
-                        case .downArrow:
-                            
-                            // Case File's loads
-                            if finderStatus == .SHOW_LIST_FILES {
-                                guard !viewModel.results.isEmpty else { return .ignored }
-                                
-                                if selectedListIndex < viewModel.results.count - 1 {
-                                    selectedListIndex += 1
-                                }
-                                
-                            } else if finderStatus == .CREATE_FILE && selectedListIndex < 2 {
-                                selectedListIndex += 1
-                                
-                            }
-                            
-                            
-                            return .handled
-                            
-                        case .upArrow:
-                            if finderStatus == .SHOW_LIST_FILES {
-                                guard !viewModel.results.isEmpty else { return .ignored }
-                            }
-                            
-                            if selectedListIndex > 0 {
-                                selectedListIndex -= 1
-                            }
-                            return .handled
-                            
-                        case .rightArrow:
-                            if finderStatus != .SHOW_CREATE_BUTTON && finderStatus != .SHOW_LIST_FILES && finderStatus != .CREATE_FILE {
-                                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                                    finderStatus = .SHOW_CREATE_BUTTON
-                                    selectedListIndex = 0
-                                }
-                            }
-                            
-                            return .handled
-                            
-                        case .leftArrow:
-                            if finderStatus != .SEARCH_FILE && finderStatus != .SHOW_LIST_FILES && finderStatus != .CREATE_FILE {
-                                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                                    finderStatus = .SEARCH_FILE
-                                    selectedListIndex = 0
-                                }
-                            }
-                            
-                            return .handled
-                            
-                        case .return:
-                            switch finderStatus {
-                            case .SHOW_LIST_FILES:
-                                guard !viewModel.results.isEmpty else { return .ignored }
-                                selectCurrent()
-                                
-                            case .SHOW_CREATE_BUTTON:
-                                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                                    finderStatus = .CREATE_FILE
-                                }
-                            
-                            default:
-                                break
-                            }
-                            
-                            return .handled
-                            
-                        case .escape:
-                            if finderStatus == .CREATE_FILE {
-                                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                                    finderStatus = .SHOW_CREATE_BUTTON
-                                    
-                                }
-                                
-                            }
-                            
-                            return .handled
-                            
-                        default:
-                            return .ignored
-                        }
+                        self.fileSearchViewModel.keyboardState(press: keyPress, onSelect: onSelect)
                     }
-                    .onChange(of: viewModel.results) {
-                        selectedListIndex = 0
+                    .onChange(of: fileSearchViewModel.filesResult) {
+                        self.fileSearchViewModel.fileSelectedIndex = 0
                         
                         withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                            let showList = !viewModel.results.isEmpty && viewModel.searchText != ""
-                             
-                            if finderStatus == .SEARCH_FILE && showList {
-                                finderStatus = .SHOW_LIST_FILES
+                            let showList = !fileSearchViewModel.filesResult.isEmpty &&
+                            fileSearchViewModel.searchText != ""
+                            
+                            if searchBarState == .SEARCH_FILE && showList {
+                                self.fileSearchViewModel.searchBarState = .SHOW_LIST_FILES
                                 
-                            } else if finderStatus == .SHOW_LIST_FILES && !showList {
-                                finderStatus = .SEARCH_FILE
+                            } else if searchBarState == .SHOW_LIST_FILES && !showList {
+                                self.fileSearchViewModel.searchBarState = .SEARCH_FILE
                                 
                             }
                         }
                     }
                     
-                    if finderStatus == .SHOW_CREATE_BUTTON {
-                        Button {
-                            
-                            
-                        } label: {
-                            Image(systemName: "document.badge.plus")
-                                .font(.system(size: 19))
-                                .frame(width: 55, height: 55)
-                                .contentShape(Circle())
-                            
-                        }
-                        .buttonStyle(.plain)
-                        .glassEffect(.regular.tint(finderStatus == .SHOW_CREATE_BUTTON ? Color.accentColor : Color.clear), in: .circle)
-                        .clipShape(Circle())
-                        .transition(.move(edge: .leading).combined(with: .opacity))
-                        
-                    } else {
-                        Color.clear
-                            .frame(width: 0, height: buttonSize)
-                            .allowsHitTesting(false)
-                    }
+                    buttonCreateFile // Button for create new file
                     
                 }
             }
@@ -213,8 +80,92 @@ struct FileSearchView: View {
         .padding(.top, 127)
     }
     
-    private func selectCurrent() {
-        guard !viewModel.results.isEmpty else { return }
-        onSelect(viewModel.results[selectedListIndex])
+    // MARK: TextField
+    private var textFieldSearch: some View {
+        let searchBarState = fileSearchViewModel.searchBarState
+        
+        return HStack(spacing: 10) {
+            
+            switch searchBarState {
+            case .CREATE_FILE:
+                Image(systemName: "document.badge.plus")
+                    .foregroundColor(.secondary)
+                    .font(.title)
+                
+            default:
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.secondary)
+                    .font(.title)
+                
+            }
+            
+            TextField(
+                searchBarState == .SEARCH_FILE ||
+                searchBarState == .SHOW_LIST_FILES ?
+                "Search File" :
+                    "Add File",
+                text: $fileSearchViewModel.searchText
+            )
+            .font(.title)
+            .textFieldStyle(.plain)
+            .onSubmit {
+                guard !fileSearchViewModel.filesResult.isEmpty else { return }
+                
+                let fileSelectedIndex = self.fileSearchViewModel.fileSelectedIndex
+                onSelect(self.fileSearchViewModel.filesResult[fileSelectedIndex])
+            }
+            
+        }
+    }
+    
+    // MARK: List elements
+    private var listElementsSearched: some View {
+        let searchBarState = fileSearchViewModel.searchBarState
+        
+        return Group {
+            if searchBarState == .SHOW_LIST_FILES || searchBarState == .CREATE_FILE {
+                Divider()
+                
+                ListFilesView() { file in onSelect(file) }
+                    .environmentObject(self.fileSearchViewModel)
+            }
+        }
+    }
+    
+    // MARK: Button for create file
+    private var buttonCreateFile: some View {
+        let searchBarState = fileSearchViewModel.searchBarState
+        
+        return Group {
+            if searchBarState == .SHOW_CREATE_BUTTON {
+                Button {
+                    
+                    
+                } label: {
+                    Image(systemName: "document.badge.plus")
+                        .font(.system(size: 19))
+                        .frame(width: 55, height: 55)
+                        .contentShape(Circle())
+                    
+                }
+                .buttonStyle(.plain)
+                .glassEffect(
+                    .regular.tint(
+                        searchBarState == .SHOW_CREATE_BUTTON ?
+                        Color.accentColor :
+                        Color.clear
+                    ),
+                    in: .circle
+                )
+                .clipShape(Circle())
+                .transition(.move(edge: .leading).combined(with: .opacity))
+                
+            } else {
+                Color.clear
+                    .frame(width: 0, height: buttonSize)
+                    .allowsHitTesting(false)
+                
+            }
+        }
     }
 }
