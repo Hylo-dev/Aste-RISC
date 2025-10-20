@@ -108,7 +108,9 @@ struct BodyEditorView: View {
     private var treeSection: some View {
         return VStack {
             DirectoryTreeView(
-                rootURL : URL(fileURLWithPath: appState.navigationState.navigationItem.selectedProjectPath)
+                rootURL : URL(
+                    fileURLWithPath: appState.navigationState.navigationItem.selectedProjectPath
+                )
                 
             ) { url in self.bodyEditorViewModel.changeOpenFile(url) }
             .environmentObject(self.bodyEditorViewModel)

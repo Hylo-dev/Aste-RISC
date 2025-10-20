@@ -9,26 +9,21 @@ import SwiftUI
 import Foundation
 internal import Combine
 
-import AppKit
-import SwiftUI
-import Foundation
-import AppKit
-
 final class FileNode: ObservableObject, Identifiable {
     let id: String
-    let url: URL
-    let name: String
+    let url        : URL
+    let name       : String
     let isDirectory: Bool
-
-    @Published var children: [FileNode] = []
-    @Published var isExpanded: Bool = false
-    @Published var icon: Image? = nil
-
+    
     private var loaded: Bool = false
 
+    @Published var children  : [FileNode] = []
+    @Published var isExpanded: Bool       = false
+    @Published var icon      : Image?     = nil
+
     init(url: URL) {
-        self.url = url
-        self.id = url.path
+        self.id   = url.path
+        self.url  = url
         self.name = url.lastPathComponent
 
         var isDir: ObjCBool = false
@@ -42,40 +37,37 @@ final class FileNode: ObservableObject, Identifiable {
     /// - Parameters:
     ///   - async: if true l'I/O is make on background (default true)
     ///   - forceReload: if true force reload (default false)
-    func loadChildrenPreservingState(async: Bool = true, forceReload: Bool = false) {
-        guard isDirectory else { return }
-
-        if loaded && !forceReload {
-            return
-        }
-
+    func loadChildrenPreservingState(forceReload: Bool = false) {
+        guard isDirectory else { return } // Assert correct value, if not equals exit
+        
+        if loaded && !forceReload { return }
+        
+        // Set async work
         let work = {
-            let fm = FileManager.default
+            let fileManager = FileManager.default
             let options: FileManager.DirectoryEnumerationOptions = [.skipsHiddenFiles]
-            let urls: [URL]
+            let urls   : [URL]
             
-            if let content = try? fm.contentsOfDirectory(
+            if let content = try? fileManager.contentsOfDirectory(
                 at: self.url,
                 includingPropertiesForKeys: [.isDirectoryKey],
                 options: options
                 
             ) {
-                
-                urls = content.sorted { a, b in
-                    let aa = (try? a.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
-                    let bb = (try? b.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
+                urls = content.sorted { first, second in
+                    let isFirstDir  = (try? first.resourceValues(forKeys: [.isDirectoryKey]).isDirectory)  ?? false
+                    let isSecondDir = (try? second.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
                     
-                    if aa == bb {
-                        return a.lastPathComponent.lowercased() < b.lastPathComponent.lowercased()
+                    if isFirstDir == isSecondDir {
+                        return first.lastPathComponent.lowercased() < second.lastPathComponent.lowercased()
                     }
 
-                    return aa && !bb
+                    return isFirstDir && !isSecondDir
                 }
-            } else {
-                urls = []
-            }
+                
+            } else { urls = [] }
 
-            DispatchQueue.main.async { [weak self] in
+            Task { @MainActor [weak self] in
                 guard let self = self else { return }
 
                 var existingMap = Dictionary(uniqueKeysWithValues: self.children.map { ($0.id, $0) })
@@ -83,45 +75,34 @@ final class FileNode: ObservableObject, Identifiable {
 
                 for url in urls {
                     if let existing = existingMap[url.path] {
-
                         newChildren.append(existing)
                         existingMap.removeValue(forKey: url.path)
                         
                     } else {
-
                         let node = FileNode(url: url)
                         newChildren.append(node)
+                        
                     }
                 }
 
                 self.children = newChildren
-                self.loaded = true
+                self.loaded   = true
 
                 for child in self.children {
                     if child.isDirectory && child.isExpanded {
-                        child.loadChildrenPreservingState(async: true, forceReload: forceReload)
-                        
+                        child.loadChildrenPreservingState(forceReload: forceReload)
                     }
                 }
             }
         }
 
-        if async {
-            DispatchQueue.global(qos: .userInitiated).async {
-                work()
-                
-            }
-            
-        } else {
-            work()
-            
-        }
+        Task { work() }
     }
 
     private func loadIcon() {
-        let nsIcon = NSWorkspace.shared.icon(forFile: url.path)
+        let nsIcon  = NSWorkspace.shared.icon(forFile: url.path)
         nsIcon.size = NSSize(width: 14, height: 14)
-        self.icon = Image(nsImage: nsIcon)
+        self.icon   = Image(nsImage: nsIcon)
         
     }
 }

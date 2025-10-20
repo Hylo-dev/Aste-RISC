@@ -15,7 +15,6 @@ struct DirectoryTreeView: View {
     init(
         rootURL       : URL,
         onOpenFile    : ((URL) -> Void)? = nil
-    
     ) {
         self._rootNode  = StateObject(wrappedValue: FileNode(url: rootURL))
         self.onOpenFile = onOpenFile
@@ -24,33 +23,30 @@ struct DirectoryTreeView: View {
 
     var body: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 0) {
-                DirectoryRow(
-                    node: rootNode,
-                    fileOpen: self.bodyEditorViewModel.currentFileSelected,
-                    level: 0,
-                    onOpenFile: onOpenFile
-                )
-                
-            }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 4)
+            treeProject // Show all projects on tree
             
         }
         .frame(minWidth: 220)
         .onAppear {
-            refresh()
+            guard rootNode.isDirectory else { return }
+
+            rootNode.loadChildrenPreservingState(forceReload: true)
+            rootNode.isExpanded = true
             
         }
     }
     
-    private func refresh() {
-        guard rootNode.isDirectory else { return }
-
-        rootNode.loadChildrenPreservingState(async: true, forceReload: true)
-
-        rootNode.isExpanded = true
+    private var treeProject: some View {
+        return LazyVStack(alignment: .leading, spacing: 0) {
+            DirectoryRow(
+                node: rootNode,
+                fileOpen: self.bodyEditorViewModel.currentFileSelected,
+                level: 0,
+                onOpenFile: onOpenFile
+            )
+            
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 4)
     }
-
-
 }

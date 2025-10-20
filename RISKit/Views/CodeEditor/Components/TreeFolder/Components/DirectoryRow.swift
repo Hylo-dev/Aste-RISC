@@ -21,7 +21,7 @@ struct DirectoryRow: View {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         node.isExpanded.toggle()
                         
-                        if node.isExpanded { node.loadChildrenPreservingState(async: true, forceReload: false) }
+                        if node.isExpanded { node.loadChildrenPreservingState(forceReload: false) }
                         
                     }
                     
