@@ -12,20 +12,16 @@ struct BodyEditorView: View {
     
     @Environment(\.openWindow) private var openWindow
     
-    // Application state, contains all view models
-    @EnvironmentObject private var appState: AppState // TODO -> Add manage CPU view model
+    // Application state, contains all global view models
+    @EnvironmentObject private var appState: AppState
     
-    @StateObject private var bodyEditorViewModel: BodyEditorViewModel = BodyEditorViewModel()
+    // ViewModel for manage UI body editor and RISC-V CPU Emulator
+    @StateObject private var bodyEditorViewModel = BodyEditorViewModel()
+    @StateObject private var cpu                 = CPU(ram: new_ram(Int(DEFAULT_RAM_SIZE)))
     
-    // RISC-V CPU Emulator
-    @StateObject private var cpu: CPU = CPU(ram: new_ram(Int(DEFAULT_RAM_SIZE))) // Init virtual RAM for RISC-V Code
-    
-    // C Strucs for emulator management
-    @State private var opts: UnsafeMutablePointer<options_t>? = nil
-    
-    // Current instruction and map index
-    @State private var indexInstruction   : UInt32?
-    @State private var indexesInstructions: [Int] = []
+    // Options emulator and mapping source asm code
+    @State private var opts          : UnsafeMutablePointer<options_t>? = nil
+    @State private var mapInstruction: MapInstructions                  = MapInstructions()
 
     var body: some View {
         
@@ -40,9 +36,9 @@ struct BodyEditorView: View {
             VStack { Text("Test") }
             
         }
-        .onAppear { self.indexInstruction = cpu.programCounter }
+        .onAppear { self.mapInstruction.indexInstruction = cpu.programCounter }
         .onChange(of: self.cpu.programCounter, { _, newValue in
-            self.indexInstruction = (newValue - opts!.pointee.text_vaddr) / 4
+            self.mapInstruction.indexInstruction = (newValue - opts!.pointee.text_vaddr) / 4
         })
         .onChange(of: self.bodyEditorViewModel.currentFileSelected, { _, newValue in
             if newValue != nil {
@@ -85,10 +81,9 @@ struct BodyEditorView: View {
             // Section toolbar, this contains running execution button
             ToolbarItem(placement: .navigation) {
                 ToolbarExecuteView(
-                    indexInstruction   : $indexInstruction,
-                    indexesInstructions: $indexesInstructions,
-                    cpu                : cpu,
-                    opts               : opts
+                    mapInstruction: $mapInstruction,
+                    cpu           : cpu,
+                    opts          : opts
                 )
                 .environmentObject(self.bodyEditorViewModel)
             }
@@ -145,9 +140,8 @@ struct BodyEditorView: View {
             
             if  !isEmptyPath {
                 ContextView(
-                    indexInstruction   : $indexInstruction,
-                    indexesInstructions: $indexesInstructions,
-                    projectRoot        : projectPath
+                    mapInstruction: $mapInstruction,
+                    projectRoot   : projectPath
                 )
                 .environmentObject(self.bodyEditorViewModel)
             }

@@ -7,9 +7,8 @@ struct ContextView: View {
     @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
     
     // Params struct
-    @Binding var indexInstruction   : UInt32?
-    @Binding var indexesInstructions: [Int]
-             var projectRoot        : URL
+    @Binding var mapInstruction: MapInstructions
+             var projectRoot   : URL
     
     // Internal var struct for UI
     @State private var terminalHeight : CGFloat = 200
@@ -25,8 +24,7 @@ struct ContextView: View {
                 if self.bodyEditorViewModel.editorState == .running {
                     CodeEditorView(
                         text: $text,
-                        indexInstruction: $indexInstruction,
-                        indexesInstructions: $indexesInstructions,
+                        mapInstruction: $mapInstruction,
                         projectRoot: self.bodyEditorViewModel.currentFileSelected!,
                         pathFile: projectRoot
                     )

@@ -10,9 +10,8 @@ import AppKit
 import STTextView
 
 struct TextViewWrapper: NSViewRepresentable {
-    @Binding var text              : String
-    @Binding var indexInstruction  : UInt32?
-    @Binding var indexesIstructions: [Int]
+    @Binding var text          : String
+    @Binding var mapInstruction: MapInstructions
     
     var viewModel : CodeEditorViewModel
 
@@ -49,8 +48,13 @@ struct TextViewWrapper: NSViewRepresentable {
             context.coordinator.updateTextPreservingSelection(newText: text)
         }
             
-        if indexInstruction != nil && !indexesIstructions.isEmpty && indexInstruction! <= indexesIstructions.count {
-            context.coordinator.highlightLine(at: indexesIstructions[Int(indexInstruction ?? 0)])
+        if self.mapInstruction.indexInstruction != nil &&
+          !self.mapInstruction.indexesInstructions.isEmpty &&
+           self.mapInstruction.indexInstruction! <= self.mapInstruction.indexesInstructions.count
+        {
+            context.coordinator.highlightLine(
+                at: self.mapInstruction.indexesInstructions[Int(self.mapInstruction.indexInstruction ?? 0)]
+            )
             
         } else {
             context.coordinator.highlightLine(clear: true)

@@ -1,24 +1,21 @@
 import SwiftUI
 
 struct CodeEditorView: View {
-    @Binding var text               : String
-    @Binding var indexInstruction   : UInt32?
-    @Binding var indexesInstructions: [Int]
+    @Binding var text          : String
+    @Binding var mapInstruction: MapInstructions
         
     @StateObject private var viewModel: CodeEditorViewModel
 
     init(
         text               : Binding<String>,
-        indexInstruction   : Binding<UInt32?>,
-        indexesInstructions: Binding<[Int]>,
+        mapInstruction     : Binding<MapInstructions>,
         projectRoot        : URL,
         pathFile           : URL
     ) {
         
         // Bindings
         self._text                = text
-        self._indexInstruction    = indexInstruction
-        self._indexesInstructions = indexesInstructions
+        self._mapInstruction    = mapInstruction
         
         // View model init
         self._viewModel = StateObject(wrappedValue: CodeEditorViewModel(projectRoot: projectRoot, documentURI: pathFile))
@@ -27,10 +24,9 @@ struct CodeEditorView: View {
     var body: some View {
         VStack {
             TextViewWrapper(
-                text              : $text,
-                indexInstruction  : $indexInstruction,
-                indexesIstructions: $indexesInstructions,
-                viewModel         : viewModel,
+                text          : $text,
+                mapInstruction: $mapInstruction,
+                viewModel     : viewModel,
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             

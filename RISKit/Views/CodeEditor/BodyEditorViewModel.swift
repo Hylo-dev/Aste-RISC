@@ -19,9 +19,9 @@ class BodyEditorViewModel: ObservableObject {
         self.currentFileSelected = nil
     }
     
-    func isSearching      (_ status: Bool)         { self.isSearchingFile     = status }
-    func changeEditorState(_ state : EditorStatus) { self.editorState         = state  }
-    func changeOpenFile   (_ file  : URL)          { self.currentFileSelected = file   }
+    func isSearching      (_ status: Bool)         { Task { @MainActor in self.isSearchingFile     = status } }
+    func changeEditorState(_ state : EditorStatus) { Task { @MainActor in self.editorState         = state  } }
+    func changeOpenFile   (_ file  : URL)          { Task { @MainActor in self.currentFileSelected = file   } }
     
     func isEditorStopped() -> Bool { return self.editorState == .readyToBuild || self.editorState == .stopped }
     
