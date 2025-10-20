@@ -10,8 +10,8 @@ import SwiftUI
 struct DirectoryRow: View {
     @ObservedObject var node: FileNode
     
-    @Binding var currentFile: URL?
-    var level: Int
+    var fileOpen  : URL?
+    var level     : Int
     var onOpenFile: ((URL) -> Void)? = nil
 
     var body: some View {
@@ -63,11 +63,11 @@ struct DirectoryRow: View {
 
             }
             .buttonStyle(.plain)
-            .background(currentFile == node.url ? Color.secondary.opacity(0.1) : Color.clear, in: .rect(cornerRadius: 12))
+            .background(fileOpen == node.url ? Color.secondary.opacity(0.1) : Color.clear, in: .rect(cornerRadius: 12))
             
             if node.isDirectory && node.isExpanded {
                 ForEach(node.children) { child in
-                    DirectoryRow(node: child, currentFile: $currentFile, level: level + 1, onOpenFile: onOpenFile)
+                    DirectoryRow(node: child, fileOpen: fileOpen, level: level + 1, onOpenFile: onOpenFile)
                 }
             }
         }

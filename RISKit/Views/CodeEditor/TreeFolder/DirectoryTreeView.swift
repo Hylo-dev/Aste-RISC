@@ -8,20 +8,16 @@
 import SwiftUI
 
 struct DirectoryTreeView: View {
-    @StateObject private var rootNode: FileNode
-    
-    @Binding var currentFile: URL?
-             var onOpenFile : ((URL) -> Void)? = nil
+    @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
+    @StateObject       private var rootNode           : FileNode
+                       private var onOpenFile         : ((URL) -> Void)? = nil
     
     init(
         rootURL       : URL,
-        currentFile   : Binding<URL?>,
         onOpenFile    : ((URL) -> Void)? = nil
     
     ) {
-        _rootNode = StateObject(wrappedValue: FileNode(url: rootURL))
-                
-        self._currentFile = currentFile
+        self._rootNode  = StateObject(wrappedValue: FileNode(url: rootURL))
         self.onOpenFile = onOpenFile
         
     }
@@ -29,7 +25,12 @@ struct DirectoryTreeView: View {
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
-                DirectoryRow(node: rootNode, currentFile: $currentFile, level: 0, onOpenFile: onOpenFile)
+                DirectoryRow(
+                    node: rootNode,
+                    fileOpen: self.bodyEditorViewModel.currentFileSelected,
+                    level: 0,
+                    onOpenFile: onOpenFile
+                )
                 
             }
             .padding(.vertical, 8)

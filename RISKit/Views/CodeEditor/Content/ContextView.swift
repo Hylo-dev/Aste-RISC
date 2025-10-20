@@ -4,13 +4,12 @@ import SwiftTerm
 
 struct ContextView: View {
 //    @ObservedObject var compilerProfile: CompilerProfileStore
+    @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
     
     // Params struct
     @Binding var indexInstruction   : UInt32?
     @Binding var indexesInstructions: [Int]
-    @Binding var editorStatus       : EditorStatus
              var projectRoot        : URL
-             let selectedFile       : URL
     
     // Internal var struct for UI
     @State private var terminalHeight : CGFloat = 200
@@ -23,12 +22,12 @@ struct ContextView: View {
         GeometryReader { geo in
             VStack(spacing: 10) {
                 
-                if editorStatus == EditorStatus.running {
+                if self.bodyEditorViewModel.editorState == .running {
                     CodeEditorView(
                         text: $text,
                         indexInstruction: $indexInstruction,
                         indexesInstructions: $indexesInstructions,
-                        projectRoot: selectedFile,
+                        projectRoot: self.bodyEditorViewModel.currentFileSelected!,
                         pathFile: projectRoot
                     )
                     .frame(
@@ -38,7 +37,7 @@ struct ContextView: View {
                     )
                     
                 } else {
-                    Terminal(pathFile: selectedFile.path)
+                    Terminal(pathFile: self.bodyEditorViewModel.currentFileSelected!.path)
                        
                 }
                                 
@@ -54,12 +53,14 @@ struct ContextView: View {
             .padding(.bottom, 16)
             .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
             .animation(.spring(), value: isBottomVisible)
-            .onChange(of: selectedFile) { _, _ in loadSelectedFile() }
+            .onChange(of: self.bodyEditorViewModel.currentFileSelected) { _, _ in loadSelectedFile() }
             .onAppear { loadSelectedFile() }
         }
     }
     
-    private func loadSelectedFile() { self.text = (try? String(contentsOf: selectedFile, encoding: .utf8)) ?? "" }
+    private func loadSelectedFile() {
+        self.text = (try? String(contentsOf: self.bodyEditorViewModel.currentFileSelected!, encoding: .utf8)) ?? ""
+    }
     
     private func topHeight(totalHeight: CGFloat) -> CGFloat {
         if isBottomVisible {

@@ -8,34 +8,24 @@
 import SwiftUI
 import AppKit
 
-struct BodyEditorViem: View {
+struct BodyEditorView: View {
     
     @Environment(\.openWindow) private var openWindow
     
     // Application state, contains all view models
     @EnvironmentObject private var appState: AppState // TODO -> Add manage CPU view model
     
-    @State private var searchFile  : Bool         // Searching File
-    @State private var editorStatus: EditorStatus // Runnig section
-    @State private var selectedFile: URL?         // Tree file section
+    @StateObject private var bodyEditorViewModel: BodyEditorViewModel = BodyEditorViewModel()
     
     // RISC-V CPU Emulator
     @StateObject private var cpu: CPU = CPU(ram: new_ram(Int(DEFAULT_RAM_SIZE))) // Init virtual RAM for RISC-V Code
     
     // C Strucs for emulator management
-    @State private var opts: UnsafeMutablePointer<options_t>?
+    @State private var opts: UnsafeMutablePointer<options_t>? = nil
     
     // Current instruction and map index
     @State private var indexInstruction   : UInt32?
     @State private var indexesInstructions: [Int] = []
-        
-    init() {
-        self.editorStatus  = .readyToBuild
-        self.searchFile    = false
-        self._selectedFile = State(initialValue: nil)
-        self.opts          = nil
-        
-    }
 
     var body: some View {
         
@@ -54,14 +44,25 @@ struct BodyEditorViem: View {
         .onChange(of: self.cpu.programCounter, { _, newValue in
             self.indexInstruction = (newValue - opts!.pointee.text_vaddr) / 4
         })
-        .onChange(of: selectedFile, { _, newValue in
+        .onChange(of: self.bodyEditorViewModel.currentFileSelected, { _, newValue in
             if newValue != nil {
-                selectedFile!.path.withCString { cUrl in
+                newValue!.path.withCString { cUrl in
                     self.opts = start_options(UnsafeMutablePointer(mutating: cUrl))
                     
                     // load program in ram
-                    load_binary_to_ram(cpu.ram, opts!.pointee.data_data, opts!.pointee.data_size, opts!.pointee.data_vaddr)
-                    load_binary_to_ram(cpu.ram, opts!.pointee.text_data, opts!.pointee.text_size, opts!.pointee.text_vaddr)
+                    load_binary_to_ram(
+                        cpu.ram,
+                        opts!.pointee.data_data,
+                        opts!.pointee.data_size,
+                        opts!.pointee.data_vaddr
+                    )
+                    
+                    load_binary_to_ram(
+                        cpu.ram,
+                        opts!.pointee.text_data,
+                        opts!.pointee.text_size,
+                        opts!.pointee.text_vaddr
+                    )
                     
                     //self.assemblyData = newAssemblyData(opts).pointee
                 }
@@ -84,31 +85,24 @@ struct BodyEditorViem: View {
             // Section toolbar, this contains running execution button
             ToolbarItem(placement: .navigation) {
                 ToolbarExecuteView(
-                    editorStatus       : $editorStatus,
-                    selectedFile       : $selectedFile,
                     indexInstruction   : $indexInstruction,
                     indexesInstructions: $indexesInstructions,
                     cpu                : cpu,
                     opts               : opts
                 )
+                .environmentObject(self.bodyEditorViewModel)
             }
             .sharedBackgroundVisibility(.hidden)
 
             // Center Section for view current file working and search file
             ToolbarItem(placement: .principal) {
-                ToolbarStatusView(
-                    selectedFile: $selectedFile,
-                    editorStatus: $editorStatus
-                )
+                ToolbarStatusView().environmentObject(self.bodyEditorViewModel)
             }
             .sharedBackgroundVisibility(.hidden)
             
             // Search button
             ToolbarItem(placement: .principal) {
-                ToolbarSearchView(
-                    selectedFile: $selectedFile,
-                    searchFile  : $searchFile
-                )
+                ToolbarSearchView().environmentObject(self.bodyEditorViewModel)
                 
             }
             .sharedBackgroundVisibility(.hidden)
@@ -119,13 +113,10 @@ struct BodyEditorViem: View {
     private var treeSection: some View {
         return VStack {
             DirectoryTreeView(
-                rootURL       : URL(fileURLWithPath: appState.navigationState.navigationItem.selectedProjectPath),
-                currentFile   : $selectedFile
+                rootURL : URL(fileURLWithPath: appState.navigationState.navigationItem.selectedProjectPath)
                 
-            ) { url in
-                selectedFile = url
-                
-            }
+            ) { url in self.bodyEditorViewModel.changeOpenFile(url) }
+            .environmentObject(self.bodyEditorViewModel)
             
             Spacer()
             
@@ -136,15 +127,15 @@ struct BodyEditorViem: View {
     // MARK: Show content editor
     private var editorContent: some View {
         let projectPath = URL(fileURLWithPath: appState.navigationState.navigationItem.selectedProjectPath)
-        let isEmptyPath = selectedFile == nil
+        let isEmptyPath = self.bodyEditorViewModel.currentFileSelected == nil
         
         return ZStack {
             
-            if searchFile || isEmptyPath {
+            if isEmptyPath || self.bodyEditorViewModel.isSearchingFile {
                 
                 FileSearchView(directory: projectPath) { currentFile in
-                    selectedFile = currentFile.url
-                    searchFile = false
+                    self.bodyEditorViewModel.changeOpenFile(currentFile.url)
+                    self.bodyEditorViewModel.isSearching(false)
                     
                 }
                 .transition(.opacity)
@@ -156,16 +147,15 @@ struct BodyEditorViem: View {
                 ContextView(
                     indexInstruction   : $indexInstruction,
                     indexesInstructions: $indexesInstructions,
-                    editorStatus       : $editorStatus,
-                    projectRoot        : projectPath,
-                    selectedFile       : selectedFile!
+                    projectRoot        : projectPath
                 )
+                .environmentObject(self.bodyEditorViewModel)
             }
         }
     }
 }
 
 #Preview {
-    BodyEditorViem()
+    BodyEditorView()
 }
 

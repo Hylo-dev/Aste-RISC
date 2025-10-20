@@ -8,10 +8,8 @@
 import SwiftUI
 
 struct ToolbarStatusView: View {
-    @EnvironmentObject private var appState: AppState
-    
-    @Binding var selectedFile: URL?
-    @Binding var editorStatus: EditorStatus
+    @EnvironmentObject private var appState           : AppState
+    @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
     
     var body: some View {
         
@@ -28,13 +26,13 @@ struct ToolbarStatusView: View {
                     .truncationMode(.middle)
                     .layoutPriority(1)
                 
-                if selectedFile != nil {
-                    
+                if let fileOpen = self.bodyEditorViewModel.currentFileSelected {
+                
                     Image(systemName: "chevron.right")
                         .font(.subheadline)
                         .foregroundStyle(.primary)
                     
-                    Text(selectedFile!.lastPathComponent)
+                    Text(fileOpen.lastPathComponent)
                         .font(.subheadline)
                         .foregroundStyle(.primary)
                         .lineLimit(1)
@@ -49,7 +47,8 @@ struct ToolbarStatusView: View {
             Spacer()
             
             let projectName = appState.navigationState.navigationItem.selectedProjectName
-            switch editorStatus {
+            
+            switch self.bodyEditorViewModel.editorState {
                 case .readyToBuild:
                     Text("\(projectName) is ready to build")
                     .font(.subheadline)

@@ -8,13 +8,12 @@
 import SwiftUI
 
 struct ToolbarExecuteView: View {
-    @Binding var editorStatus       : EditorStatus
-    @Binding var selectedFile       : URL?
+    @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
+    
     @Binding var indexInstruction   : UInt32?
     @Binding var indexesInstructions: [Int]
-    
-    var cpu: CPU
-    var opts: UnsafeMutablePointer<options_t>?
+             var cpu                : CPU
+             var opts               : UnsafeMutablePointer<options_t>?
     
     static private let instructionRegex = try! NSRegularExpression(pattern: #"^\s*(?!\.)(?:[A-Za-z_]\w*:)?([A-Za-z]{2,7})\b"#)
     
@@ -24,7 +23,7 @@ struct ToolbarExecuteView: View {
             
             // Run and stop button
             Button {
-                if editorStatus == .readyToBuild || editorStatus == .stopped {
+                if self.bodyEditorViewModel.isEditorStopped() {
                     
                     // Load entry point and setup register
                     self.cpu.loadEntryPoint(value: opts!.pointee.entry_point)
@@ -32,20 +31,18 @@ struct ToolbarExecuteView: View {
                     
                     getIndexSourceAssembly()
                     
-                    withAnimation {
-                        editorStatus = .running
-                    }
+                    withAnimation { self.bodyEditorViewModel.changeEditorState(.running) }
                     
                 } else {
                     withAnimation {
-                        editorStatus = .stopped
+                        self.bodyEditorViewModel.changeEditorState(.stopped)
                         self.indexInstruction = nil
                     }
                     
                 }
                 
             } label: {
-                Image(systemName: editorStatus == .readyToBuild || editorStatus == .stopped ? "play" : "stop.fill")
+                Image(systemName: self.bodyEditorViewModel.isEditorStopped() ? "play" : "stop.fill")
                     .font(.system(size: 17))
                 
             }
@@ -53,7 +50,7 @@ struct ToolbarExecuteView: View {
             .buttonStyle(.glass)
             .disabled(opts == nil)
 
-            if editorStatus == .running {
+            if self.bodyEditorViewModel.editorState == .running {
                 GlassEffectContainer(spacing: 30) {
                     HStack(spacing: 10) {
                         Button {
@@ -92,14 +89,15 @@ struct ToolbarExecuteView: View {
                     .allowsHitTesting(false)
             }
         }
-        .animation(.spring(), value: editorStatus)
+        .animation(.spring(), value: self.bodyEditorViewModel.editorState)
         
     }
     
     private func getIndexSourceAssembly() {
         self.indexesInstructions.removeAll()
         
-        let fileContent = (try? String(contentsOf: selectedFile!, encoding: .utf8)) ?? ""
+        let fileOpen    = self.bodyEditorViewModel.currentFileSelected!
+        let fileContent = (try? String(contentsOf: fileOpen, encoding: .utf8)) ?? ""
         
         var controlTextSection = false
 
