@@ -21,14 +21,13 @@ final class RecentProjectsStore: ObservableObject {
         let directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let folder = directory
             .appendingPathComponent("RISKit", isDirectory: true)
-            .appendingPathComponent("Settings", isDirectory: true)
             .appendingPathComponent("StateIDE", isDirectory: true)
 
         do {
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
             
         } catch {
-            print("Erorr to create StateIDE folder: ", error)
+            print("Error to create StateIDE folder: ", error)
             
         }
 

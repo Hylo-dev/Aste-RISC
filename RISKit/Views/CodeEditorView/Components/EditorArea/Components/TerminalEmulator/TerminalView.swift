@@ -9,29 +9,39 @@ import SwiftUI
 import SwiftTerm
 import AppKit
 
-struct EditorTerminalView: NSViewRepresentable {
-    let pathFile: String
-
-    func makeCoordinator() -> Coordinator { Coordinator() }
+struct TerminalView: NSViewRepresentable {
+    let pathProgramExecute: String
+    let args              : [String]
+    let cornerRadiusActive: Bool
     
-    init(pathFile: String) {
-        self.pathFile = pathFile
+    init(
+        pathProgramExecute: String,
+        args              : [String] = [],
+        cornerRadiusActive: Bool = true
+    ) {
+        self.pathProgramExecute = pathProgramExecute
+        self.args               = args
+        self.cornerRadiusActive = cornerRadiusActive
     }
+
+    func makeCoordinator() -> CoordinatorTerminal { CoordinatorTerminal() }
 
     func makeNSView(context: Context) -> LocalProcessTerminalView {
         let term = LocalProcessTerminalView(frame: .zero)
         term.getTerminal().setCursorStyle(.steadyBlock)
-
+        
         // Set color term
         term.caretColor           = .systemGreen
         term.caretViewTracksFocus = true
         term.processDelegate      = context.coordinator
         
-        // Corner radius on AppKit
-        term.wantsLayer           = true
-        term.layer?.cornerRadius  = 25
-        term.layer?.masksToBounds = true
-    
+        if cornerRadiusActive {
+            // Corner radius on AppKit
+            term.wantsLayer           = true
+            term.layer?.cornerRadius  = 25
+            term.layer?.masksToBounds = true
+            
+        } 
         return term
     }
 
@@ -43,7 +53,7 @@ struct EditorTerminalView: NSViewRepresentable {
             
             nsView.selectNone()
 
-            nsView.startProcess(executable: "/opt/homebrew/bin/hx", args: [pathFile])
+            nsView.startProcess(executable: pathProgramExecute, args: args)
             nsView.window?.makeFirstResponder(nsView)
             
             try await Task.sleep(for: .milliseconds(100))
@@ -52,7 +62,8 @@ struct EditorTerminalView: NSViewRepresentable {
         }
     }
 
-    class Coordinator: NSObject, LocalProcessTerminalViewDelegate {
+    class CoordinatorTerminal: NSObject, LocalProcessTerminalViewDelegate {
+        
         var started = false
         var mouseUpMonitor: Any?
 
@@ -63,6 +74,8 @@ struct EditorTerminalView: NSViewRepresentable {
             }
         }
 
+        func hostCurrentDirectoryUpdate(source: SwiftTerm.TerminalView, directory: String?) {}
+        func processTerminated(source: SwiftTerm.TerminalView, exitCode: Int32?) {}
         func sizeChanged(source: LocalProcessTerminalView, newCols: Int, newRows: Int) {}
         func setTerminalTitle(source: LocalProcessTerminalView, title: String) {}
         func hostCurrentDirectoryUpdate(source: TerminalView, directory: String?) {}

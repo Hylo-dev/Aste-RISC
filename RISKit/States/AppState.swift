@@ -6,6 +6,7 @@
 //
 
 internal import Combine
+import Foundation
 
 @MainActor
 final class AppState: ObservableObject {
@@ -38,6 +39,13 @@ final class AppState: ObservableObject {
         
         objectWillChange.send()
         editorProjectPath = path
+    }
+    
+    func isSettingsFolderExist() -> Bool {
+        let path = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let settingsFolder = path.appendingPathComponent("RISKit").appendingPathComponent("Settings")
+        
+        return FileManager.default.fileExists(atPath: settingsFolder.path)
     }
     
 }

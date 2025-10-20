@@ -10,6 +10,7 @@ import SwiftUI
 @main
 struct RISKitApp: App {
     @StateObject private var appState = AppState()
+    
     @Environment(\.openWindow) private var openWindow
     
     var body: some Scene {

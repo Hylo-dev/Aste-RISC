@@ -23,7 +23,7 @@ final class NavigationState: ObservableObject {
         self.lastStateApp = LastAppStateStore()
 
         self.navigationItem = NavigationItem(
-            principalNavigation: .HOME,
+            principalNavigation: .home,
             selectedProjectName: URL(string: lastStateApp.currentState.lastPathOpened)?.lastPathComponent ?? "",
             selectedProjectPath: lastStateApp.currentState.lastPathOpened
         )

@@ -29,13 +29,13 @@ struct EditorAreaView: View {
                     )
                     
                 } else {
-                    EditorTerminalView(pathFile: self.bodyEditorViewModel.currentFileSelected!.path)
+                    EditorTerminalView(openFilePath: self.bodyEditorViewModel.currentFileSelected!.path)
                        
                 }
                                 
                 TerminalContainerView(
                     terminalHeight:  $terminalHeight,
-                    isBottomVisible: $isBottomVisible
+                    isBottomVisible: $isBottomVisible,
                 )
                 
             }

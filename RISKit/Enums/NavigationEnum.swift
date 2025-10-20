@@ -8,7 +8,8 @@
 import Foundation
 
 enum NavigationEnum {
-    case HOME
+    case home
+    case welcome
 }
 
 enum SecondaryNavigationEnum {

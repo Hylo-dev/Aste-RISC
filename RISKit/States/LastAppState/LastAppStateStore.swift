@@ -19,7 +19,6 @@ class LastAppStateStore: ObservableObject {
         let directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let folder = directory
             .appendingPathComponent("RISKit", isDirectory: true)
-            .appendingPathComponent("Settings", isDirectory: true)
             .appendingPathComponent("StateIDE", isDirectory: true)
 
         do {

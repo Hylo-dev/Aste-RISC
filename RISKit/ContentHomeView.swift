@@ -10,12 +10,8 @@ import SwiftUI
 struct ContentHomeView: View {
     @EnvironmentObject private var appState: AppState
     
-    /// Enviroment call for open new window
-    @Environment(\.openWindow) private var openWindow
-    
-    /// Enviroment call for close the current window
-    @Environment(\.dismiss) private var dismiss
-    
+    @Environment(\.openWindow) private var openWindow /// Enviroment call for open new window
+    @Environment(\.dismiss)    private var dismiss    /// Enviroment call for close the current window
     
     /// Binding state, this show the creation project
     private var isCreateProjectPresented: Binding<Bool> {
@@ -37,43 +33,56 @@ struct ContentHomeView: View {
         let navigationState = appState.navigationState
         
         switch navigationState.navigationItem.principalNavigation {
-        case .HOME:
+        case .home:
             HomeView()
-            .sheet(isPresented: isCreateProjectPresented) {
-                CreationProjectView(navigationState: navigationState)
-                    .frame(width: 600, height: 400)
-            }
-            .alert(
-                "Open Project '\(navigationState.navigationItem.selectedProjectName)'",
-                isPresented: isOpenProjectAlertPresented,
-                actions: {
-                    Button("No", role: .cancel) {
-                        navigationState.cleanProjectInformation()
-                        navigationState.cleanSecondaryNavigation()
+                .onAppear {
+                    if !appState.isSettingsFolderExist() {
+                        navigationState.setPrincipalNavigation(principalNavigation: .welcome)
                     }
-                    .buttonStyle(.glass)
-                    
-                    Button("Yes") {
-                        let path = navigationState.navigationItem.selectedProjectPath
-                        let name = navigationState.navigationItem.selectedProjectName
-
-                        withTransaction(Transaction(animation: nil)) {
-                            appState.setEditorProjectPath(path)
-                            appState.recentProjectsStore.addProject(name: name, path: path)
-                            
-                            navigationState.saveCurrentProjectState(path: path)
-                        }
-                        
-                        Task { @MainActor in
-                            openWindow(id: "editor")
-                            dismiss()
-                        }
-
-                    }
-                    .buttonStyle(.glass)
-
                 }
-            )
+                .sheet(isPresented: isCreateProjectPresented) {
+                    CreationProjectView()
+                        .frame(width: 600, height: 400)
+                }
+                .alert(
+                    "Open Project '\(navigationState.navigationItem.selectedProjectName)'",
+                    isPresented: isOpenProjectAlertPresented,
+                    actions: { alertContent }
+                )
+            
+        case .welcome:
+            WelcomeView()
+        }
+    }
+    
+    private var alertContent: some View {
+        let navigationState = appState.navigationState
+        
+        return Group {
+            Button("No", role: .cancel) {
+                navigationState.cleanProjectInformation()
+                navigationState.cleanSecondaryNavigation()
+            }
+            .buttonStyle(.glass)
+            
+            Button("Yes") {
+                let path = navigationState.navigationItem.selectedProjectPath
+                let name = navigationState.navigationItem.selectedProjectName
+
+                withTransaction(Transaction(animation: nil)) {
+                    appState.setEditorProjectPath(path)
+                    appState.recentProjectsStore.addProject(name: name, path: path)
+                    
+                    navigationState.saveCurrentProjectState(path: path)
+                }
+                
+                Task { @MainActor in
+                    openWindow(id: "editor")
+                    dismiss()
+                }
+
+            }
+            .buttonStyle(.glass)
         }
     }
 }
