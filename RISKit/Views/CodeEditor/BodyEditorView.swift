@@ -19,71 +19,27 @@ struct BodyEditorView: View {
     @StateObject private var bodyEditorViewModel = BodyEditorViewModel()
     @StateObject private var cpu                 = CPU(ram: new_ram(Int(DEFAULT_RAM_SIZE)))
     
-    // Options emulator and mapping source asm code
-    @State private var opts          : UnsafeMutablePointer<options_t>? = nil
-    @State private var mapInstruction: MapInstructions                  = MapInstructions()
+    // Options emulator
+    @State private var opts: UnsafeMutablePointer<options_t>? = nil
 
     var body: some View {
-        
-        NavigationSplitView() {
-            treeSection   // Show tree directory
-                        
-        } content: {
-            editorArea // Principal content editor, code editor and show run section
-                
-        } detail: {
+        NavigationSplitView() { treeSection } content: { editorArea } detail: {
             // More information, for example Stack, table registers
             VStack { Text("Test") }
             
         }
-        .onAppear { self.mapInstruction.indexInstruction = cpu.programCounter }
-        .onChange(of: self.cpu.programCounter, { _, newValue in
-            self.mapInstruction.indexInstruction = (newValue - opts!.pointee.text_vaddr) / 4
-        })
-        .onChange(of: self.bodyEditorViewModel.currentFileSelected, { _, newValue in
-            if newValue != nil {
-                newValue!.path.withCString { cUrl in
-                    self.opts = start_options(UnsafeMutablePointer(mutating: cUrl))
-                    
-                    // load program in ram
-                    load_binary_to_ram(
-                        cpu.ram,
-                        opts!.pointee.data_data,
-                        opts!.pointee.data_size,
-                        opts!.pointee.data_vaddr
-                    )
-                    
-                    load_binary_to_ram(
-                        cpu.ram,
-                        opts!.pointee.text_data,
-                        opts!.pointee.text_size,
-                        opts!.pointee.text_vaddr
-                    )
-                    
-                    //self.assemblyData = newAssemblyData(opts).pointee
-                }
-            }
-        })
-        .onDisappear {
-            withTransaction(Transaction(animation: nil)) {
-                appState.setEditorProjectPath(nil)
-                appState.navigationState.saveCurrentProjectState(path: "")
-            }
-            
-            Task {
-                openWindow(id: "home")
-            }
-            
-        }
+        .onAppear { self.bodyEditorViewModel.changeCurrentInstruction(index: cpu.programCounter) }
+        .onChange(of: cpu.programCounter, handleProgramCounterChange)
+        .onChange(of: bodyEditorViewModel.currentFileSelected, handleFileSelectionChange)
+        .onDisappear(perform: viewDisappearHandle)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .toolbar {
             
             // Section toolbar, this contains running execution button
             ToolbarItem(placement: .navigation) {
                 ToolbarExecuteView(
-                    mapInstruction: $mapInstruction,
-                    cpu           : cpu,
-                    opts          : opts
+                    cpu : cpu,
+                    opts: opts
                 )
                 .environmentObject(self.bodyEditorViewModel)
             }
@@ -141,14 +97,38 @@ struct BodyEditorView: View {
             }
             
             if  !isEmptyPath {
-                EditorAreaView(
-                    mapInstruction: $mapInstruction,
-                    projectRoot   : projectPath
-                )
-                .environmentObject(self.bodyEditorViewModel)
+                EditorAreaView(projectRoot: projectPath)
+                    .environmentObject(self.bodyEditorViewModel)
             }
         }
     }
+        
+    private func handleProgramCounterChange(oldValue: UInt32, newValue: UInt32) {
+        guard let opts = opts else { return }
+        bodyEditorViewModel.changeCurrentInstruction(
+            index: UInt32((newValue - opts.pointee.text_vaddr) / 4)
+        )
+    }
+
+    private func handleFileSelectionChange(oldValue: URL?, newValue: URL?) {
+        guard let newValue = newValue else { return }
+
+        newValue.path.withCString { cUrl in
+            opts = start_options(UnsafeMutablePointer(mutating: cUrl))
+            load_binary_to_ram(cpu.ram, opts!.pointee.data_data, opts!.pointee.data_size, opts!.pointee.data_vaddr)
+            load_binary_to_ram(cpu.ram, opts!.pointee.text_data, opts!.pointee.text_size, opts!.pointee.text_vaddr)
+        }
+    }
+    
+    private func viewDisappearHandle() {
+        withTransaction(Transaction(animation: nil)) {
+            appState.setEditorProjectPath(nil)
+            appState.navigationState.saveCurrentProjectState(path: "")
+        }
+        
+        Task { openWindow(id: "home") }
+    }
+
 }
 
 #Preview {

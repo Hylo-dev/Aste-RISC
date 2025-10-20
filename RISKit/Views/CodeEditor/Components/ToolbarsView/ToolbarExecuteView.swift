@@ -10,9 +10,8 @@ import SwiftUI
 struct ToolbarExecuteView: View {
     @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
     
-    @Binding var mapInstruction: MapInstructions
-             var cpu           : CPU
-             var opts          : UnsafeMutablePointer<options_t>?
+    var cpu : CPU
+    var opts: UnsafeMutablePointer<options_t>?
     
     static private let instructionRegex = try! NSRegularExpression(pattern: #"^\s*(?!\.)(?:[A-Za-z_]\w*:)?([A-Za-z]{2,7})\b"#)
     
@@ -35,7 +34,7 @@ struct ToolbarExecuteView: View {
                 } else {
                     withAnimation {
                         self.bodyEditorViewModel.changeEditorState(.stopped)
-                        self.mapInstruction.indexInstruction = nil
+                        self.bodyEditorViewModel.changeCurrentInstruction(index: nil)
                     }
                     
                 }
@@ -93,7 +92,7 @@ struct ToolbarExecuteView: View {
     }
     
     private func getIndexSourceAssembly() {
-        self.mapInstruction.indexesInstructions.removeAll()
+        self.bodyEditorViewModel.cleanInstructionsMapped()
         
         let fileOpen    = self.bodyEditorViewModel.currentFileSelected!
         let fileContent = (try? String(contentsOf: fileOpen, encoding: .utf8)) ?? ""
@@ -106,7 +105,7 @@ struct ToolbarExecuteView: View {
             let range = NSRange(location: 0, length: line.utf16.count)
             
             if Self.instructionRegex.firstMatch(in: String(line), options: [], range: range) != nil {
-                self.mapInstruction.indexesInstructions.append(index)
+                self.bodyEditorViewModel.appendInstruction(index)
             }
         }
     }

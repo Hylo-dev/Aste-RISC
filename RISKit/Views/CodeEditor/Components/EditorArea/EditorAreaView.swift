@@ -3,20 +3,16 @@ import AppKit
 import SwiftTerm
 
 struct EditorAreaView: View {
-//    @ObservedObject var compilerProfile: CompilerProfileStore
     @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
-    
-    // Params struct
-    @Binding var mapInstruction: MapInstructions
-             var projectRoot   : URL
     
     // Internal var struct for UI
     @State private var terminalHeight : CGFloat = 200
     @State private var isBottomVisible: Bool    = true
     @State private var text           : String  = ""
            private let collapsedHeight: CGFloat = 48
+    
+    var projectRoot   : URL
             
-
     var body: some View {
         GeometryReader { geo in
             VStack(spacing: 10) {
@@ -24,7 +20,6 @@ struct EditorAreaView: View {
                 if self.bodyEditorViewModel.editorState == .running {
                     CodeEditorView(
                         text: $text,
-                        mapInstruction: $mapInstruction,
                         projectRoot: self.bodyEditorViewModel.currentFileSelected!,
                         pathFile: projectRoot
                     )

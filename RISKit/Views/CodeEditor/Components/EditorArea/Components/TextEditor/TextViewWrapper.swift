@@ -10,10 +10,11 @@ import AppKit
 import STTextView
 
 struct TextViewWrapper: NSViewRepresentable {
-    @Binding var text          : String
-    @Binding var mapInstruction: MapInstructions
+    @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
     
-    var viewModel : CodeEditorViewModel
+    @Binding var text: String
+    
+    var viewModel: CodeEditorViewModel
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -34,6 +35,7 @@ struct TextViewWrapper: NSViewRepresentable {
 
     func updateNSView(_ nsView: NSScrollView, context: Context) {
         guard let textView = nsView.documentView as? STTextView else { return }
+        let mapInstruction = bodyEditorViewModel.mapInstruction
         
         textView.isEditable = true //indexInstruction == nil
         textView.isSelectable = true
@@ -48,12 +50,12 @@ struct TextViewWrapper: NSViewRepresentable {
             context.coordinator.updateTextPreservingSelection(newText: text)
         }
             
-        if self.mapInstruction.indexInstruction != nil &&
-          !self.mapInstruction.indexesInstructions.isEmpty &&
-           self.mapInstruction.indexInstruction! <= self.mapInstruction.indexesInstructions.count
+        if mapInstruction.indexInstruction != nil &&
+           !mapInstruction.indexesInstructions.isEmpty &&
+           mapInstruction.indexInstruction! <= mapInstruction.indexesInstructions.count
         {
             context.coordinator.highlightLine(
-                at: self.mapInstruction.indexesInstructions[Int(self.mapInstruction.indexInstruction ?? 0)]
+                at: mapInstruction.indexesInstructions[Int(mapInstruction.indexInstruction ?? 0)]
             )
             
         } else {
