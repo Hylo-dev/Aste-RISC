@@ -29,7 +29,7 @@ struct BodyEditorView: View {
             treeSection   // Show tree directory
                         
         } content: {
-            editorContent // Principal content editor, code editor and show run section
+            editorArea // Principal content editor, code editor and show run section
                 
         } detail: {
             // More information, for example Stack, table registers
@@ -122,7 +122,7 @@ struct BodyEditorView: View {
     }
     
     // MARK: Show content editor
-    private var editorContent: some View {
+    private var editorArea: some View {
         let projectPath = URL(fileURLWithPath: appState.navigationState.navigationItem.selectedProjectPath)
         let isEmptyPath = self.bodyEditorViewModel.currentFileSelected == nil
         

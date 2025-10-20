@@ -10,11 +10,11 @@ import SwiftUI
 struct DirectoryTreeView: View {
     @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
     @StateObject       private var rootNode           : FileNode
-                       private var onOpenFile         : ((URL) -> Void)? = nil
+                       private var onOpenFile         : ((URL) -> Void)
     
     init(
         rootURL       : URL,
-        onOpenFile    : ((URL) -> Void)? = nil
+        onOpenFile    : @escaping ((URL) -> Void)
     ) {
         self._rootNode  = StateObject(wrappedValue: FileNode(url: rootURL))
         self.onOpenFile = onOpenFile
@@ -22,10 +22,7 @@ struct DirectoryTreeView: View {
     }
 
     var body: some View {
-        ScrollView {
-            treeProject // Show all projects on tree
-            
-        }
+        ScrollView { treeProject } // Show all projects on tree
         .frame(minWidth: 220)
         .onAppear {
             guard rootNode.isDirectory else { return }
@@ -38,7 +35,7 @@ struct DirectoryTreeView: View {
     
     private var treeProject: some View {
         return LazyVStack(alignment: .leading, spacing: 0) {
-            DirectoryRow(
+            TreeElementRowView(
                 node: rootNode,
                 fileOpen: self.bodyEditorViewModel.currentFileSelected,
                 level: 0,
