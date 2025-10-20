@@ -4,13 +4,13 @@ struct EditorAreaView: View {
     @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
     
     // Internal var struct for UI
+    @State private var text           : String  = ""
     @State private var terminalHeight : CGFloat = 200
     @State private var isBottomVisible: Bool    = true
-    @State private var text           : String  = ""
            
     private static let collapsedHeight: CGFloat = 48
     
-    var projectRoot   : URL
+    var projectRoot: URL // Principal path, this is project path
             
     var body: some View {
         GeometryReader { geo in
@@ -18,12 +18,12 @@ struct EditorAreaView: View {
                 
                 if self.bodyEditorViewModel.editorState == .running {
                     CodeEditorView(
-                        text: $text,
-                        projectRoot: self.bodyEditorViewModel.currentFileSelected!,
-                        pathFile: projectRoot
+                        text       : $text,
+                        projectRoot: projectRoot,
+                        pathFile   : self.bodyEditorViewModel.currentFileSelected!
                     )
                     .frame(
-                        maxWidth: .infinity,
+                        maxWidth : .infinity,
                         maxHeight: topHeight(totalHeight: geo.size.height),
                         alignment: .topLeading
                     )

@@ -6,13 +6,11 @@
 //
 
 import Foundation
-import AppKit
 internal import Combine
 import SwiftUI
 import STTextView
 
-final class CodeEditorViewModel: ObservableObject {
-//    @Published private(set) var diagnostics: [LSPDiagnostic] = []
+class CodeEditorViewModel: ObservableObject {
 
     let projectRoot: URL
     let documentURI: URL
@@ -20,7 +18,7 @@ final class CodeEditorViewModel: ObservableObject {
     // Core components
     private weak var textView: STTextView?
     private weak var scrollView: NSScrollView?
-//    private var lspClient: LSPClient?
+
     private var cancellables = Set<AnyCancellable>()
     private var lastVersion: Int = 1
     private var didOpenSent = false
@@ -58,22 +56,51 @@ final class CodeEditorViewModel: ObservableObject {
         cancelAllPendingWork()
         cancellables.removeAll()
     }
+    
+    // TODO: Implement with use LSP
+    func textChanged(newText: String) {
+        // guard let lsp = lspClient else { return }
 
-//    func setupLSP(language: Language) {
-//        lspClient = LSPClient()
-//        try? lspClient?.start(projectRoot: projectRoot)
-//
-//        NotificationCenter.default.publisher(for: .lspDiagnosticsReceived)
-//            .receive(on: DispatchQueue.main)
-//            .sink { [weak self] notification in
-//                self?.handleDiagnostics(notification)
-//            }
-//            .store(in: &cancellables)
-//        
-//        lspClient?.onInitialized = { [weak self] in
-//            self?.openDocumentIfReady()
-//        }
-//    }
+        // lastVersion += 1
+        // let version = lastVersion
+                
+        // lsp.changeDocument(uri: documentURI.absoluteString, text: newText, version: version)
+
+        // let shouldForceHighlight = !diagnostics.isEmpty
+        //   if shouldForceHighlight {
+        //      self.diagnostics = []
+        //   }
+
+        // scheduleHighlight(force: shouldForceHighlight)
+    }
+
+    func setupLSP(language: Language) {
+    //        lspClient = LSPClient()
+    //        try? lspClient?.start(projectRoot: projectRoot)
+    //
+    //        NotificationCenter.default.publisher(for: .lspDiagnosticsReceived)
+    //            .receive(on: DispatchQueue.main)
+    //            .sink { [weak self] notification in
+    //                self?.handleDiagnostics(notification)
+    //            }
+    //            .store(in: &cancellables)
+    //
+    //        lspClient?.onInitialized = { [weak self] in
+    //            self?.openDocumentIfReady()
+    //        }
+    }
+    
+    func scheduleHighlight(force: Bool = false) {
+        let captureVersion = lastVersion
+        
+        Task { [weak self] in
+            guard let self = self,
+                  let textView = self.textView,
+                  force || self.lastVersion == captureVersion else { return }
+            
+            SyntaxHighlighter.shared.applyHighlight(textView: textView)
+        }
+    }
     
     private func cancelAllPendingWork() {
         pendingWorkItems.values.forEach { $0.cancel() }
@@ -99,30 +126,12 @@ final class CodeEditorViewModel: ObservableObject {
     
     private func openDocumentIfReady() {
         guard !didOpenSent,
-//            let lsp = lspClient,
             let tv = textView,
             let _ = tv.text else { return }
 
-//        lsp.openDocument(uri: documentURI.absoluteString, languageId: Language.c.langId, text: text)
         didOpenSent = true
     }
-
-    func textChanged(newText: String) {
-//        guard let lsp = lspClient else { return }
-
-//        lastVersion += 1
-//        let version = lastVersion
-        
-//        lsp.changeDocument(uri: documentURI.absoluteString, text: newText, version: version)
-//
-//        let shouldForceHighlight = !diagnostics.isEmpty
-//        if shouldForceHighlight {
-//            self.diagnostics = []
-//        }
-//        
-//        scheduleHighlight(force: shouldForceHighlight)
-    }
-
+    
     private func handleDiagnostics(_ notification: Notification) {
         guard let obj = notification.object as? [String: Any],
               let params = obj["params"] as? [String: Any],
@@ -156,19 +165,6 @@ final class CodeEditorViewModel: ObservableObject {
 //        
 //        return false
 //    }
-
-    func scheduleHighlight(force: Bool = false) {
-        let captureVersion = lastVersion
-        
-        Task { [weak self] in
-            guard let self = self,
-                  let textView = self.textView,
-                  force || self.lastVersion == captureVersion else { return }
-            
-            //SyntaxHighlighter.shared.applyHighlight(textView: tv, diagnostics: captureDiagnostics)
-            SyntaxHighlighter.shared.applyHighlight(textView: textView)
-        }
-    }
 
     func createTextView(text: String) -> NSScrollView {
         if let existing = scrollView {
@@ -238,7 +234,6 @@ final class CodeEditorViewModel: ObservableObject {
         scrollView.reflectScrolledClipView(scrollView.contentView)
 
         self.textView = tv
-        scheduleHighlight()
     }
 
     // MARK: - Optimized Completion System
