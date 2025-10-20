@@ -19,7 +19,7 @@ struct ProjectListView: View {
             
             LazyVStack(spacing: 10) {
                 ForEach(projects, id: \.id) { project in
-                    ProjectRow(
+                    ProjectRowView(
                         project : project,
                         onSelect: { onSelect(project) },
                         onDelete: { onDelete(project) }

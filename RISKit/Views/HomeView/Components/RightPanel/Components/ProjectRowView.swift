@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ProjectRow: View {
+struct ProjectRowView: View {
     let project : RecentProject
     var onSelect: () -> Void
     var onDelete: () -> Void

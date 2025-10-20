@@ -8,7 +8,7 @@
 import AppKit
 import UniformTypeIdentifiers
 
-final class IconCache {
+class IconCache {
     static let shared = IconCache()
     private var cache: [String: NSImage] = [:]
     private let lock = NSLock()

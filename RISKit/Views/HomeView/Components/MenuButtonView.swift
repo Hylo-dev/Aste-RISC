@@ -8,18 +8,17 @@
 import SwiftUI
 
 /// The view show the button for each IDE modality
-struct ModeButton: View {
+struct MenuButtonView: View {
     
     /// Rapresenting hoveing mouse on the button
     @State private var isHovering: Bool
     
     /// This is the modality rapresenting
-    private let currentMode: ModeItem
+    private let currentMode: ModalityItem
     
-    init(currentMode: ModeItem) {
+    init(currentMode: ModalityItem) {
         self.isHovering  = false
         self.currentMode = currentMode
-        
     }
 
     var body: some View {
@@ -39,9 +38,7 @@ struct ModeButton: View {
         .background(interactiveBackground)
         .clipShape(RoundedRectangle(cornerRadius: 26))
         .scaleEffect(isHovering ? 1.02 : 1.0)
-        .onHover { hovering in
-            isHovering = hovering
-        }
+        .onHover { hovering in isHovering = hovering }
     }
 
     /// Icon button

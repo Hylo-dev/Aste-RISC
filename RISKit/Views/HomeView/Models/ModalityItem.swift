@@ -8,7 +8,7 @@
 import Foundation
 
 /// Rappresenting each modality IDE
-struct ModeItem: Identifiable {
+struct ModalityItem: Identifiable {
     let id         : UUID   = UUID()
     let name       : String
     let description: String
