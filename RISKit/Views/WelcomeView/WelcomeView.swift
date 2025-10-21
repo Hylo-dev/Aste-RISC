@@ -11,10 +11,29 @@ import SwiftUI
 private let ideFeatures: [FeatureItem] = [
     FeatureItem(
         id: 0,
-        title: "Assembly compiler",
+        title: "Assembler",
         description: "For the asm program compilation",
         icon: "terminal",
-        colorBgIcon: Color.accentColor
+        colorBgIcon: .accentColor
+        
+    ),
+    
+    FeatureItem(
+        id: 1,
+        title: "RISC-V Emulator",
+        description: "Execute RISC-V machine code",
+        icon: "desktopcomputer",
+        colorBgIcon: .green
+        
+    ),
+    
+    FeatureItem(
+        id: 2,
+        title: "Grapdical data",
+        description: "Graphical view of the stack and registers",
+        icon: "play.desktopcomputer",
+        colorBgIcon: .purple
+        
     )
 ]
 
@@ -143,7 +162,7 @@ struct WelcomeView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
             .background(.background)
-            .overlay(RoundedRectangle(cornerRadius: 26)
+            .overlay(RoundedRectangle(cornerRadius: 24)
             .stroke(.placeholder.opacity(0.18), lineWidth: 1))
             
             Spacer()

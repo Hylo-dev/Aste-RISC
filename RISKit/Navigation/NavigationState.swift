@@ -11,7 +11,7 @@ import SwiftUI
 
 @MainActor
 /// NavigationState class contains all information ide, settings, lang, projects open and close state
-final class NavigationState: ObservableObject {
+class NavigationState: ObservableObject {
     
     /// Contains all data
     @Published private(set) var navigationItem: NavigationItem
@@ -24,6 +24,7 @@ final class NavigationState: ObservableObject {
 
         self.navigationItem = NavigationItem(
             principalNavigation: .home,
+            secondaryNavigation: nil,
             selectedProjectName: URL(string: lastStateApp.currentState.lastPathOpened)?.lastPathComponent ?? "",
             selectedProjectPath: lastStateApp.currentState.lastPathOpened
         )

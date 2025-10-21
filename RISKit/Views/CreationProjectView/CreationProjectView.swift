@@ -11,7 +11,7 @@ import SwiftUI
 struct CreationProjectView: View {
     
     /// Nvigation and current state app
-    @EnvironmentObject private var navigationState: NavigationState
+    @EnvironmentObject private var appState: AppState
     
     /// View model for manage creation project
     @StateObject private var viewModel = CreationProjectViewModel()
@@ -49,7 +49,7 @@ struct CreationProjectView: View {
             
             // Row for back and continue buttons.
             HStack {
-                Button("Back") { navigationState.cleanSecondaryNavigation() }
+                Button("Back") { appState.navigationState.cleanSecondaryNavigation() }
                     .buttonStyle(.glass)
                 
                 Spacer()
@@ -74,25 +74,27 @@ struct CreationProjectView: View {
     private func createProjectHandle() {
         creating = true
         
-        Task {
+        Task { @MainActor in
             do {
                 urlProject = try await viewModel.createProject()
                 
             } catch {
                 urlProject = nil
-                await MainActor.run { errorMessage = error.localizedDescription }
+                errorMessage = error.localizedDescription
                 
             }
             
             if let path = urlProject?.path, !path.isEmpty {
-                navigationState.setProjectInformation(url: path, name: viewModel.nameProject)
-                navigationState.setSecondaryNavigation(currentSecondaryNavigation: .CONTROL_OPEN_PROJECT)
+                appState.navigationState.setProjectInformation(
+                    url: path,
+                    name: viewModel.nameProject
+                )
+                
+                appState.navigationState.setSecondaryNavigation(currentSecondaryNavigation: .CONTROL_OPEN_PROJECT)
                 
             }
             
-            await MainActor.run {
-                creating = false
-            }
+            creating = false
         }
     }
 }
