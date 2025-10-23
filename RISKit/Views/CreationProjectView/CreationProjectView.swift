@@ -29,21 +29,53 @@ struct CreationProjectView: View {
         // Prinpal column, contain information modifiables project
         VStack(alignment: .leading) {
             
-            Text("Set your new project")
-                .font(.title2).bold()
+            HStack(spacing: 10) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.accentColor.opacity(0.18))
+                        .frame(width: 42, height: 42)
+                    
+                    Image(systemName: "document.badge.plus")
+                        .frame(width: 38, height: 38)
+                    
+                }
+                
+                VStack(alignment: .leading) {
+                    Text("Create new project")
+                        .font(.title)
+                        .bold()
+                    
+                    Text("Create a new assembly project")
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
+                }
+            }
             
             // Contain information modificable
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Project name:")
-                TextField("Project name", text: $viewModel.nameProject)
-                    .textFieldStyle(.roundedBorder)
+            VStack(
+                alignment: .leading,
+                spacing: 17
                 
-                Text("Location:")
-                TextField("Location", text: $viewModel.locationProject)
-                    .textFieldStyle(.roundedBorder)
+            ) {
+                VStack(alignment: .leading) {
+                    Text("Project name:")
+                        .font(.headline)
+                    
+                    TextField("Project name", text: $viewModel.nameProject)
+                        .textFieldStyle(.roundedBorder)
+                }
+                
+                VStack(alignment: .leading) {
+                    Text("Location:")
+                        .font(.headline)
+                    
+                    TextField("Location", text: $viewModel.locationProject)
+                        .textFieldStyle(.roundedBorder)
+                    
+                }
                 
             }
-            .padding()
+            .padding(.vertical)
             
             Spacer()
             

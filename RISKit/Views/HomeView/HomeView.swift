@@ -62,10 +62,7 @@ struct HomeView: View {
             Spacer()
 
             // Column contain the recent project opens
-            ProjectRecentView(
-                navigationState    : appState.navigationState,
-                recentProjectsStore: appState.recentProjectsStore
-            )
+            ProjectRecentView()
 
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

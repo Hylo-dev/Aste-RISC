@@ -8,22 +8,41 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @State private var selectedSection: SettingsSection? = SettingsSection.allCases.first
+    @State private var selectedSection: SettingsSection = SettingsSection.allCases.first!
+    
+    private var settingsManager: SettingsManager = SettingsManager()
     
     var body: some View {
         TabView(selection: $selectedSection) {
             ForEach(SettingsSection.allCases, id: \.id) { section in
-                
-                switch section {
-                case .general:
-                    GeneralSettingView()
-                        .tabItem { Label(section.rawValue, systemImage: section.systemImageName) }
-                        .tag(section.id)
-                }
-                
-                    
+            
+                getScreenSetting(section)
+                    .tabItem { Label(section.rawValue, systemImage: section.systemImageName) }
+                    .tag(section)
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .navigation) { Text(selectedSection.rawValue).font(.title2) }
+            .sharedBackgroundVisibility(.hidden)
+        }
         .tabViewStyle(.sidebarAdaptable)
+    }
+    
+    @ViewBuilder
+    private func getScreenSetting(_ section: SettingsSection) -> some View {
+        
+        switch section {
+        case .general:
+            GeneralSettingView()
+            
+        case .editor:
+            EditorSettingView(settingsManager: settingsManager)
+            
+        case .editing:
+            EditingSettingView()
+            
+        case .theme:
+            ThemeSettingView()
+        }
     }
 }

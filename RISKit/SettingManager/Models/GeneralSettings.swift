@@ -7,8 +7,8 @@
 
 import Foundation
 
-struct GeneralSettings: SettingsInterfarce {
-    static let fileName = "general.json"
+struct GeneralSettings: SettingsInterface {
+    var fileName = "general.json"
     var id = UUID()
 
 }

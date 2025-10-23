@@ -11,28 +11,43 @@ struct EditorAreaView: View {
     private static let collapsedHeight: CGFloat = 48
     
     var projectRoot: URL // Principal path, this is project path
+	let editorUse  : Editors
             
     var body: some View {
         GeometryReader { geo in
             VStack(spacing: 10) {
-                
-                if self.bodyEditorViewModel.editorState == .running {
-                    CodeEditorView(
-                        text       : $text,
-                        projectRoot: projectRoot,
-                        pathFile   : self.bodyEditorViewModel.currentFileSelected!
-                    )
-                    .frame(
-                        maxWidth : .infinity,
-                        maxHeight: topHeight(totalHeight: geo.size.height),
-                        alignment: .topLeading
-                    )
-                    
-                } else {
-                    EditorTerminalView(openFilePath: self.bodyEditorViewModel.currentFileSelected!.path)
-                       
-                }
-                                
+				
+				switch editorUse {
+					case .native:
+						CodeEditorView(
+							text       : $text,
+							projectRoot: projectRoot,
+							pathFile   : self.bodyEditorViewModel.currentFileSelected!
+						)
+						.frame(
+							maxWidth : .infinity,
+							maxHeight: topHeight(totalHeight: geo.size.height),
+							alignment: .topLeading
+						)
+						
+					case .helix, .vim, .nvim:
+						if self.bodyEditorViewModel.editorState == .running {
+							CodeEditorView(
+								text       : $text,
+								projectRoot: projectRoot,
+								pathFile   : self.bodyEditorViewModel.currentFileSelected!
+							)
+							.frame(
+								maxWidth : .infinity,
+								maxHeight: topHeight(totalHeight: geo.size.height),
+								alignment: .topLeading
+							)
+							
+						} else {
+							EditorTerminalView(openFilePath: self.bodyEditorViewModel.currentFileSelected!.path)
+						}
+				}
+				
                 TerminalContainerView(
                     terminalHeight:  $terminalHeight,
                     isBottomVisible: $isBottomVisible,

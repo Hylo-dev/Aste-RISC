@@ -8,7 +8,7 @@
 import Foundation
 internal import Combine
 
-protocol SettingsInterfarce: Codable, Identifiable {
-    static var fileName: String { get }
+protocol SettingsInterface: Codable, Identifiable {
+    var fileName: String { get set }
     init()
 }

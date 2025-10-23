@@ -10,26 +10,17 @@ import Foundation
 
 @MainActor
 final class AppState: ObservableObject {
-    var navigationState     = NavigationState()
-    var recentProjectsStore = RecentProjectsStore()
+    var navigationState = NavigationState()
     
     @Published private var editorProjectPath: String? = nil
     
     private  var cancellables: Set<AnyCancellable> = []
     internal let objectWillChange = ObservableObjectPublisher()
     
-    init(
-        navigationState: NavigationState?         = nil,
-        recentProjectsStore: RecentProjectsStore? = nil
-    ) {
-        self.navigationState     = navigationState     ?? NavigationState()
-        self.recentProjectsStore = recentProjectsStore ?? RecentProjectsStore()
+    init(navigationState: NavigationState? = nil) {
+        self.navigationState = navigationState ?? NavigationState()
         
         self.navigationState.objectWillChange
-            .sink { [weak self] _ in self?.objectWillChange.send() }
-            .store(in: &cancellables)
-
-        self.recentProjectsStore.objectWillChange
             .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &cancellables)
     }

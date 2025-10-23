@@ -13,34 +13,48 @@ import SwiftUI
 struct ProjectRecentView: View {
     
     /// Navigation app state
-    @ObservedObject var navigationState: NavigationState
+    @EnvironmentObject private var appState: AppState
     
-    /// Save and looad recent projects on JSON
-    @ObservedObject var recentProjectsStore: RecentProjectsStore
+    @State private var globalSetting: GlobalSettings? = nil
+    
+    private let settingsManager: SettingsManager = SettingsManager()
     
     var body: some View {
-        // List rapresenting recetprojects
+        
+        // List rapresenting recent projects
         ProjectListView(
-            projects: recentProjectsStore.projects,
+            projects: globalSetting?.recentsProjects ?? [],
             onSelect: handleProjectSelection,
             onDelete: handleProjectDeletion,
             
         )
         .frame(minWidth: 300, maxWidth: 300, maxHeight: .infinity, alignment: .trailing)
-    }
+        .onAppear {
+            self.globalSetting = self.settingsManager.load(
+                file: "global_settings.json",
+                GlobalSettings.self
+            )
+        }
         
+    }
+    
     /// Handle for open project and change view
     private func handleProjectSelection(_ project: RecentProject) {
+        let navigationState = appState.navigationState
+        
         navigationState.setProjectInformation(url: project.path, name: project.name)
         navigationState.setSecondaryNavigation(currentSecondaryNavigation: .CONTROL_OPEN_PROJECT)
     }
     
     /// Handle for remove recent project
     private func handleProjectDeletion(_ project: RecentProject) {
-        guard let index = recentProjectsStore.projects.firstIndex(where: { $0.id == project.id }) else { return }
+        guard let index = self.globalSetting!.recentsProjects.firstIndex(where: { $0.id == project.id }) else {
+            return
+        }
         
         withAnimation(.easeInOut(duration: 0.3)) {
-            recentProjectsStore.removeProject(at: IndexSet(integer: index))
+            self.globalSetting?.removeProject(at: IndexSet(integer: index))
+            self.settingsManager.save(self.globalSetting!)
         }
     }
 }

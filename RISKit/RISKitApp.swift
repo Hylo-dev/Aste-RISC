@@ -26,6 +26,7 @@ struct RISKitApp: App {
         }
         .windowStyle(.hiddenTitleBar)
         
+        // Setting Window
         WindowGroup(id: "preferences") {
             SettingsView()
         }

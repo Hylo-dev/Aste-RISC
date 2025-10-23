@@ -15,18 +15,24 @@ class NavigationState: ObservableObject {
     
     /// Contains all data
     @Published private(set) var navigationItem: NavigationItem
-    
-    /// Save and load state on JSON
-    private let lastStateApp: LastAppStateStore
+        
+    private var settingsManager: SettingsManager = SettingsManager()
 
     init() {
-        self.lastStateApp = LastAppStateStore()
-
         self.navigationItem = NavigationItem(
             principalNavigation: .home,
             secondaryNavigation: nil,
-            selectedProjectName: URL(string: lastStateApp.currentState.lastPathOpened)?.lastPathComponent ?? "",
-            selectedProjectPath: lastStateApp.currentState.lastPathOpened
+            selectedProjectName: URL(
+                string: self.settingsManager.load(
+                    file: "global_settings.json",
+                    GlobalSettings.self
+                )?.lastProjectOpened ?? ""
+            )?.lastPathComponent ?? "",
+            
+            selectedProjectPath: self.settingsManager.load(
+                file: "global_settings.json",
+                GlobalSettings.self
+            )?.lastProjectOpened ?? ""
         )
     }
     
@@ -76,6 +82,14 @@ class NavigationState: ObservableObject {
     
     /// Save on file JSON current state
     func saveCurrentProjectState(path: String) {
-        lastStateApp.changeState(path: path)
+        var globalSettings = self.settingsManager.load(
+            file: "global_settings.json",
+            GlobalSettings.self
+        )
+        
+        if globalSettings != nil {
+            globalSettings?.lastProjectOpened = path
+            self.settingsManager.save(globalSettings!)
+        }
     }
 }

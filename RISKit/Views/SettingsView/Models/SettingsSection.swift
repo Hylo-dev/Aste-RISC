@@ -6,13 +6,19 @@
 //
 
 enum SettingsSection: String, Identifiable, CaseIterable {
-    case general = "Generale"
+    case general = "General"
+    case editor  = "Editor"
+    case editing = "Editing"
+    case theme   = "Themes"
 
     var id: String { rawValue }
     
     var systemImageName: String {
         switch self {
         case .general: "gearshape"
+        case .editor:  "square.and.pencil"
+        case .editing: "macwindow"
+        case .theme:   "paintbrush"
         }
     }
 }

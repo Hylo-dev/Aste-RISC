@@ -29,6 +29,8 @@ struct ContentHomeView: View {
         )
     }
     
+    private let settingsManager: SettingsManager = SettingsManager()
+    
     var body: some View {
         let navigationState = appState.navigationState
         
@@ -43,11 +45,12 @@ struct ContentHomeView: View {
                 .sheet(isPresented: isCreateProjectPresented) {
                     CreationProjectView()
                         .frame(width: 600, height: 400)
+                    
                 }
                 .alert(
                     "Open Project '\(navigationState.navigationItem.selectedProjectName)'",
                     isPresented: isOpenProjectAlertPresented,
-                    actions: { alertContent }
+                    actions: alertContent
                 )
             
         case .welcome:
@@ -55,35 +58,43 @@ struct ContentHomeView: View {
         }
     }
     
-    private var alertContent: some View {
+    @ViewBuilder
+    private func alertContent() -> some View {
         let navigationState = appState.navigationState
         
-        return Group {
-            Button("No", role: .cancel) {
-                navigationState.cleanProjectInformation()
-                navigationState.cleanSecondaryNavigation()
-            }
-            .buttonStyle(.glass)
-            
-            Button("Yes") {
-                let path = navigationState.navigationItem.selectedProjectPath
-                let name = navigationState.navigationItem.selectedProjectName
+        Button("No", role: .cancel) {
+            navigationState.cleanProjectInformation()
+            navigationState.cleanSecondaryNavigation()
+        }
+        .buttonStyle(.glass)
+        
+        Button("Yes") {
+            let path = navigationState.navigationItem.selectedProjectPath
+            let name = navigationState.navigationItem.selectedProjectName
 
-                withTransaction(Transaction(animation: nil)) {
-                    appState.setEditorProjectPath(path)
-                    appState.recentProjectsStore.addProject(name: name, path: path)
+            withTransaction(Transaction(animation: nil)) {
+                appState.setEditorProjectPath(path)
+                
+                var oldSettings = settingsManager.load(file: "global_settings.json",GlobalSettings.self)
+                
+                if oldSettings != nil {
+                    oldSettings?.addRecentProject(name: name, path: path)
+                    
+                    settingsManager.save(oldSettings!)
+                    
+                    //appState.recentProjectsStore.addProject(name: name, path: path)
                     
                     navigationState.saveCurrentProjectState(path: path)
-                }
-                
-                Task { @MainActor in
-                    openWindow(id: "editor")
-                    dismiss()
-                }
-
+                }                
             }
-            .buttonStyle(.glass)
+            
+            Task { @MainActor in
+                openWindow(id: "editor")
+                dismiss()
+            }
+
         }
+        .buttonStyle(.glass)
     }
 }
 

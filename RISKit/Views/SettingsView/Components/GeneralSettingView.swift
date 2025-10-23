@@ -10,5 +10,9 @@ import SwiftUI
 struct GeneralSettingView: View {
     var body: some View {
         
+        VStack {
+            Text("General view settings")
+        }
+        
     }
 }

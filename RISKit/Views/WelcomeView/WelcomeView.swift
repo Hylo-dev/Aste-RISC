@@ -172,7 +172,16 @@ struct WelcomeView: View {
                 Spacer()
                 
                 Button("Understand") {
-                    let _ = SettingsManager() // Init settings
+                    let settingsManager = SettingsManager()
+                    let initialSettings = GlobalSettings()
+                    let defaultTheme    = ThemeEditorsSettings(themeName: initialSettings.themeUsed)
+                    
+                    settingsManager.save(initialSettings)
+                    settingsManager.save(
+                        folder: "Themes",
+                        defaultTheme
+                    ) // GruvBox theme is default
+                    
                     appState.navigationState.setPrincipalNavigation(principalNavigation: .home)
                     
                 }
