@@ -19,7 +19,7 @@ struct BodyEditorView: View {
     @StateObject private var bodyEditorViewModel = BodyEditorViewModel()
     @StateObject private var cpu                 = CPU(ram: new_ram(Int(DEFAULT_RAM_SIZE)))
 	@StateObject private var terminal 			 = AssemblerBridge.shared.terminal
-    
+	    
     // Options emulator
     @State private var optionsWrapper: OptionsAssemblerWrapper = OptionsAssemblerWrapper()
 

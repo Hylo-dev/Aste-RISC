@@ -13,6 +13,7 @@ class AssemblerBridge {
 	@MainActor var terminal = TerminalOutputModel()
 	
 	func assemble(optionsAsembler: UnsafeMutablePointer<options_t>) -> Int {
+		self.terminal.clear()
 		return Int(parse_riscv_file(optionsAsembler, AssemblerBridge.cCallback))
 	}
 	

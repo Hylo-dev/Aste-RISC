@@ -8,10 +8,10 @@
 import SwiftUI
 
 struct TerminalContainerView: View {
-	@EnvironmentObject var terminal: TerminalOutputModel
+	@EnvironmentObject private var terminal: TerminalOutputModel
+	@EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
 	
 	@Binding var terminalHeight: CGFloat
-	@Binding var isBottomVisible: Bool
 	@State private var isDragging: Bool = false
 	
 	@State private var isHoveringSlider: Bool = false
@@ -66,7 +66,9 @@ struct TerminalContainerView: View {
 						let newHeight = terminalHeight - value.translation.height
 						
 						if newHeight >= Self.collapsedHeight {
-							if !isBottomVisible { isBottomVisible = true }
+							if !self.bodyEditorViewModel.isOutputVisible {
+								self.bodyEditorViewModel.isOutputVisible = true
+							}
 							
 							isDragging = true
 							
@@ -79,7 +81,7 @@ struct TerminalContainerView: View {
 						
 						if terminalHeight <= minTerminalHeight + 10 {
 							withAnimation(.spring()) {
-								isBottomVisible = false
+								self.bodyEditorViewModel.isOutputVisible = false
 							}
 						}
 					}
@@ -93,23 +95,23 @@ struct TerminalContainerView: View {
 				Spacer()
 				Button {
 					withAnimation(.spring()) {
-						isBottomVisible.toggle()
+						self.bodyEditorViewModel.isOutputVisible.toggle()
 						
-						if isBottomVisible && terminalHeight < minTerminalHeight {
+						if self.bodyEditorViewModel.isOutputVisible && terminalHeight < minTerminalHeight {
 							terminalHeight = minTerminalHeight
 						}
 						
 					}
 				} label: {
 					Image(systemName: "dock.rectangle")
-						.foregroundColor(isBottomVisible ? .accentColor : .primary)
+						.foregroundColor(self.bodyEditorViewModel.isOutputVisible ? .accentColor : .primary)
 					
 				}
 				.buttonStyle(.plain)
 			}
 			.zIndex(1)
 			
-			if isBottomVisible {
+			if self.bodyEditorViewModel.isOutputVisible {
 				Spacer()
 			}
 			
@@ -119,7 +121,7 @@ struct TerminalContainerView: View {
 		.padding()
 		.frame(
 			maxWidth: .infinity,
-			maxHeight: isBottomVisible ? terminalHeight : Self.collapsedHeight,
+			maxHeight: self.bodyEditorViewModel.isOutputVisible ? terminalHeight : Self.collapsedHeight,
 			alignment: .top
 		)
 		.background(roundedBackgroundTerminal)
@@ -131,20 +133,44 @@ struct TerminalContainerView: View {
 		return ScrollView {
 			VStack(alignment: .leading, spacing: 4) {
 				ForEach(terminal.messages.indices, id: \.self) { i in
+					let item = terminal.messages[i]
+					let text = String(cString: item.text).trimmingCharacters(in: .whitespacesAndNewlines)
 					
-					Text(String(cString: terminal.messages[i].text))
-						.font(.system(.body, design: .monospaced))
-						.foregroundColor(.primary)
-						.frame(maxWidth: .infinity, alignment: .leading)
+					switch item.type {
+						case MESSAGE_INFO:
+							Text(text)
+								.font(.system(.body, design: .monospaced))
+								.foregroundColor(.primary)
+								.frame(maxWidth: .infinity, alignment: .leading)
+							
+						case MESSAGE_WARNING:
+							Text(text)
+								.font(.system(.body, design: .monospaced))
+								.foregroundColor(.yellow)
+								.frame(maxWidth: .infinity, alignment: .leading)
+							
+						case MESSAGE_ERROR:
+							Text(text)
+								.font(.system(.body, design: .monospaced))
+								.foregroundColor(.red)
+								.frame(maxWidth: .infinity, alignment: .leading)
+							
+						default:
+							Text(text)
+								.font(.system(.body, design: .monospaced))
+								.foregroundColor(.primary)
+								.frame(maxWidth: .infinity, alignment: .leading)
+					}
 					
+					Divider()
 				}
+
 			}
-			.padding(.horizontal)
 		}
 	}
     
     private var roundedBackgroundTerminal: some View {
-        RoundedRectangle(cornerRadius: isBottomVisible ? 26 : 20)
+        RoundedRectangle(cornerRadius: self.bodyEditorViewModel.isOutputVisible ? 26 : 20)
             .fill(.windowBackground)
             .stroke(.secondary.opacity(0.23), style: .init(lineWidth: 1))
             .shadow(color: .black.opacity(0.2), radius: 24, x: 0, y: 8)

@@ -13,12 +13,14 @@ class BodyEditorViewModel: ObservableObject {
     @Published private(set) var editorState        : EditorStatus    // Runnig section
     @Published private(set) var currentFileSelected: URL?            // Tree file section
     @Published private(set) var mapInstruction     : MapInstructions // Map instruction source to view
+	@Published 		 		var isOutputVisible	   : Bool			 // Show output section
     
     init() {
         self.isSearchingFile     = false
         self.editorState         = .readyToBuild
         self.currentFileSelected = nil
         self.mapInstruction      = MapInstructions()
+		self.isOutputVisible 	 = false
     }
     
     func isSearching      (_ status: Bool)         { Task { @MainActor in self.isSearchingFile     = status } }

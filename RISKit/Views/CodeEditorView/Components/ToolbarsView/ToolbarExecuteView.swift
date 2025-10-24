@@ -22,11 +22,12 @@ struct ToolbarExecuteView: View {
             // Run and stop button
             Button {
                 if self.bodyEditorViewModel.isEditorStopped() {
-
 					// Execute Assembly
 					let resultAssembling = AssemblerBridge.shared.assemble(
 						optionsAsembler: optionsWrapper.opts!
 					)
+					
+					self.bodyEditorViewModel.isOutputVisible = true
 										
 					if resultAssembling == 0 {
 						// Load entry point and setup register
