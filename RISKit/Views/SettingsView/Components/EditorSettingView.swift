@@ -49,7 +49,7 @@ struct EditorSettingView: View {
 			
 			self.globalSettings?.editorUse = self.editorUse
 			
-			self.settingsManager.save(self.globalSettings!)			
+			self.settingsManager.save(self.globalSettings!)
 		}
 		
 	}

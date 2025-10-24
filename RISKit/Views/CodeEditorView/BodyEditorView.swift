@@ -18,9 +18,10 @@ struct BodyEditorView: View {
     // ViewModel for manage UI body editor and RISC-V CPU Emulator
     @StateObject private var bodyEditorViewModel = BodyEditorViewModel()
     @StateObject private var cpu                 = CPU(ram: new_ram(Int(DEFAULT_RAM_SIZE)))
+	@StateObject private var terminal 			 = AssemblerBridge.shared.terminal
     
     // Options emulator
-    @State private var opts: UnsafeMutablePointer<options_t>? = nil
+    @State private var optionsWrapper: OptionsAssemblerWrapper = OptionsAssemblerWrapper()
 
     var body: some View {
         NavigationSplitView() { treeSection } content: { editorArea } detail: {
@@ -37,11 +38,10 @@ struct BodyEditorView: View {
             
             // Section toolbar, this contains running execution button
             ToolbarItem(placement: .navigation) {
-                ToolbarExecuteView(
-                    cpu : cpu,
-                    opts: opts
-                )
-                .environmentObject(self.bodyEditorViewModel)
+                ToolbarExecuteView(optionsWrapper: optionsWrapper)
+					.environmentObject(self.bodyEditorViewModel)
+					.environmentObject(self.cpu)
+					.environmentObject(self.terminal)
             }
             .sharedBackgroundVisibility(.hidden)
 
@@ -104,25 +104,24 @@ struct BodyEditorView: View {
 					editorUse  : editor
 				)
                     .environmentObject(self.bodyEditorViewModel)
+					.environmentObject(self.terminal)
             }
         }
     }
         
     private func handleProgramCounterChange(oldValue: UInt32, newValue: UInt32) {
-        guard let opts = opts else { return }
+		guard let opts = optionsWrapper.opts else { return }
+		
         bodyEditorViewModel.changeCurrentInstruction(
-            index: UInt32((newValue - opts.pointee.text_vaddr) / 4)
+			index: UInt32((newValue - (opts.pointee.text_vaddr)) / 4)
         )
     }
 
     private func handleFileSelectionChange(oldValue: URL?, newValue: URL?) {
         guard let newValue = newValue else { return }
-
-        newValue.path.withCString { cUrl in
-            opts = start_options(UnsafeMutablePointer(mutating: cUrl))
-            load_binary_to_ram(cpu.ram, opts!.pointee.data_data, opts!.pointee.data_size, opts!.pointee.data_vaddr)
-            load_binary_to_ram(cpu.ram, opts!.pointee.text_data, opts!.pointee.text_size, opts!.pointee.text_vaddr)
-        }
+		
+		let pathCString = strdup(newValue.path)
+		self.optionsWrapper.opts = start_options(pathCString)
     }
     
     private func viewDisappearHandle() {

@@ -9,10 +9,10 @@ import SwiftUI
 
 struct ToolbarExecuteView: View {
     @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
-    
-    var cpu : CPU
-    var opts: UnsafeMutablePointer<options_t>?
-    
+	@EnvironmentObject private var cpu 				  : CPU
+	
+    @ObservedObject var optionsWrapper: OptionsAssemblerWrapper
+	    
     static private let instructionRegex = try! NSRegularExpression(pattern: #"^\s*(?!\.)(?:[A-Za-z_]\w*:)?([A-Za-z]{2,7})\b"#)
     
     var body: some View {
@@ -22,11 +22,25 @@ struct ToolbarExecuteView: View {
             // Run and stop button
             Button {
                 if self.bodyEditorViewModel.isEditorStopped() {
-                    
-                    // Load entry point and setup register
-                    self.cpu.loadEntryPoint(value: opts!.pointee.entry_point)
-                    self.cpu.registers[2] = 0x100000
-                    
+
+					// Execute Assembly
+					let resultAssembling = AssemblerBridge.shared.assemble(
+						optionsAsembler: optionsWrapper.opts!
+					)
+										
+					if resultAssembling == 0 {
+						// Load entry point and setup register
+						self.cpu.loadEntryPoint(value: optionsWrapper.opts!.pointee.entry_point)
+						self.cpu.registers[2] = 0x100000
+						
+						load_binary_to_ram(cpu.ram, optionsWrapper.opts!.pointee.data_data, optionsWrapper.opts!.pointee.data_size, optionsWrapper.opts!.pointee.data_vaddr)
+						
+						load_binary_to_ram(cpu.ram, optionsWrapper.opts!.pointee.text_data, optionsWrapper.opts!.pointee.text_size, optionsWrapper.opts!.pointee.text_vaddr)
+					}
+			
+					//if (parse_riscv_file(opts) == -1)
+					//	return NULL;
+					
                     getIndexSourceAssembly()
                     
                     withAnimation { self.bodyEditorViewModel.changeEditorState(.running) }
@@ -46,14 +60,14 @@ struct ToolbarExecuteView: View {
             }
             .frame(width: 35, height: 35)
             .buttonStyle(.glass)
-            .disabled(opts == nil)
+			.disabled(optionsWrapper.opts == nil)
 
             if self.bodyEditorViewModel.editorState == .running {
                 GlassEffectContainer(spacing: 30) {
                     HStack(spacing: 10) {
                         Button {
                             let _ = cpu.runStep(
-                                optionsSource: opts!.pointee,
+								optionsSource: optionsWrapper.opts!.pointee,
                                 mainMemory   : cpu.ram
                             )
                             
@@ -67,7 +81,7 @@ struct ToolbarExecuteView: View {
 
                         Button {
                             let _ = cpu.runStep(
-                                optionsSource: opts!.pointee,
+								optionsSource: optionsWrapper.opts!.pointee,
                                 mainMemory: cpu.ram
                             )
                             

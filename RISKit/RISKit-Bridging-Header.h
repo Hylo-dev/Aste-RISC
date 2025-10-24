@@ -15,6 +15,7 @@
 #include "elf.h"
 #include "ram.h"
 #include "control_unit.h"
+#include "assembler_with_logs.h"
 
 
 #endif /* RISKit_Bridging_Header_h */

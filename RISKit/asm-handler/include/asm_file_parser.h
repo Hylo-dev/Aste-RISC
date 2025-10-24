@@ -11,8 +11,9 @@
 #include <stdbool.h>
 
 #include "args_handler.h"
+#include "assembler_with_logs.h"
 
-int parse_riscv_file(options_t **opts);
+int parse_riscv_file(options_t *options_pointer, LogCallback callback);
 
 /**
  * @brief returns true if the file in the given path has .s extension
@@ -42,7 +43,13 @@ static int compile_assembly(
     sprintf(output_elf_path, "%s.elf", filepath);
 
     // Compile assembly file to object file
-    sprintf(cmd, "/opt/homebrew/bin/riscv64-unknown-elf-as -march=rv32i -mabi=ilp32 \"%s\" -o \"%s\"", filepath, temp_obj);
+    sprintf(
+		cmd,
+		"/opt/homebrew/bin/riscv64-unknown-elf-as -march=rv32i -mabi=ilp32 \"%s\" -o \"%s\"",
+		filepath,
+		temp_obj
+	);
+	
     if (system(cmd) != 0) {
         fprintf(stderr, "Error assembling %s\n", filepath);
         return -1;

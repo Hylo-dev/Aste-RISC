@@ -127,12 +127,10 @@ options_t* start_options(char *url) {
     
     options_t* opts = calloc(1, sizeof(options_t));
     
-    if (!opts) {
-        return NULL;
-    }
+    if (!opts) { return NULL; }
 
     opts->execution_mode = STEP_BY_STEP;        
-    opts->binary_file = url;
+    opts->binary_file    = url;
 
     // check if the binary has been passed
     if (!opts->binary_file) {
@@ -140,10 +138,10 @@ options_t* start_options(char *url) {
 
         return NULL;
     }
-
-    // loads the binary
-    if (parse_riscv_file(&opts) == -1)
-        return NULL;
+	
+	// Assembling the binary
+//	if (parse_riscv_file(opts) == -1)
+//		return NULL;
 
     return opts;
 }
