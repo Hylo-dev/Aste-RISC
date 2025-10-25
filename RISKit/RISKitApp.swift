@@ -12,6 +12,7 @@ struct RISKitApp: App {
     @StateObject private var appState = AppState()
     
     @Environment(\.openWindow) private var openWindow
+	@Environment(\.dismiss) private var dismiss
     
     var body: some Scene {
         // Home screen
@@ -22,7 +23,14 @@ struct RISKitApp: App {
         
         // Editor screen
         WindowGroup(id: "editor") {
-            BodyEditorView().environmentObject(self.appState)
+            BodyEditorView()
+				.environmentObject(self.appState)
+				.onAppear {
+					if self.appState.navigationState.navigationItem.selectedProjectPath == "" {
+						dismiss()
+						openWindow(id: "home")
+					}
+				}
         }
         .windowStyle(.hiddenTitleBar)
         
