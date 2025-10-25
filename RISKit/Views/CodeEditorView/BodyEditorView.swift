@@ -24,40 +24,36 @@ struct BodyEditorView: View {
     @State private var optionsWrapper: OptionsAssemblerWrapper = OptionsAssemblerWrapper()
 
     var body: some View {
-        NavigationSplitView() { treeSection } content: { editorArea } detail: {
-            // More information, for example Stack, table registers
-            VStack { Text("Test") }
-            
-        }
-        .onAppear { self.bodyEditorViewModel.changeCurrentInstruction(index: cpu.programCounter) }
-        .onChange(of: cpu.programCounter, handleProgramCounterChange)
-        .onChange(of: bodyEditorViewModel.currentFileSelected, handleFileSelectionChange)
-        .onDisappear(perform: viewDisappearHandle)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .toolbar {
-            
-            // Section toolbar, this contains running execution button
-            ToolbarItem(placement: .navigation) {
-                ToolbarExecuteView(optionsWrapper: optionsWrapper)
-					.environmentObject(self.bodyEditorViewModel)
-					.environmentObject(self.cpu)
-					.environmentObject(self.terminal)
-            }
-            .sharedBackgroundVisibility(.hidden)
+        NavigationSplitView() { treeSection } content: { editorArea } detail: { informationArea }
+			.onAppear { self.bodyEditorViewModel.changeCurrentInstruction(index: cpu.programCounter) }
+			.onChange(of: cpu.programCounter, handleProgramCounterChange)
+			.onChange(of: bodyEditorViewModel.currentFileSelected, handleFileSelectionChange)
+			.onDisappear(perform: viewDisappearHandle)
+			.frame(maxWidth: .infinity, maxHeight: .infinity)
+			.toolbar {
+				
+				// Section toolbar, this contains running execution button
+				ToolbarItem(placement: .navigation) {
+					ToolbarExecuteView(optionsWrapper: optionsWrapper)
+						.environmentObject(self.bodyEditorViewModel)
+						.environmentObject(self.cpu)
+						.environmentObject(self.terminal)
+				}
+				.sharedBackgroundVisibility(.hidden)
 
-            // Center Section for view current file working and search file
-            ToolbarItem(placement: .principal) {
-                ToolbarStatusView().environmentObject(self.bodyEditorViewModel)
-            }
-            .sharedBackgroundVisibility(.hidden)
-            
-            // Search button
-            ToolbarItem(placement: .principal) {
-                ToolbarSearchView().environmentObject(self.bodyEditorViewModel)
-                
-            }
-            .sharedBackgroundVisibility(.hidden)
-        }
+				// Center Section for view current file working and search file
+				ToolbarItem(placement: .principal) {
+					ToolbarStatusView().environmentObject(self.bodyEditorViewModel)
+				}
+				.sharedBackgroundVisibility(.hidden)
+				
+				// Search button
+				ToolbarItem(placement: .principal) {
+					ToolbarSearchView().environmentObject(self.bodyEditorViewModel)
+					
+				}
+				.sharedBackgroundVisibility(.hidden)
+			}
     }
     
     // MARK: Variable show tree directory project
@@ -108,6 +104,11 @@ struct BodyEditorView: View {
             }
         }
     }
+	
+	private var informationArea: some View {
+		// More information, for example Stack, table registers
+		InformationAreaView()
+	}
         
     private func handleProgramCounterChange(oldValue: UInt32, newValue: UInt32) {
 		guard let opts = optionsWrapper.opts else { return }

@@ -17,7 +17,7 @@ import CodeEditSourceEditor
 import CodeEditLanguages
 import CodeEditTextView
 
-struct CodeEditorNewView: View {
+struct CodeSourceEditorView: View {
 	@Environment(\.colorScheme)
 	var colorScheme
 
