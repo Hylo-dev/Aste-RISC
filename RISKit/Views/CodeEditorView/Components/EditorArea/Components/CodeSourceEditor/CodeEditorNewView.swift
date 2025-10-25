@@ -24,7 +24,7 @@ struct CodeEditorNewView: View {
 	@Binding var document: CodeEditSourceEditorDocument
 	let fileURL: URL?
 
-	@State private var language: CodeLanguage = .default
+	@State private var language: CodeLanguage = .c
 	@State private var theme: EditorTheme = .dark
 	@State private var editorState = SourceEditorState(
 		cursorPositions: [CursorPosition(line: 1, column: 1)]
@@ -85,6 +85,7 @@ struct CodeEditorNewView: View {
 				jumpToDefinitionDelegate: jumpToDefinition
 			)
 			.frame(maxWidth: .infinity, maxHeight: .infinity)
+			.clipShape(RoundedRectangle(cornerRadius: 26))
 			.onReceive(NotificationCenter.default.publisher(for: TreeSitterClient.Constants.longParse)) { _ in
 				withAnimation(.easeIn(duration: 0.1)) {
 					isInLongParse = true
@@ -95,13 +96,7 @@ struct CodeEditorNewView: View {
 					isInLongParse = false
 				}
 			}
-			.onChange(of: colorScheme) { _, newValue in
-				if newValue == .dark {
-					theme = .dark
-				} else {
-					theme = .light
-				}
-			}
 		}
 	}
+	
 }
