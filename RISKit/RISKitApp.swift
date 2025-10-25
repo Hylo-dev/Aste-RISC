@@ -25,12 +25,6 @@ struct RISKitApp: App {
         WindowGroup(id: "editor") {
             BodyEditorView()
 				.environmentObject(self.appState)
-				.onAppear {
-					if self.appState.navigationState.navigationItem.selectedProjectPath == "" {
-						dismiss()
-						openWindow(id: "home")
-					}
-				}
         }
         .windowStyle(.hiddenTitleBar)
         

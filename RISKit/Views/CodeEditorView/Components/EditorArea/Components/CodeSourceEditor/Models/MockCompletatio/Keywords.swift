@@ -446,4 +446,52 @@ let riscvRegisters: [RiscvKeyword] = [
 			usage: "Second argument register, used to pass values to a function and to return the value of a function"
 		)
 	),
+	
+	RiscvKeyword(
+		label: "x12",
+		category: .register,
+		documentation: "Argument register",
+		instructionDetail: nil,
+		directiveDetail: nil,
+		registerDetail: RiscvRegisterDetail(
+			number: 12,
+			usage: "Third argument register, used to pass values to a function and to return the value of a function"
+		)
+	),
+	
+	RiscvKeyword(
+		label: "a2",
+		category: .register,
+		documentation: "Argument register",
+		instructionDetail: nil,
+		directiveDetail: nil,
+		registerDetail: RiscvRegisterDetail(
+			number: 12,
+			usage: "Third argument register, used to pass values to a function and to return the value of a function"
+		)
+	),
+	
+	RiscvKeyword(
+		label: "x13",
+		category: .register,
+		documentation: "Argument register",
+		instructionDetail: nil,
+		directiveDetail: nil,
+		registerDetail: RiscvRegisterDetail(
+			number: 13,
+			usage: "Third argument register, used to pass values to a function and to return the value of a function"
+		)
+	),
+	
+	RiscvKeyword(
+		label: "a3",
+		category: .register,
+		documentation: "Argument register",
+		instructionDetail: nil,
+		directiveDetail: nil,
+		registerDetail: RiscvRegisterDetail(
+			number: 13,
+			usage: "Fourth argument register, used to pass values to a function and to return the value of a function"
+		)
+	),
 ]
