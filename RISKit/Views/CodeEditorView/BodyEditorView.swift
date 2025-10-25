@@ -98,7 +98,7 @@ struct BodyEditorView: View {
             
             if  !isEmptyPath,
 				let editor = SettingsManager().load(file: "global_settings.json",GlobalSettings.self)?.editorUse {
-				
+								
                 EditorAreaView(
 					projectRoot: projectPath,
 					editorUse  : editor

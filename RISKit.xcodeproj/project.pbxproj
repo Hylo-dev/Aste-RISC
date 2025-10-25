@@ -10,6 +10,7 @@
 		1F041C5B2E9F054F00ED403A /* STTextView in Frameworks */ = {isa = PBXBuildFile; productRef = 1F041C5A2E9F054F00ED403A /* STTextView */; };
 		1F041C5E2E9F05F500ED403A /* Highlightr in Frameworks */ = {isa = PBXBuildFile; productRef = 1F041C5D2E9F05F500ED403A /* Highlightr */; };
 		1F041C732EA2A74500ED403A /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 1F041C722EA2A74500ED403A /* SwiftTerm */; };
+		1FE758302EACBC79007E1897 /* CodeEditSourceEditor in Frameworks */ = {isa = PBXBuildFile; productRef = 1FE7582F2EACBC79007E1897 /* CodeEditSourceEditor */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +30,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1FE758302EACBC79007E1897 /* CodeEditSourceEditor in Frameworks */,
 				1F041C5E2E9F05F500ED403A /* Highlightr in Frameworks */,
 				1F041C5B2E9F054F00ED403A /* STTextView in Frameworks */,
 				1F041C732EA2A74500ED403A /* SwiftTerm in Frameworks */,
@@ -77,6 +79,7 @@
 				1F041C5A2E9F054F00ED403A /* STTextView */,
 				1F041C5D2E9F05F500ED403A /* Highlightr */,
 				1F041C722EA2A74500ED403A /* SwiftTerm */,
+				1FE7582F2EACBC79007E1897 /* CodeEditSourceEditor */,
 			);
 			productName = RISKit;
 			productReference = 1FD053182E9ED36F00D734FD /* RISKit.app */;
@@ -111,6 +114,7 @@
 				1F041C592E9F054F00ED403A /* XCRemoteSwiftPackageReference "STTextView" */,
 				1F041C5C2E9F05F500ED403A /* XCRemoteSwiftPackageReference "Highlightr" */,
 				1F041C712EA2A74500ED403A /* XCRemoteSwiftPackageReference "SwiftTerm" */,
+				1FE7582E2EACBC79007E1897 /* XCRemoteSwiftPackageReference "CodeEditSourceEditor" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 1FD053192E9ED36F00D734FD /* Products */;
@@ -378,6 +382,14 @@
 				minimumVersion = 1.5.0;
 			};
 		};
+		1FE7582E2EACBC79007E1897 /* XCRemoteSwiftPackageReference "CodeEditSourceEditor" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/CodeEditApp/CodeEditSourceEditor.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.15.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -395,6 +407,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 1F041C712EA2A74500ED403A /* XCRemoteSwiftPackageReference "SwiftTerm" */;
 			productName = SwiftTerm;
+		};
+		1FE7582F2EACBC79007E1897 /* CodeEditSourceEditor */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1FE7582E2EACBC79007E1897 /* XCRemoteSwiftPackageReference "CodeEditSourceEditor" */;
+			productName = CodeEditSourceEditor;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
