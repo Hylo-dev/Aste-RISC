@@ -9,15 +9,9 @@ import SwiftUI
 
 struct TableRegistersView: View {
 	@EnvironmentObject private var cpu: CPU
-	private static let registerName = riscvRegisters.filter { !$0.label.contains("x") && $0.label != "zero" }
-	
-	@State private var numberBaseUsed: NumberBaseReg = .hex
+	@EnvironmentObject private var informationAreaViewModel: InformationAreaViewModel
 	
 	var body: some View {
-		basePicker()
-			.padding(.horizontal)
-		
-		Divider()
 				
 		Grid(
 			alignment		 : .leading,
@@ -33,7 +27,7 @@ struct TableRegistersView: View {
 				Text("Stack").bold()
 			}
 		
-			ForEach(Self.registerName, id: \.label) { register in
+			ForEach(InformationAreaViewModel.registerName, id: \.label) { register in
 				
 				GridRow {
 					Text(register.label)
@@ -41,7 +35,7 @@ struct TableRegistersView: View {
 					Spacer()
 					
 					let value = self.cpu.registers[register.registerDetail!.number]
-					Text(baseFormatted(value))
+					Text(self.informationAreaViewModel.baseFormatted(value))
 						.monospaced()
 						.lineLimit(1)
 					
@@ -56,30 +50,5 @@ struct TableRegistersView: View {
 		.clipShape(RoundedRectangle(cornerRadius: 15))
 		.padding(.horizontal)
 		.padding(.bottom)
-	}
-	
-	@ViewBuilder /// Picker contains all number case available's
-	private func basePicker() -> some View {
-		Picker("Number base", selection: $numberBaseUsed) {
-			
-			ForEach(NumberBaseReg.allCases, id: \.id) { base in
-				Text(base.rawValue).tag(base)
-			}
-			
-		}
-	}
-	
-	/// Get string formatted for number base selected
-	private func baseFormatted(_ value: Int) -> String {
-		return switch numberBaseUsed {
-			case .dec: String(value, radix: numberBaseUsed.base, uppercase: true)
-							
-			case .bin: "0b" + String(value, radix: numberBaseUsed.base, uppercase: true)
-						
-			case .hex: "0x" + String(value, radix: numberBaseUsed.base, uppercase: true)
-							
-			case .oct: "0o" + String(value, radix: numberBaseUsed.base, uppercase: true)
-		
-		}
 	}
 }
