@@ -8,14 +8,13 @@
 import SwiftUI
 
 struct HeaderNavigationBarView: View {
-	@State private var selectedSection: InformationNavigation = .tableRegisters
+	@Binding var selectedSection: InformationNavigation
 	
 	var body: some View {
 		HStack {
 			ForEach(InformationNavigation.allCases, id: \.hashValue) { item in
 				buttonNavigation(item)
 			}
-			
 			
 		}
 		.frame(maxWidth: .infinity, alignment: .leading)

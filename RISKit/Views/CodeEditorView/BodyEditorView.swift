@@ -108,6 +108,7 @@ struct BodyEditorView: View {
 	private var informationArea: some View {
 		// More information, for example Stack, table registers
 		InformationAreaView()
+			.environmentObject(self.cpu)
 	}
         
     private func handleProgramCounterChange(oldValue: UInt32, newValue: UInt32) {

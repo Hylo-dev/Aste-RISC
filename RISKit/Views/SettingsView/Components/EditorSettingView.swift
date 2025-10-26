@@ -29,7 +29,6 @@ struct EditorSettingView: View {
             }
             
             Section("Editor settings") {
-                
                 Text("Test")
             }
             
