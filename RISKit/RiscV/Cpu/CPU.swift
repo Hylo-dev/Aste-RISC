@@ -10,8 +10,9 @@ import Foundation
 internal import Combine
 
 class CPU: ObservableObject {
-	@Published var stackFrames: [StackFrame] = []
+	@Published var stackFrames   : [StackFrame] = []
 	@Published var programCounter: UInt32
+	@Published var stackStores   : [UInt32: Int] = [:] // address -> register number
 	
 	var registers: [Int]
 	private let resetFlag: Int
@@ -118,10 +119,16 @@ class CPU: ObservableObject {
 			
 		} else if controlUnitState.mem_write && controlUnitState.alu_src {
 			// Calculate memory address: base(rs1) + offset(immediate)
-		   let memoryAddress = UInt32(resultAlu.result)
+		    let memoryAddress = UInt32(resultAlu.result)
+			let registerSource2 = Int(decodedInstruction.registerSource2)
 		   
-		   // Get value to store from rs2
-		   let valueToStore = getValueRegister(register: Int(decodedInstruction.registerSource2))
+		    // Get value to store from rs2
+		    let valueToStore = getValueRegister(register: Int(decodedInstruction.registerSource2))
+			
+			let sp = UInt32(registers[2])
+			if memoryAddress >= sp && memoryAddress < sp + 512 {
+				stackStores[memoryAddress] = registerSource2
+			}
 		   
 		   // Perform store based on funct3
 		   if !performStore(address: memoryAddress, value: valueToStore, funct3: decodedInstruction.funz3) {
@@ -157,7 +164,7 @@ class CPU: ObservableObject {
 	}
 	
 	/// Decode language code instruction
-	private func decode(_ instruction: Int) -> DecodedInstruction {
+	func decode(_ instruction: Int) -> DecodedInstruction {
 		var decoded = DecodedInstruction(
 			operationCode: UInt8(extractBits(instruction, start: 0, end: 6)),
 			registerSource1: UInt8(extractBits(instruction, start: 15, end: 19)),
@@ -169,31 +176,32 @@ class CPU: ObservableObject {
 		)
 		
 		switch decoded.operationCode {
-		case 0x67, 0x13, 0x03:
-			let extractedBits = extractBits(instruction, start: 20, end: 31)
-			decoded.immediate = signExtend(value: extractedBits, bits: 12)
-						
-		case 0x23:
-			let immediateAt11To5 = extractBits(instruction, start: 25, end: 31)
-			let immediateAt4To0 = extractBits(instruction, start: 7, end: 11)
-			let calculateImmediate = immediateAt11To5 << 5 | immediateAt4To0
-			
-			decoded.immediate = signExtend(value: calculateImmediate, bits: 12)
-			
-		case 0x6F:
-			let immediateAt20 = extractBits(instruction, start: 31, end: 31)
-			let immediateAt19To12 = extractBits(instruction, start: 12, end: 19)
-			let immediateAt11 = extractBits(instruction, start: 20, end: 20)
-			let immediateAt10To1 = extractBits(instruction, start: 21, end: 30)
-			let calculateImmediate = immediateAt20 << 20 | immediateAt19To12 << 12 | immediateAt11 << 11 | immediateAt10To1 << 1
-			
-			decoded.immediate = signExtend(value: calculateImmediate, bits: 21)
-			
-		case 0x37, 0x17:
-			decoded.immediate = Int(extractBits(instruction, start: 12, end: 31) << 12)
-			
-		default:
-			decoded.immediate = 0
+			case 0x67, 0x13, 0x03:
+				let extractedBits = extractBits(instruction, start: 20, end: 31)
+				decoded.immediate = signExtend(value: extractedBits, bits: 12)
+							
+			// Store instruction
+			case 0x23:
+				let immediateAt11To5   = extractBits(instruction, start: 25, end: 31)
+				let immediateAt4To0    = extractBits(instruction, start: 7, end: 11)
+				let calculateImmediate = immediateAt11To5 << 5 | immediateAt4To0
+				
+				decoded.immediate = signExtend(value: calculateImmediate, bits: 12)
+				
+			case 0x6F:
+				let immediateAt20 = extractBits(instruction, start: 31, end: 31)
+				let immediateAt19To12 = extractBits(instruction, start: 12, end: 19)
+				let immediateAt11 = extractBits(instruction, start: 20, end: 20)
+				let immediateAt10To1 = extractBits(instruction, start: 21, end: 30)
+				let calculateImmediate = immediateAt20 << 20 | immediateAt19To12 << 12 | immediateAt11 << 11 | immediateAt10To1 << 1
+				
+				decoded.immediate = signExtend(value: calculateImmediate, bits: 21)
+				
+			case 0x37, 0x17:
+				decoded.immediate = Int(extractBits(instruction, start: 12, end: 31) << 12)
+				
+			default:
+				decoded.immediate = 0
 		}
 		
 		return decoded
@@ -247,52 +255,55 @@ class CPU: ObservableObject {
 		self.programCounter = value
 	}
 	
-	@MainActor
+	@MainActor /// Update stack frame UI
 	private func updateStackFrames() {
-		guard let ram = ram else { return }
-		let sp = UInt32(registers[2])
-		let fp = UInt32(registers[8]) // Frame pointer (s0)
+		guard let ram = ram else { return } // Control ram is not null
+		
 		var frames: [StackFrame] = []
+		
+		let sp = UInt32(registers[2]) // Stack pointer (sp)
+		let fp = UInt32(registers[8]) // Frame pointer (s0)
 
-		let wordsToShow = 128
-		var consecutiveErrors = 0
+		let wordsToShow			 = 128
+		var consecutiveErrors	 = 0
 		let maxConsecutiveErrors = 8
 		
 		let ramStart = ram.pointee.base_vaddr
-		let ramEnd = ramStart + UInt32(ram.pointee.size)
+		let ramEnd   = ramStart + UInt32(ram.pointee.size)
 
 		for i in 0..<wordsToShow {
-			let addr = sp &+ UInt32(i * 4)
+			let addr = sp &+ UInt32(i * 4) // Calc new instruction
 			
 			if addr < ramStart || addr + 4 > ramEnd {
 				consecutiveErrors += 1
-				if consecutiveErrors >= maxConsecutiveErrors {
-					break
-				}
+				if consecutiveErrors >= maxConsecutiveErrors { break }
+				
 				continue
 			}
 			
-			let raw = read_ram32bit(ram, addr)
-			let isErr = (raw == -1)
-			let isNonZero = (!isErr && raw != 0)
-			let asU = UInt32(bitPattern: raw)
-			let isPtrToText = (asU >= self.textBase && asU < self.textBase &+ self.textSize)
+			let rawInstruction = read_ram32bit(ram, addr) // Get instruction
+			let isError 	   = (rawInstruction == -1)   // Control is error
 			
-			let isFrameBoundary = isPtrToText && isNonZero
-			let isFramePointer = (addr == fp)
-			let isSavedRegister = isNonZero && !isPtrToText && i < 32
+			let isNonZero 			   = (!isError && rawInstruction != 0)
+			let rawInstructionUnsigned = UInt32(bitPattern: rawInstruction)
+			
+			let isPointerToText = (
+				rawInstructionUnsigned >= self.textBase &&
+				rawInstructionUnsigned < self.textBase &+ self.textSize
+			)
+			
+			let isFrameBoundary = isPointerToText && isNonZero
+			let isFramePointer  = (addr == fp)
+			let isSavedRegister = isNonZero && !isPointerToText && i < 32
 
-			if isErr {
+			if isError {
 				consecutiveErrors += 1
 				if consecutiveErrors >= maxConsecutiveErrors { break }
 				
-			} else {
-				consecutiveErrors = 0
-				
-			}
+			} else { consecutiveErrors = 0 }
 
 			let color: Color
-			if isErr {
+			if isError {
 				color = Color(.systemGray)
 				
 			} else if isFramePointer {
@@ -314,12 +325,12 @@ class CPU: ObservableObject {
 
 			let frame = StackFrame(
 				address: addr,
-				value: raw,
+				value: rawInstruction,
 				color: color,
 				label: String(format: "0x%08x", addr),
-				isPointer: isPtrToText,
+				isPointer: isPointerToText,
 				isNonZero: isNonZero,
-				isError: isErr,
+				isError: isError,
 				isFrameBoundary: isFrameBoundary,
 				offsetFromSP: i
 			)
@@ -342,6 +353,16 @@ class CPU: ObservableObject {
 		guard let ram = ram else {
 			print("RAM not initialized")
 			return false
+		}
+		
+		let sp = UInt32(registers[2])
+		if address >= sp && address < sp + 512 {
+			for i in 0 ..< 32 {
+				if registers[i] == value {
+					stackStores[address] = i
+					break
+				}
+			}
 		}
 		
 		switch funct3 {

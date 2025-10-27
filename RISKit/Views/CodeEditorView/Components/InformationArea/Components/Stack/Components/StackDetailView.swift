@@ -20,7 +20,7 @@ struct StackDetailView: View {
 						.font(.title2)
 						.fontWeight(.bold)
 					
-					Text("\(detectedFrames.count) frame(s) attivi")
+					Text("\(detectedFrames.count) Active frame's")
 						.font(.caption)
 						.foregroundColor(.secondary)
 					
@@ -74,59 +74,64 @@ struct StackDetailView: View {
 	private var detectedFrames: [CallFrame] {
 		guard !cpu.stackFrames.isEmpty else { return [] }
 		
-		var frames: [CallFrame] = []
+		var frames			 : [CallFrame]  = []
 		var currentFrameWords: [StackFrame] = []
-		var frameStart: UInt32?
-		var returnAddr: UInt32?
-		var savedFP: UInt32?
+		var frameStart		 : UInt32?
+		var returnAddr		 : UInt32?
+		var savedFP			 : UInt32?
 		
+		// Iterate all stack frames
 		for word in cpu.stackFrames {
-			// Inizia un nuovo frame quando troviamo un return address
+			
+			// Init new frame when found return address
 			if word.isFrameBoundary && word.isPointer {
-				// Salva il frame precedente se esiste
+				
+				// Save previus frame if exist
 				if !currentFrameWords.isEmpty, let start = frameStart {
 					let size = UInt32(currentFrameWords.count * 4)
-					frames.append(CallFrame(
-						startAddress: start,
-						size: size,
-						returnAddress: returnAddr,
-						savedFP: savedFP,
-						words: currentFrameWords
-					))
+					
+					frames.append(
+						CallFrame(
+							startAddress : start,
+							size		 : size,
+							returnAddress: returnAddr,
+							savedFP		 : savedFP,
+							words		 : currentFrameWords
+						)
+					)
 				}
 				
-				// Inizia nuovo frame
-				frameStart = word.address
-				returnAddr = UInt32(bitPattern: word.value)
-				savedFP = nil
+				// Init new frame
+				frameStart 		  = word.address
+				returnAddr 		  = UInt32(bitPattern: word.value)
+				savedFP 		  = nil
 				currentFrameWords = [word]
 				
 			} else {
-				// Aggiungi al frame corrente
-				currentFrameWords.append(word)
+				currentFrameWords.append(word) // Add current frame
 				
-				// Cerca il saved frame pointer (di solito subito dopo il RA)
+				// Search saved frame pointer
 				if savedFP == nil && !word.isError && word.isNonZero && !word.isPointer {
 					savedFP = UInt32(bitPattern: word.value)
 				}
 				
-				// Se non abbiamo ancora un frame, questo è il primo
-				if frameStart == nil {
-					frameStart = word.address
-				}
+				// If not have frame, this is first
+				if frameStart == nil { frameStart = word.address }
 			}
 		}
 		
-		// Aggiungi l'ultimo frame se esiste
+		// Add last frame if exist
 		if !currentFrameWords.isEmpty, let start = frameStart {
 			let size = UInt32(currentFrameWords.count * 4)
-			frames.append(CallFrame(
-				startAddress: start,
-				size: size,
-				returnAddress: returnAddr,
-				savedFP: savedFP,
-				words: currentFrameWords
-			))
+			frames.append(
+				CallFrame(
+					startAddress : start,
+					size		 : size,
+					returnAddress: returnAddr,
+					savedFP		 : savedFP,
+					words		 : currentFrameWords
+				)
+			)
 		}
 		
 		return frames
@@ -135,8 +140,10 @@ struct StackDetailView: View {
 	private func formatSize(_ size: UInt32) -> String {
 		if size < 1024 {
 			return "\(size)B"
+			
 		} else if size < 1024 * 1024 {
 			return String(format: "%.1fKB", Double(size) / 1024.0)
+			
 		} else {
 			return String(format: "%.1fMB", Double(size) / (1024.0 * 1024.0))
 		}

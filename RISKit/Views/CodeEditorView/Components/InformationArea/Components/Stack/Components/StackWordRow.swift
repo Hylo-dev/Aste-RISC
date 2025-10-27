@@ -9,6 +9,8 @@ import SwiftUI
 
 // Vista per una singola word nello stack
 struct StackWordRow: View {
+	@EnvironmentObject private var cpu: CPU
+	
 	let word: StackFrame
 	let index: Int
 	let isInFrame: Bool
@@ -52,15 +54,18 @@ struct StackWordRow: View {
 						.foregroundColor(.blue)
 					
 				} else if word.isNonZero {
+					
 					// Prova a identificare se è un saved register
 					let label = identifyWordType(word, index: index)
 					Text(label)
 						.font(.caption2)
 						.foregroundColor(.secondary)
+					
 				} else {
 					Text("0")
 						.font(.caption2)
 						.foregroundColor(.secondary)
+					
 				}
 			}
 			.frame(width: 60, alignment: .leading)
@@ -73,6 +78,7 @@ struct StackWordRow: View {
 					Text(String(format: "0x%08x", UInt32(bitPattern: word.value)))
 						.font(.caption2)
 						.monospacedDigit()
+					
 					Text("\(word.value)")
 						.font(.caption2)
 						.foregroundColor(.secondary)
@@ -87,21 +93,17 @@ struct StackWordRow: View {
 	}
 	
 	private func identifyWordType(_ word: StackFrame, index: Int) -> String {
-		// i primi slot dopo RA sono tipicamente saved registers
-		// In RISC-V: ra (x1), s0/fp (x8), s1-s11 (x9, x18-x27)
-		if index == 0 && word.isFrameBoundary {
-			return "ra"
-			
-		} else if index == 1 {
-			return "s0/fp"
-			
-		} else if index >= 2 && index <= 13 {
-			return "s\(index - 1)"
-			
-		} else if word.isNonZero {
-			return "local"
-			
+
+		if let registerNum = cpu.stackStores[word.address] {
+			return riscvRegisters.first(
+				where: { $0.registerDetail!.number == registerNum && !$0.label.contains("x")}
+			)?.label ?? "x\(registerNum)"
 		}
+		
+		if index == 0 && word.isFrameBoundary { return "ra" }
+		
+		if word.isNonZero { return "local" }
+		
 		return "data"
 	}
 }

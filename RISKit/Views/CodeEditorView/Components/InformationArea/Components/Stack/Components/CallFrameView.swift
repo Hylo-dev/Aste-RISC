@@ -14,7 +14,7 @@ struct CallFrameView: View {
 	
 	var body: some View {
 		VStack(alignment: .leading, spacing: 0) {
-			// Header del frame (espandibile)
+			// Frame header
 			Button(action: { withAnimation { isExpanded.toggle() } }) {
 				HStack {
 					Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
@@ -55,11 +55,14 @@ struct CallFrameView: View {
 			}
 			.buttonStyle(.plain)
 			
-			// Contenuto del frame (espandibile)
+			// Frame content
 			if isExpanded {
 				VStack(spacing: 4) {
 					ForEach(Array(frame.words.enumerated()), id: \.element.id) { index, word in
 						StackWordRow(word: word, index: index, isInFrame: true)
+							.onAppear {
+								print("Row: \(index): \(word)")
+							}
 					}
 				}
 				.padding(.leading, 8)
