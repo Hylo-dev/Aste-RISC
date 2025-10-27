@@ -1,8 +1,8 @@
-# RISKit
+# Aste-RISC
 
 Lightweight, focused editor for RISC-V assembly, written in Swift.
 
-RISKit is an editor project that aims to provide a clean, simple environment to write, view and test RISC-V assembly code on macOS.
+Aste-RISC is an editor project that aims to provide a clean, simple environment to write, view and test RISC-V assembly code on macOS.
 
 The editor focuses on a readable user interface, assembly-aware core functionality, and an accessible code workspace implemented in Swift with the RISC-V architecture emulator written in C.
 
@@ -28,13 +28,13 @@ The editor focuses on a readable user interface, assembly-aware core functionali
 
 1. Clone the repo:
    ```bash
-   git clone https://github.com/eliorodr2104/RISKit.git
+   git clone https://github.com/eliorodr2104/Aste-RISC.git
    
-   cd RISKit
+   cd Aste-RISC
    ```
 2. Open the Xcode workspace/project:
    ```bash
-   open RISKit.xcodeproj
+   open Aste-RISC.xcodeproj
    ```
 3. Select the appropriate target (macOS) and run from Xcode.
    
