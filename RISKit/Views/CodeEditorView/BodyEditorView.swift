@@ -17,7 +17,7 @@ struct BodyEditorView: View {
     
     // ViewModel for manage UI body editor and RISC-V CPU Emulator
     @StateObject private var bodyEditorViewModel = BodyEditorViewModel()
-    @StateObject private var cpu                 = CPU(ram: new_ram(Int(DEFAULT_RAM_SIZE)))
+	@StateObject private var cpu                 = CPU()
 	@StateObject private var terminal 			 = AssemblerBridge.shared.terminal
 	    
     // Options emulator

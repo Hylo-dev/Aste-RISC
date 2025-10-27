@@ -49,7 +49,7 @@ struct InformationAreaView: View {
 					.environmentObject(self.informationAreaViewModel)
 						 
 			case .stack:
-				EmptyView()
+				MemoryMapView()
 		}
 	}
 	

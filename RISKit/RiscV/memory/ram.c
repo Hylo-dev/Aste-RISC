@@ -25,7 +25,7 @@ void destroy_ram(RAM ram) {
  *
  * @return Pointer to the newly created RAM instance, or NULL if allocation fails.
  */
-RAM new_ram(size_t size) {
+RAM new_ram(size_t size, uint32_t base_vaddr) {
     if (size == 0) return NULL;
 
     RAM main_memory = malloc(sizeof(struct ram));
@@ -38,7 +38,8 @@ RAM new_ram(size_t size) {
         return NULL;
     }
 
-    main_memory->size = size;
+	main_memory->base_vaddr = base_vaddr;
+    main_memory->size 		= size;
 
     memset(main_memory->data, 0, size);
     return main_memory;
@@ -52,6 +53,7 @@ RAM new_ram(size_t size) {
 void free_ram(RAM ram) {
     free(ram->data);
     ram->data = NULL;
+	ram->base_vaddr = 0;
     ram->size = 0;
 
 }
@@ -77,14 +79,20 @@ void write_ram32bit(
         fprintf(stderr, "Errore: indirizzo 0x%08x non allineato a 4 byte\n", address);
         return;
     }
+	
+	if (address < ram->base_vaddr) {
+		fprintf(stderr, "Errore: indirizzo 0x%08x sotto base ram 0x%08x\n", address, ram->base_vaddr);
+		return;
+	}
+	const uint32_t offset = address - ram->base_vaddr;
 
-    if (address + 3 >= ram->size) {
-        fprintf(stderr, "Errore: accesso fuori bounds 0x%08x + 4 > 0x%08x\n",
-                address, (int32_t)ram->size);
+    if (offset + 3 >= ram->size) {
+        fprintf(stderr, "Errore write: accesso fuori bounds 0x%08x + 4 > 0x%08x\n",
+				offset, (int32_t)ram->size);
         return;
     }
 
-    uint8_t *p = ram->data + address;
+    uint8_t *p = ram->data + offset;
 
     p[0] = (uint8_t)(value & 0xFF);
     p[1] = (uint8_t)(value >> 8 & 0xFF);
@@ -112,15 +120,20 @@ int32_t read_ram32bit(
         fprintf(stderr, "Errore: indirizzo 0x%08x non allineato a 4 byte\n", address);
         return -1;
     }
+	
+	if (address < ram->base_vaddr) {
+		fprintf(stderr, "Errore: indirizzo 0x%08x sotto base ram 0x%08x\n", address, ram->base_vaddr);
+		return -1;
+	}
+	const uint32_t offset = address - ram->base_vaddr;
 
-    if (address + 3 >= ram->size) {
-        fprintf(stderr, "Errore: accesso fuori bounds 0x%08x + 4 > 0x%08lu\n",
+    if (offset + 3 >= ram->size) {
+        fprintf(stderr, "Errore read: accesso fuori bounds 0x%08x + 4 > 0x%08lu\n",
                 address, ram->size);
         return -1;
     }
 
-    const uint8_t *p = ram->data + address;
-
+    const uint8_t *p = ram->data + offset;
     return (int32_t)p[0]
          | (int32_t)p[1] << 8
          | (int32_t)p[2] << 16
@@ -129,32 +142,24 @@ int32_t read_ram32bit(
 }
 
 void load_binary_to_ram(RAM ram, const uint8_t *binary, size_t size, uint32_t start_addr) {
-    if (!ram) {
-        fprintf(stderr, "RAM pointer null\n");
-        return;
-    }
-    
-    if (!binary) {
-        fprintf(stderr, "Binary pointer null\n");
-        return;
-    }
+	if (!ram || !binary) return;
 
-    // Controllo bounds più rigoroso
-    if (start_addr >= ram->size) {
-        fprintf(stderr, "Indirizzo di start 0x%08x fuori dai limiti della RAM (0x%08x)\n",
-                start_addr, (int32_t)ram->size);
-        return;
-    }
+	if (start_addr < ram->base_vaddr) {
+		fprintf(stderr, "Start addr 0x%08x < base 0x%08x\n", start_addr, ram->base_vaddr);
+		return;
+	}
 
-    if (start_addr + size > ram->size) {
-        fprintf(stderr, "Dimensione %zu + indirizzo 0x%08x eccede la RAM (0x%08x)\n",
-                size, start_addr, (int32_t)ram->size);
-        size = ram->size - start_addr; // Tronca alla dimensione disponibile
-    }
+	uint32_t offset = start_addr - ram->base_vaddr;
+	if ((uint64_t)offset >= ram->size) {
+		fprintf(stderr, "Indirizzo di start 0x%08x fuori dai limiti della RAM (size 0x%08zx)\n",
+				start_addr, ram->size);
+		return;
+	}
 
-    // Copia byte per byte
-    for (size_t i = 0; i < size; i++) {
-        ram->data[start_addr + i] = binary[i];
-    }
+	if ((uint64_t)offset + size > ram->size) {
+		fprintf(stderr, "Dimensione %zu + start 0x%08x eccede la RAM, tronco\n", size, start_addr);
+		size = ram->size - offset;
+	}
 
+	memcpy(ram->data + offset, binary, size);
 }

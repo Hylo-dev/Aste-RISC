@@ -11,6 +11,8 @@ struct TableRegistersView: View {
 	@EnvironmentObject private var cpu: CPU
 	@EnvironmentObject private var informationAreaViewModel: InformationAreaViewModel
 	
+	@State private var registersChanged: Int = -1
+	
 	var body: some View {
 				
 		Grid(
@@ -34,8 +36,11 @@ struct TableRegistersView: View {
 					
 					Spacer()
 					
-					let value = self.cpu.registers[register.registerDetail!.number]
+					let regNumber = register.registerDetail!.number
+					let isChanged = self.registersChanged == regNumber
+					let value     = self.cpu.registers[regNumber]
 					Text(self.informationAreaViewModel.baseFormatted(value))
+						.foregroundStyle(isChanged ? Color.yellow : Color.primary)
 						.monospaced()
 						.lineLimit(1)
 					
@@ -50,5 +55,22 @@ struct TableRegistersView: View {
 		.clipShape(RoundedRectangle(cornerRadius: 15))
 		.padding(.horizontal)
 		.padding(.bottom)
+		.onChange(of: self.cpu.registers, handleRegistersChanded)
+		
+	}
+	
+	private func handleRegistersChanded(
+		oldValue: [Int],
+		newValue: [Int]
+		
+	) {
+		self.registersChanged = -1
+		
+		for index in oldValue.indices {
+			
+			if oldValue[index] != newValue[index] { self.registersChanged = index  }
+			
+		}
+		
 	}
 }

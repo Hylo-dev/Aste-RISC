@@ -30,17 +30,33 @@ struct ToolbarExecuteView: View {
 					self.bodyEditorViewModel.isOutputVisible = true
 										
 					if resultAssembling == 0 {
-						// Load entry point and setup register
-						self.cpu.loadEntryPoint(value: optionsWrapper.opts!.pointee.entry_point)
-						self.cpu.registers[2] = 0x100000
+						let opt = optionsWrapper.opts!.pointee
+					
+						let textStart = Int(opt.text_vaddr)
+						let textEnd   = textStart + opt.text_size
+						let dataStart = Int(opt.data_vaddr)
+						let dataEnd   = dataStart + opt.data_size
+
+						let stackSize = 0x10000 // 64 KB di stack
+						let stackTop = max(textEnd, dataEnd) + stackSize
+
+						let ramBase = min(textStart, dataStart)
+						let ramSize = stackTop - ramBase
+
+						self.cpu.ram = new_ram(ramSize, UInt32(ramBase))
 						
-						load_binary_to_ram(cpu.ram, optionsWrapper.opts!.pointee.data_data, optionsWrapper.opts!.pointee.data_size, optionsWrapper.opts!.pointee.data_vaddr)
+						load_binary_to_ram(cpu.ram, opt.data_data, opt.data_size, opt.data_vaddr)
+						load_binary_to_ram(cpu.ram, opt.text_data, opt.text_size, opt.text_vaddr)
 						
-						load_binary_to_ram(cpu.ram, optionsWrapper.opts!.pointee.text_data, optionsWrapper.opts!.pointee.text_size, optionsWrapper.opts!.pointee.text_vaddr)
+						self.cpu.textBase = opt.text_vaddr
+						self.cpu.textSize = UInt32(opt.text_size)
+						self.cpu.dataBase = opt.data_vaddr
+						self.cpu.dataSize = UInt32(opt.data_size)
+
+						self.cpu.loadEntryPoint(value: opt.entry_point)
+
+						self.cpu.registers[2] = Int(stackTop - 4)
 					}
-			
-					//if (parse_riscv_file(opts) == -1)
-					//	return NULL;
 					
                     getIndexSourceAssembly()
                     
@@ -67,10 +83,7 @@ struct ToolbarExecuteView: View {
                 GlassEffectContainer(spacing: 30) {
                     HStack(spacing: 10) {
                         Button {
-                            let _ = cpu.runStep(
-								optionsSource: optionsWrapper.opts!.pointee,
-                                mainMemory   : cpu.ram
-                            )
+                            let _ = cpu.runStep(optionsSource: optionsWrapper.opts!.pointee)
                             
                         } label: {
                             Image(systemName: "backward.fill")
@@ -81,10 +94,7 @@ struct ToolbarExecuteView: View {
                         .buttonStyle(.glass)
 
                         Button {
-                            let _ = cpu.runStep(
-								optionsSource: optionsWrapper.opts!.pointee,
-                                mainMemory: cpu.ram
-                            )
+                            let _ = cpu.runStep(optionsSource: optionsWrapper.opts!.pointee)
                             
                         } label: {
                             Image(systemName: "forward.fill")

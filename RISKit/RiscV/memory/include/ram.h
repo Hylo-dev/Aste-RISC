@@ -22,6 +22,7 @@
 typedef struct ram {
     uint8_t *data;
     size_t size;
+	uint32_t base_vaddr;
 
 } *RAM;
 
@@ -39,7 +40,7 @@ void destroy_ram(RAM ram);
  *
  * @return Pointer to the newly created RAM instance, or NULL if allocation fails.
  */
-RAM new_ram(size_t size);
+RAM new_ram(size_t size, uint32_t base_vaddr);
 
 /**
  * @brief Free the RAM instance and its data.

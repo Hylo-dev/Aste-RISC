@@ -54,14 +54,14 @@ struct ALU {
         
         // Special cases
         switch operation {
-        case 0x03, 0x17, 0x6F: // Load, AUIPC, JAL
+        case 0x03, 0x17, 0x6F, 0x23: // Load, AUIPC, JAL, S-Type
             return .add
             
         case 0x37, 0x73: // LUI, ECALL
             return .skip
             
         case 0x33, 0x13, 0x67: // R-type, I-type ALU, JALR
-            break 
+            break
         
         default:
             return .unknown
@@ -138,15 +138,15 @@ struct ALU {
             for i in 0 ..< 32 {
                 let bitA = ((a >> i) & 1) == 1
                 let bitB = ((b >> i) & 1) == 1
-                let lessInput = i == 32 ? less : false
+                let lessInput = i == 31 ? less : false
                 
                 let res = alu1Bit(a: bitA, b: bitB, less: lessInput, carryIn: carryIn, operation: operation)
                 
                 if res.result { result |= (1 << i) }
                 carryIn = res.carryOut
                 
-                if i == 1 { carryInOverflowControl = carryIn }
-                if i == 0 { carryOutOverflowContral = res.carryOut }
+                if i == 30 { carryInOverflowControl = carryIn }
+                if i == 31 { carryOutOverflowContral = res.carryOut }
             }
             
             let zero = result == 0
