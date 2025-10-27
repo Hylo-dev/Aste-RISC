@@ -15,6 +15,8 @@ struct MemoryBarView: View {
 		HStack {
 			ForEach(Array(sections.enumerated()), id: \.1.id) { index, item in
 				buttonNavigation(item)
+					.padding(.leading, index == 0 ? 7 : 0)
+					.padding(.trailing, index == sections.endIndex ? 7 : 0)
 
 				if index != sections.count - 1 { Spacer() }
 			}

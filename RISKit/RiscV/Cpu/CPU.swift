@@ -24,6 +24,10 @@ class CPU: ObservableObject {
 	var dataBase: UInt32 = 0
 	var dataSize: UInt32 = 0
 	
+	private var lastSP: UInt32 = 0
+	private var lastFP: UInt32 = 0
+	private var stackUpdateCounter: Int = 0
+	
 	// Tracking frame pointer for identify each frame
 	private var framePointers: [UInt32] = []
 	
@@ -255,36 +259,50 @@ class CPU: ObservableObject {
 		self.programCounter = value
 	}
 	
-	@MainActor /// Update stack frame UI
+	@MainActor
 	private func updateStackFrames() {
-		guard let ram = ram else { return } // Control ram is not null
+		guard let ram = ram else { return }
 		
+		let sp = UInt32(registers[2])
+		let fp = UInt32(registers[8])
+		
+		// Aggiorna solo ogni N istruzioni O se SP/FP cambiano significativamente
+		stackUpdateCounter += 1
+		let spChanged = abs(Int(sp) - Int(lastSP)) >= 4 // Minimo 1 words di differenza
+		let fpChanged = fp != lastFP
+		
+		// Aggiorna solo se necessario
+		guard stackUpdateCounter >= 2 || spChanged || fpChanged else {
+			return
+		}
+		
+		stackUpdateCounter = 0
+		lastSP = sp
+		lastFP = fp
+				
+		// Ora procedi con l'aggiornamento reale
 		var frames: [StackFrame] = []
 		
-		let sp = UInt32(registers[2]) // Stack pointer (sp)
-		let fp = UInt32(registers[8]) // Frame pointer (s0)
-
-		let wordsToShow			 = 128
-		var consecutiveErrors	 = 0
+		let wordsToShow = 128
+		var consecutiveErrors = 0
 		let maxConsecutiveErrors = 8
 		
 		let ramStart = ram.pointee.base_vaddr
-		let ramEnd   = ramStart + UInt32(ram.pointee.size)
+		let ramEnd = ramStart + UInt32(ram.pointee.size)
 
 		for i in 0..<wordsToShow {
-			let addr = sp &+ UInt32(i * 4) // Calc new instruction
+			let addr = sp &+ UInt32(i * 4)
 			
 			if addr < ramStart || addr + 4 > ramEnd {
 				consecutiveErrors += 1
 				if consecutiveErrors >= maxConsecutiveErrors { break }
-				
 				continue
 			}
 			
-			let rawInstruction = read_ram32bit(ram, addr) // Get instruction
-			let isError 	   = (rawInstruction == -1)   // Control is error
+			let rawInstruction = read_ram32bit(ram, addr)
+			let isError = (rawInstruction == -1)
 			
-			let isNonZero 			   = (!isError && rawInstruction != 0)
+			let isNonZero = (!isError && rawInstruction != 0)
 			let rawInstructionUnsigned = UInt32(bitPattern: rawInstruction)
 			
 			let isPointerToText = (
@@ -293,34 +311,31 @@ class CPU: ObservableObject {
 			)
 			
 			let isFrameBoundary = isPointerToText && isNonZero
-			let isFramePointer  = (addr == fp)
+			let isFramePointer = (addr == fp)
 			let isSavedRegister = isNonZero && !isPointerToText && i < 32
 
 			if isError {
 				consecutiveErrors += 1
 				if consecutiveErrors >= maxConsecutiveErrors { break }
 				
-			} else { consecutiveErrors = 0 }
+			} else {
+				consecutiveErrors = 0
+				
+			}
 
 			let color: Color
 			if isError {
 				color = Color(.systemGray)
-				
 			} else if isFramePointer {
 				color = Color(.systemPurple).opacity(0.85)
-				
 			} else if isFrameBoundary {
 				color = Color(.systemRed).opacity(0.85)
-				
 			} else if isSavedRegister {
 				color = Color(.systemOrange).opacity(0.6)
-				
 			} else if isNonZero {
 				color = Color(.systemBlue).opacity(0.6)
-				
 			} else {
 				color = Color(.systemMint)
-				
 			}
 
 			let frame = StackFrame(
@@ -338,7 +353,12 @@ class CPU: ObservableObject {
 			frames.append(frame)
 		}
 
-		withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+		// Usa animazione più leggera se i frame sono simili
+		let animationStyle: Animation = frames.count == self.stackFrames.count ?
+			.easeInOut(duration: 0.15) :
+			.spring(response: 0.3, dampingFraction: 0.8)
+		
+		withAnimation(animationStyle) {
 			self.stackFrames = frames
 		}
 	}

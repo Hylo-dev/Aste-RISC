@@ -55,7 +55,7 @@ struct StackWordRow: View {
 					
 				} else if word.isNonZero {
 					
-					// Prova a identificare se è un saved register
+					// Set label reginter saved
 					let label = identifyWordType(word, index: index)
 					Text(label)
 						.font(.caption2)
@@ -68,18 +68,20 @@ struct StackWordRow: View {
 					
 				}
 			}
-			.frame(width: 60, alignment: .leading)
+			.frame(alignment: .leading)
 			
 			Spacer()
 			
-			// Valore
+			// Value store memory
 			if !word.isError {
 				VStack(alignment: .trailing, spacing: 2) {
 					Text(String(format: "0x%08x", UInt32(bitPattern: word.value)))
 						.font(.caption2)
+						.lineLimit(1)
 						.monospacedDigit()
 					
 					Text("\(word.value)")
+						.lineLimit(1)
 						.font(.caption2)
 						.foregroundColor(.secondary)
 						.monospacedDigit()

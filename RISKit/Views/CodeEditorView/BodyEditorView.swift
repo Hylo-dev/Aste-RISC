@@ -24,7 +24,12 @@ struct BodyEditorView: View {
     @State private var optionsWrapper: OptionsAssemblerWrapper = OptionsAssemblerWrapper()
 
     var body: some View {
-        NavigationSplitView() { treeSection } content: { editorArea } detail: { informationArea }
+		NavigationSplitView { treeSection }
+		content: { editorArea }
+		detail : {
+			informationArea
+				.frame(minWidth: 350, idealWidth: 400, maxWidth: .infinity)
+		}
 			.onAppear { self.bodyEditorViewModel.changeCurrentInstruction(index: cpu.programCounter) }
 			.onChange(of: cpu.programCounter, handleProgramCounterChange)
 			.onChange(of: bodyEditorViewModel.currentFileSelected, handleFileSelectionChange)

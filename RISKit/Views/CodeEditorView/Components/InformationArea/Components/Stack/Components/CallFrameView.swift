@@ -8,9 +8,20 @@
 import SwiftUI
 
 struct CallFrameView: View {
-	let frame: CallFrame
-	let frameIndex: Int
-	@State private var isExpanded: Bool = true
+	private let frame: CallFrame
+	private let frameIndex: Int
+	@Binding var isExpanded: Bool
+	
+	init(
+		frame	  : CallFrame,
+		frameIndex: Int,
+		isExpanded: Binding<Bool>
+	) {
+		self.frame = frame
+		self.frameIndex = frameIndex
+		self._isExpanded = isExpanded
+		
+	}
 	
 	var body: some View {
 		VStack(alignment: .leading, spacing: 0) {
@@ -60,9 +71,6 @@ struct CallFrameView: View {
 				VStack(spacing: 4) {
 					ForEach(Array(frame.words.enumerated()), id: \.element.id) { index, word in
 						StackWordRow(word: word, index: index, isInFrame: true)
-							.onAppear {
-								print("Row: \(index): \(word)")
-							}
 					}
 				}
 				.padding(.leading, 8)

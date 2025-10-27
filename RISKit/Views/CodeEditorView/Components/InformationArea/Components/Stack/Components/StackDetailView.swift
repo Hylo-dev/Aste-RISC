@@ -8,9 +8,17 @@
 import SwiftUI
 
 struct StackDetailView: View {
-	let section: MemorySection
 	@EnvironmentObject var cpu: CPU
 	
+	@State private var expandedFrames: Set<Int>
+		   private let section		 : MemorySection
+	
+	init(section: MemorySection) {
+		self.expandedFrames = [0]
+		self.section 		= section
+	}
+	
+		
 	var body: some View {
 		VStack(alignment: .leading, spacing: 8) {
 			// Header
@@ -63,8 +71,24 @@ struct StackDetailView: View {
 				
 			} else {
 				ForEach(Array(detectedFrames.enumerated()), id: \.element.id) { index, frame in
-					CallFrameView(frame: frame, frameIndex: index)
-						.padding(.horizontal)
+					CallFrameView(
+						frame	  : frame,
+						frameIndex: index,
+						isExpanded: Binding(
+							get: { expandedFrames.contains(index) },
+							set: { newValue in
+								if newValue {
+									expandedFrames.insert(index)
+									
+								} else {
+									expandedFrames.remove(index)
+									
+								}
+							}
+						)
+					)
+					.id(frame.id)
+					.padding(.horizontal)
 				}
 			}
 		}
