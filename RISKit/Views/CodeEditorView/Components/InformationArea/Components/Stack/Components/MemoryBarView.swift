@@ -10,64 +10,51 @@ import SwiftUI
 struct MemoryBarView: View {
 	let sections: [MemorySection]
 	@Binding var selectedSection: MemorySection.SectionType?
-	let totalHeight: CGFloat
-	
-	private var totalMemorySize: UInt32 {
-		guard let first = sections.first, let last = sections.last else { return 0 }
-		return (last.endAddress - first.startAddress)
-	}
 	
 	var body: some View {
 		HStack {
-			ForEach(Section) { item in
+			ForEach(Array(sections.enumerated()), id: \.1.id) { index, item in
 				buttonNavigation(item)
+
+				if index != sections.count - 1 { Spacer() }
 			}
 			
 		}
-		.frame(maxWidth: .infinity, alignment: .leading)
+		.frame(maxWidth: .infinity)
 		.background(
 			RoundedRectangle(cornerRadius: 10)
 				.fill(.ultraThinMaterial)
 				.shadow(color: .black.opacity(0.2), radius: 24, x: 0, y: 8)
 		)
 		.padding(.horizontal)
-		
-		VStack(spacing: 1) {
-			ForEach(sections) { section in
-				let height = calculateHeight(for: section)
-				
-				Button(action: {
-					selectedSection = section.type
-				}) {
-					VStack(spacing: 2) {
-						Text(section.name)
-							.font(.caption2)
-							.fontWeight(.bold)
-						
-						Text(formatSize(section.size))
-							.font(.caption2)
-							.foregroundColor(.secondary)
-						
-					}
-					.frame(maxWidth: .infinity)
-					.frame(height: max(height, 30))
-					.background(section.color.opacity(selectedSection == section.type ? 0.8 : 0.5))
-					.overlay(
-						RoundedRectangle(cornerRadius: 4)
-							.stroke(selectedSection == section.type ? Color.white : Color.clear, lineWidth: 2)
-					)
-					.cornerRadius(4)
-				}
-				.buttonStyle(.plain)
-			}
-		}
-		.padding(4)
 	}
 	
-	private func calculateHeight(for section: MemorySection) -> CGFloat {
-		guard totalMemorySize > 0 else { return 0 }
-		let ratio = CGFloat(section.size) / CGFloat(totalMemorySize)
-		return totalHeight * ratio
+	@ViewBuilder
+	private func buttonNavigation(_ section: MemorySection) -> some View {
+		
+		Button {
+			self.selectedSection = section.type
+			
+		} label: {
+			Text(section.name)
+				.padding(.vertical, 4)
+				.padding(.horizontal, 8)
+				.background(
+					selectedSection == section.type
+						? Color.accentColor
+						: Color(.clear)
+				)
+				.foregroundColor(
+					selectedSection == section.type
+						? .white
+						: .primary
+				)
+				.cornerRadius(8)
+				.animation(.easeInOut(duration: 0.15), value: selectedSection)
+			
+		}
+		.buttonStyle(.plain)
+		
 	}
 
 }

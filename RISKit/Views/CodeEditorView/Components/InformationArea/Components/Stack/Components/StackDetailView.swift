@@ -28,6 +28,7 @@ struct StackDetailView: View {
 						.font(.caption)
 						.foregroundColor(.secondary)
 				}
+				
 				Spacer()
 				
 				VStack(alignment: .trailing) {
@@ -45,15 +46,16 @@ struct StackDetailView: View {
 			
 			Divider()
 			
-			// Lista dei frame
+			// List frame
 			if detectedFrames.isEmpty {
 				VStack {
 					Spacer()
+					
 					Image(systemName: "tray")
 						.font(.system(size: 40))
 						.foregroundColor(.secondary)
 					
-					Text("Stack vuoto")
+					Text("Empty stack")
 						.foregroundColor(.secondary)
 					
 					Spacer()
@@ -62,6 +64,7 @@ struct StackDetailView: View {
 			} else {
 				ForEach(Array(detectedFrames.enumerated()), id: \.element.id) { index, frame in
 					CallFrameView(frame: frame, frameIndex: index)
+						.padding(.horizontal)
 				}
 			}
 		}

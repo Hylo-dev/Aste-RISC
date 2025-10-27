@@ -11,6 +11,7 @@ import SwiftUI
 struct DetailView: View {
 	let selectedSection: MemorySection.SectionType?
 	let sections: [MemorySection]
+	
 	@EnvironmentObject var cpu: CPU
 	
 	var body: some View {
@@ -21,21 +22,28 @@ struct DetailView: View {
 				switch sectionType {
 				case .stack:
 					StackDetailView(section: section)
+						
 				case .text:
 					TextSectionView(section: section)
+						
 				case .data:
 					DataSectionView(section: section)
+						
 				case .heap:
 					HeapSectionView(section: section)
+						
 				case .unused:
 					UnusedSectionView()
+						
 				}
+				
 			} else {
 				VStack {
 					Image(systemName: "memorychip")
 						.font(.system(size: 60))
 						.foregroundColor(.secondary)
-					Text("Seleziona una sezione")
+					
+					Text("Select a section")
 						.foregroundColor(.secondary)
 				}
 			}

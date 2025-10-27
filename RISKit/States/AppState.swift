@@ -9,7 +9,7 @@ internal import Combine
 import Foundation
 
 @MainActor
-final class AppState: ObservableObject {
+class AppState: ObservableObject {
     var navigationState = NavigationState()
     
     @Published private var editorProjectPath: String? = nil
@@ -28,7 +28,6 @@ final class AppState: ObservableObject {
     func setEditorProjectPath(_ path: String?) {
         guard editorProjectPath != path else { return }
         
-        objectWillChange.send()
         editorProjectPath = path
     }
     

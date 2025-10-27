@@ -12,27 +12,17 @@ struct MemoryMapView: View {
 	@State private var selectedSection: MemorySection.SectionType?
 	
 	var body: some View {
-		GeometryReader { geometry in
-			VStack(spacing: 6) {
-				
-				MemoryBarView(
-					sections: memorySections,
-					selectedSection: $selectedSection,
-					totalHeight: geometry.size.height - 100
-				)
-								
-				Divider()
-				
-				// Dettaglio della sezione selezionata
-				DetailView(
-					selectedSection: selectedSection,
-					sections: memorySections
-				)
-				.frame(maxWidth: .infinity)
-				
-			}
-			.padding()
-		}
+		MemoryBarView(
+			sections: memorySections,
+			selectedSection: $selectedSection
+		)
+						
+		if selectedSection != nil { Divider() }
+		
+		DetailView(
+			selectedSection: selectedSection,
+			sections: memorySections
+		)
 	}
 	
 	private var memorySections: [MemorySection] {

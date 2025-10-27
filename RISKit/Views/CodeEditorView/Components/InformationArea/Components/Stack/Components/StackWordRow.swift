@@ -40,14 +40,17 @@ struct StackWordRow: View {
 					Label("ERR", systemImage: "exclamationmark.triangle")
 						.font(.caption2)
 						.foregroundColor(.red)
+					
 				} else if word.isFrameBoundary && word.isPointer {
 					Label("RA", systemImage: "arrow.turn.up.right")
 						.font(.caption2)
 						.foregroundColor(.orange)
+					
 				} else if word.isPointer {
 					Label("PTR", systemImage: "arrow.right")
 						.font(.caption2)
 						.foregroundColor(.blue)
+					
 				} else if word.isNonZero {
 					// Prova a identificare se è un saved register
 					let label = identifyWordType(word, index: index)
@@ -84,16 +87,20 @@ struct StackWordRow: View {
 	}
 	
 	private func identifyWordType(_ word: StackFrame, index: Int) -> String {
-		// Euristica: i primi slot dopo RA sono tipicamente saved registers
+		// i primi slot dopo RA sono tipicamente saved registers
 		// In RISC-V: ra (x1), s0/fp (x8), s1-s11 (x9, x18-x27)
 		if index == 0 && word.isFrameBoundary {
 			return "ra"
+			
 		} else if index == 1 {
 			return "s0/fp"
+			
 		} else if index >= 2 && index <= 13 {
 			return "s\(index - 1)"
+			
 		} else if word.isNonZero {
 			return "local"
+			
 		}
 		return "data"
 	}
