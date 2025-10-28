@@ -17,6 +17,7 @@ struct InformationAreaView: View {
 				Image(systemName: section.rawValue)
 			}
 			.buttonFocusedColor(.accentColor)
+			.backgroundColor(.primary.opacity(0.18))
 			
 			VStack(alignment: .leading) {
 				scrollHeader()
