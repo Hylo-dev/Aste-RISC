@@ -8,5 +8,4 @@
 enum InformationNavigation: String, CaseIterable, Equatable {
 	case tableRegisters = "tablecells"
 	case stack			= "square.stack.3d.up"
-	
 }

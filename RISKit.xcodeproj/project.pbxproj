@@ -10,8 +10,8 @@
 		1F041C5B2E9F054F00ED403A /* STTextView in Frameworks */ = {isa = PBXBuildFile; productRef = 1F041C5A2E9F054F00ED403A /* STTextView */; };
 		1F041C5E2E9F05F500ED403A /* Highlightr in Frameworks */ = {isa = PBXBuildFile; productRef = 1F041C5D2E9F05F500ED403A /* Highlightr */; };
 		1F041C732EA2A74500ED403A /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 1F041C722EA2A74500ED403A /* SwiftTerm */; };
-		1FDCB2642EB1140E002866F1 /* FlowPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 1FDCB2632EB1140E002866F1 /* FlowPicker */; };
 		1FE758302EACBC79007E1897 /* CodeEditSourceEditor in Frameworks */ = {isa = PBXBuildFile; productRef = 1FE7582F2EACBC79007E1897 /* CodeEditSourceEditor */; };
+		EA29A30D2EB169AB007EB92F /* SegmentedFlowPicker in Frameworks */ = {isa = PBXBuildFile; productRef = EA29A30C2EB169AB007EB92F /* SegmentedFlowPicker */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,8 +32,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				1FE758302EACBC79007E1897 /* CodeEditSourceEditor in Frameworks */,
-				1FDCB2642EB1140E002866F1 /* FlowPicker in Frameworks */,
 				1F041C5E2E9F05F500ED403A /* Highlightr in Frameworks */,
+				EA29A30D2EB169AB007EB92F /* SegmentedFlowPicker in Frameworks */,
 				1F041C5B2E9F054F00ED403A /* STTextView in Frameworks */,
 				1F041C732EA2A74500ED403A /* SwiftTerm in Frameworks */,
 			);
@@ -46,6 +46,7 @@
 			isa = PBXGroup;
 			children = (
 				1FD0531A2E9ED36F00D734FD /* Aste-RISC */,
+				EA29A30A2EB16971007EB92F /* Frameworks */,
 				1FD053192E9ED36F00D734FD /* Products */,
 			);
 			sourceTree = "<group>";
@@ -56,6 +57,13 @@
 				1FD053182E9ED36F00D734FD /* Aste-RISC.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		EA29A30A2EB16971007EB92F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -82,7 +90,7 @@
 				1F041C5D2E9F05F500ED403A /* Highlightr */,
 				1F041C722EA2A74500ED403A /* SwiftTerm */,
 				1FE7582F2EACBC79007E1897 /* CodeEditSourceEditor */,
-				1FDCB2632EB1140E002866F1 /* FlowPicker */,
+				EA29A30C2EB169AB007EB92F /* SegmentedFlowPicker */,
 			);
 			productName = RISKit;
 			productReference = 1FD053182E9ED36F00D734FD /* Aste-RISC.app */;
@@ -118,7 +126,7 @@
 				1F041C5C2E9F05F500ED403A /* XCRemoteSwiftPackageReference "Highlightr" */,
 				1F041C712EA2A74500ED403A /* XCRemoteSwiftPackageReference "SwiftTerm" */,
 				1FE7582E2EACBC79007E1897 /* XCRemoteSwiftPackageReference "CodeEditSourceEditor" */,
-				1FDCB2622EB1140E002866F1 /* XCRemoteSwiftPackageReference "SwiftFlowPicker" */,
+				EA29A30B2EB169AB007EB92F /* XCRemoteSwiftPackageReference "SwiftFlowPicker" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 1FD053192E9ED36F00D734FD /* Products */;
@@ -280,7 +288,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 8KZQJ4JUGS;
+				DEVELOPMENT_TEAM = A6A5HQL6K4;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -316,7 +324,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 8KZQJ4JUGS;
+				DEVELOPMENT_TEAM = A6A5HQL6K4;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -390,20 +398,20 @@
 				minimumVersion = 1.5.0;
 			};
 		};
-		1FDCB2622EB1140E002866F1 /* XCRemoteSwiftPackageReference "SwiftFlowPicker" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Hylo-dev/SwiftFlowPicker.git";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
 		1FE7582E2EACBC79007E1897 /* XCRemoteSwiftPackageReference "CodeEditSourceEditor" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/CodeEditApp/CodeEditSourceEditor.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 0.15.2;
+			};
+		};
+		EA29A30B2EB169AB007EB92F /* XCRemoteSwiftPackageReference "SwiftFlowPicker" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Hylo-dev/SwiftFlowPicker.git";
+			requirement = {
+				branch = main;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -424,15 +432,15 @@
 			package = 1F041C712EA2A74500ED403A /* XCRemoteSwiftPackageReference "SwiftTerm" */;
 			productName = SwiftTerm;
 		};
-		1FDCB2632EB1140E002866F1 /* FlowPicker */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 1FDCB2622EB1140E002866F1 /* XCRemoteSwiftPackageReference "SwiftFlowPicker" */;
-			productName = FlowPicker;
-		};
 		1FE7582F2EACBC79007E1897 /* CodeEditSourceEditor */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 1FE7582E2EACBC79007E1897 /* XCRemoteSwiftPackageReference "CodeEditSourceEditor" */;
 			productName = CodeEditSourceEditor;
+		};
+		EA29A30C2EB169AB007EB92F /* SegmentedFlowPicker */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EA29A30B2EB169AB007EB92F /* XCRemoteSwiftPackageReference "SwiftFlowPicker" */;
+			productName = SegmentedFlowPicker;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

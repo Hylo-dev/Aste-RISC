@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import FlowPicker
+import SegmentedFlowPicker
 
 struct InformationAreaView: View {
 	@StateObject private var informationAreaViewModel = InformationAreaViewModel()
@@ -18,6 +18,8 @@ struct InformationAreaView: View {
 			}
 			.buttonFocusedColor(.accentColor)
 			.backgroundColor(.primary.opacity(0.18))
+			.clipShape(.rect(cornerRadius: 10))
+			.glassEffect()
 			
 			VStack(alignment: .leading) {
 				scrollHeader()

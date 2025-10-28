@@ -7,36 +7,35 @@
 
 import SwiftUI
 
-// Vista per l'heap
 struct HeapSectionView: View {
 	let section: MemorySection
 	
 	var body: some View {
 		VStack {
 			HStack {
-				Text("Heap")
-					.font(.title2)
-					.fontWeight(.bold)
+				
+				VStack(alignment: .leading) {
+					Text("Heap")
+						.font(.title2)
+						.foregroundStyle(.orange)
+						.fontWeight(.bold)
+					
+					Text("\(section.size) Bytes available")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+					
+				}
+				
 				Spacer()
+				
+				Text("Dynamic allocation area")
+					.font(.body)
+					.foregroundColor(.secondary)
+				
 			}
 			.padding()
 			
 			Divider()
-			
-			Spacer()
-			
-			VStack(spacing: 8) {
-				Image(systemName: "arrow.up.and.down")
-					.font(.system(size: 40))
-					.foregroundColor(.orange)
-				Text("Area di allocazione dinamica")
-					.foregroundColor(.secondary)
-				Text("\(section.size) bytes disponibili")
-					.font(.caption)
-					.foregroundColor(.secondary)
-			}
-			
-			Spacer()
 		}
 	}
 }

@@ -26,6 +26,7 @@ struct StackDetailView: View {
 				VStack(alignment: .leading) {
 					Text("Stack")
 						.font(.title2)
+						.foregroundStyle(.purple)
 						.fontWeight(.bold)
 					
 					Text("\(detectedFrames.count) Active frame's")

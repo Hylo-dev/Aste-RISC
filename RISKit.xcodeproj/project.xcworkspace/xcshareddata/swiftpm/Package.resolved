@@ -1,5 +1,5 @@
 {
-  "originHash" : "09a67b215c3226b9b20b15e1531fa02cc61803b7b0cb07a39ad2c845e6717bd9",
+  "originHash" : "ba1f0321dd480c0dbf491e916f2c8c6f7f529ee54607391e3de070425cf763fc",
   "pins" : [
     {
       "identity" : "codeeditlanguages",
@@ -106,7 +106,7 @@
       "location" : "https://github.com/Hylo-dev/SwiftFlowPicker.git",
       "state" : {
         "branch" : "main",
-        "revision" : "4ae23d81cc130c1b780da27a596683b92f7de204"
+        "revision" : "5892a4a9697bdcd25fe6180d983db120a0b8f822"
       }
     },
     {
