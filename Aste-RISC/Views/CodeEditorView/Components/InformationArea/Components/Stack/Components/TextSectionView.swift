@@ -16,6 +16,7 @@ struct TextSectionView: View {
 			HStack {
 				Text(".text (Code)")
 					.font(.title2)
+					.foregroundStyle(.green)
 					.fontWeight(.bold)
 				Spacer()
 				Text("0x\(String(format: "%08x", section.startAddress)) - 0x\(String(format: "%08x", section.endAddress))")

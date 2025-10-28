@@ -17,7 +17,9 @@ struct DataSectionView: View {
 				Text(".data (Globals)")
 					.font(.title2)
 					.fontWeight(.bold)
+				
 				Spacer()
+				
 				Text("0x\(String(format: "%08x", section.startAddress)) - 0x\(String(format: "%08x", section.endAddress))")
 					.font(.caption)
 					.monospacedDigit()
