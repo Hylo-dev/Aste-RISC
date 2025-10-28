@@ -20,7 +20,8 @@ struct InformationAreaView: View {
 			.backgroundColor(.primary.opacity(0.18))
 			.clipShape(.rect(cornerRadius: 10))
 			.glassEffect()
-			
+			.padding(.top, 5)
+
 			VStack(alignment: .leading) {
 				scrollHeader()
 							
