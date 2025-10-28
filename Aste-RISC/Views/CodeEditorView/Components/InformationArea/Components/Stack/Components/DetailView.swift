@@ -32,20 +32,19 @@ struct DetailView: View {
 				case .heap:
 					HeapSectionView(section: section)
 						
-				case .unused:
-					UnusedSectionView()
-						
 				}
 				
 			} else {
-				VStack {
-					Image(systemName: "memorychip")
+				HStack(spacing: 7) {
+					Image(systemName: "exclamationmark.triangle")
 						.font(.system(size: 60))
 						.foregroundColor(.secondary)
 					
-					Text("Select a section")
+					Text("Run a file to see \(selectedSection!.rawValue)")
 						.foregroundColor(.secondary)
 				}
+				.frame(maxWidth: .infinity, alignment: .leading)
+				.padding(.horizontal)
 			}
 		}
 	}

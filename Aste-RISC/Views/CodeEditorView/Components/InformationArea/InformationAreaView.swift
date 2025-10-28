@@ -6,13 +6,17 @@
 //
 
 import SwiftUI
+import FlowPicker
 
 struct InformationAreaView: View {
 	@StateObject private var informationAreaViewModel = InformationAreaViewModel()
 	
 	var body: some View {
 		VStack(spacing: 16) {
-			HeaderNavigationBarView(selectedSection: self.$informationAreaViewModel.selectedSection)
+			SegmentedFlowPicker(selectedSection: self.$informationAreaViewModel.selectedSection) { section in
+				Image(systemName: section.rawValue)
+			}
+			.buttonFocusedColor(.accentColor)
 			
 			VStack(alignment: .leading) {
 				scrollHeader()
@@ -29,16 +33,26 @@ struct InformationAreaView: View {
 	
 	@ViewBuilder
 	private func scrollHeader() -> some View {
+		Divider()
+		
 		switch self.informationAreaViewModel.selectedSection {
 			case .tableRegisters:
-				basePicker()
-					.padding(.horizontal)
-				
-				Divider()
+				SegmentedFlowPicker(selectedSection: self.$informationAreaViewModel.numberBaseUsed) { section in
+					Text(section.rawValue).tag(section.base)
+						.font(.body)
+				}
 				
 			case .stack:
-				Divider()
+				SegmentedFlowPicker(
+					selectedSection: self.$informationAreaViewModel.memoryMapSelected
+					
+				) { section in
+					Text(section.rawValue).tag(section.rawValue)
+						.font(.body)
+				}
 		}
+		
+		Divider()
 	}
 	
 	@ViewBuilder /// Show selected view
@@ -50,17 +64,7 @@ struct InformationAreaView: View {
 						 
 			case .stack:
 				MemoryMapView()
-		}
-	}
-	
-	@ViewBuilder /// Picker contains all number case available's
-	private func basePicker() -> some View {
-		Picker("Number base", selection: self.$informationAreaViewModel.numberBaseUsed) {
-			
-			ForEach(NumberBaseReg.allCases, id: \.id) { base in
-				Text(base.rawValue).tag(base)
-			}
-			
+					.environmentObject(self.informationAreaViewModel)
 		}
 	}
 }

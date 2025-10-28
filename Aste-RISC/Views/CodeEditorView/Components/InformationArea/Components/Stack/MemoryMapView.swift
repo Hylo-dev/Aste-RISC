@@ -9,18 +9,11 @@ import SwiftUI
 
 struct MemoryMapView: View {
 	@EnvironmentObject var cpu: CPU
-	@State private var selectedSection: MemorySection.SectionType?
+	@EnvironmentObject var informationAreaViewModel: InformationAreaViewModel
 	
 	var body: some View {
-		MemoryBarView(
-			sections: memorySections,
-			selectedSection: $selectedSection
-		)
-						
-		if selectedSection != nil { Divider() }
-		
 		DetailView(
-			selectedSection: selectedSection,
+			selectedSection: self.informationAreaViewModel.memoryMapSelected,
 			sections: memorySections
 		)
 	}

@@ -10,7 +10,7 @@ import Foundation
 struct NewProjectItem {
     var nameProject    : String = ""
     var locationProject: String = FileManager.default.homeDirectoryForCurrentUser
-        .appendingPathComponent("RISKitProjects", isDirectory: true).path
+        .appendingPathComponent("AsteRiscProjects", isDirectory: true).path
     
     var versionLanguageSelect: String = ""
 }

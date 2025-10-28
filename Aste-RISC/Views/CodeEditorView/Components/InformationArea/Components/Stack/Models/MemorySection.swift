@@ -16,8 +16,11 @@ struct MemorySection: Identifiable {
 	let color		: Color
 	let type		: SectionType
 	
-	enum SectionType {
-		case text, data, stack, heap, unused
+	enum SectionType: String, CaseIterable, Equatable {
+		case text   = "text"
+		case data   = "data"
+		case stack  = "stack"
+		case heap   = "heap"
 	}
 	
 	var endAddress: UInt32 {

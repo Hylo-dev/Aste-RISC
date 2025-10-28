@@ -5,8 +5,8 @@
 //  Created by Eliomar Alejandro Rodriguez Ferrer on 14/10/25.
 //
 
-#ifndef RISKit_Bridging_Header_h
-#define RISKit_Bridging_Header_h
+#ifndef Aste-RISC_Bridging_Header_h
+#define Aste-RISC_Bridging_Header_h
 
 
 #include "args_handler.h"
@@ -18,4 +18,4 @@
 #include "assembler_with_logs.h"
 
 
-#endif /* RISKit_Bridging_Header_h */
+#endif /* Aste-RISC_Bridging_Header_h */

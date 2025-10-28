@@ -95,11 +95,12 @@ class FileSearchViewModel: ObservableObject {
                 searchBarState != .SHOW_LIST_FILES    &&
                 searchBarState != .CREATE_FILE {
                 
-                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                    searchBarState    = .SHOW_CREATE_BUTTON
-                    fileSelectedIndex = 0
-                    
-                }
+				Task {
+					withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+						searchBarState    = .SHOW_CREATE_BUTTON
+						fileSelectedIndex = 0
+					}
+				}
             }
             
             return .handled
@@ -108,11 +109,13 @@ class FileSearchViewModel: ObservableObject {
             if searchBarState  != .SEARCH_FILE &&
                 searchBarState != .SHOW_LIST_FILES &&
                 searchBarState != .CREATE_FILE {
-                
-                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                    searchBarState    = .SEARCH_FILE
-                    fileSelectedIndex = 0
-                }
+				
+				Task {
+					withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+						searchBarState    = .SEARCH_FILE
+						fileSelectedIndex = 0
+					}
+				}
             }
             
             return .handled
@@ -126,9 +129,11 @@ class FileSearchViewModel: ObservableObject {
                 
             case .SHOW_CREATE_BUTTON:
                 
-                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                    searchBarState = .CREATE_FILE
-                }
+				Task {
+					withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+						searchBarState = .CREATE_FILE
+					}
+				}
             
             default:
                 break
@@ -139,10 +144,12 @@ class FileSearchViewModel: ObservableObject {
         case .escape:
             if searchBarState == .CREATE_FILE {
                 
-                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                    searchBarState = .SHOW_CREATE_BUTTON
-                }
-                
+				
+				Task {
+					withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+						searchBarState = .SHOW_CREATE_BUTTON
+					}
+				}
             }
             
             return .handled

@@ -10,8 +10,9 @@ internal import Combine
 
 @MainActor
 class InformationAreaViewModel: ObservableObject {
-	@Published var selectedSection: InformationNavigation = .tableRegisters
-	@Published var numberBaseUsed: NumberBaseReg = .hex
+	@Published var selectedSection  : InformationNavigation     = .tableRegisters
+	@Published var numberBaseUsed   : NumberBaseReg		        = .hex
+	@Published var memoryMapSelected: MemorySection.SectionType = .stack
 	
 	static let registerName = riscvRegisters.filter { !$0.label.contains("x") && $0.label != "zero" }
 

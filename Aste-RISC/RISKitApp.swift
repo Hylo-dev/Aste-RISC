@@ -12,7 +12,7 @@ struct RISKitApp: App {
     @StateObject private var appState = AppState()
     
     @Environment(\.openWindow) private var openWindow
-	@Environment(\.dismiss) private var dismiss
+	@Environment(\.dismiss)    private var dismiss
     
     var body: some Scene {
         // Home screen
@@ -23,8 +23,7 @@ struct RISKitApp: App {
         
         // Editor screen
         WindowGroup(id: "editor") {
-            BodyEditorView()
-				.environmentObject(self.appState)
+			EditorWindowWrapper().environmentObject(self.appState)
         }
         .windowStyle(.hiddenTitleBar)
         
@@ -46,4 +45,32 @@ struct RISKitApp: App {
             }
         }
     }
+}
+
+struct EditorWindowWrapper: View {
+	@EnvironmentObject var appState: AppState
+	@Environment(\.openWindow) private var openWindow
+	@Environment(\.dismiss) private var dismiss
+	
+	@State private var hasHandledInvalidPath = false
+	
+	var body: some View {
+		let path = appState.navigationState.navigationItem.selectedProjectPath
+		
+		if path.isEmpty || path == "/" {
+			Color.clear
+				.onAppear {
+					guard !hasHandledInvalidPath else { return }
+					hasHandledInvalidPath = true
+					
+					dismiss()
+					Task {
+						try? await Task.sleep(nanoseconds: 100_000_000)
+						openWindow(id: "home")
+					}
+				}
+		} else {
+			BodyEditorView()
+		}
+	}
 }

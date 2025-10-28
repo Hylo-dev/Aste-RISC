@@ -16,8 +16,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "1FD053172E9ED36F00D734FD"
-               BuildableName = "RISKit.app"
-               BlueprintName = "RISKit"
+               BuildableName = "Aste-RISC.app"
+               BlueprintName = "Aste-RISC"
                ReferencedContainer = "container:RISKit.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,8 +45,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1FD053172E9ED36F00D734FD"
-            BuildableName = "RISKit.app"
-            BlueprintName = "RISKit"
+            BuildableName = "Aste-RISC.app"
+            BlueprintName = "Aste-RISC"
             ReferencedContainer = "container:RISKit.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -62,8 +62,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1FD053172E9ED36F00D734FD"
-            BuildableName = "RISKit.app"
-            BlueprintName = "RISKit"
+            BuildableName = "Aste-RISC.app"
+            BlueprintName = "Aste-RISC"
             ReferencedContainer = "container:RISKit.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
