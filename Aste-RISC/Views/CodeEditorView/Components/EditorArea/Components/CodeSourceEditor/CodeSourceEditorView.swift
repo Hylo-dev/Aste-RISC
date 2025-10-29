@@ -16,12 +16,15 @@ struct CodeSourceEditorView: View {
 	@EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
 
 	@Binding var document: CodeEditSourceEditorDocument
-
+	
 	@State private var language: CodeLanguage = .default
 	@State private var theme   : EditorTheme = .dark
 	
 	@State private var editorState = SourceEditorState(
-		cursorPositions: [CursorPosition(line: 1, column: 1)]
+		cursorPositions: [
+			CursorPosition(line: 9, column: 6),
+			CursorPosition(line: 10, column: 6)
+		],
 	)
 	@StateObject private var suggestions     : MockCompletionDelegate       = MockCompletionDelegate()
 	@StateObject private var jumpToDefinition: MockJumpToDefinitionDelegate = MockJumpToDefinitionDelegate()
@@ -47,10 +50,10 @@ struct CodeSourceEditorView: View {
 	@State private var settingsIsPresented: Bool = false
 	
 	private func contentInsets(proxy: GeometryProxy) -> NSEdgeInsets {
-		NSEdgeInsets(top: proxy.safeAreaInsets.top, left: showGutter ? 0 : 1, bottom: 28.0, right: 0)
+		NSEdgeInsets(top: 25, left: showGutter ? 0 : 1, bottom: 28.0, right: 0)
 	}
 	
-	private let highlightRiscV = [
+	static private let highlightRiscV = [
 		RISCVCommentHighlightProvider(),
 		RISCVNumberHighlightProvider(),
 		RISCVTokenHighlightProvider(),
@@ -84,9 +87,10 @@ struct CodeSourceEditorView: View {
 					)
 				),
 				state: $editorState,
-				highlightProviders: highlightRiscV,
+				highlightProviders: Self.highlightRiscV,
 				completionDelegate: suggestions,
 				jumpToDefinitionDelegate: jumpToDefinition
+				
 			)
 			.frame(maxWidth: .infinity, maxHeight: .infinity)
 			.clipShape(RoundedRectangle(cornerRadius: 26))
@@ -102,5 +106,4 @@ struct CodeSourceEditorView: View {
 			}
 		}
 	}
-	
 }

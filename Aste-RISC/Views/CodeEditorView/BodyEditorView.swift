@@ -15,6 +15,8 @@ struct BodyEditorView: View {
     
     // Application state, contains all global view models
     @EnvironmentObject private var appState: AppState
+	
+	@FocusState private var spotlightFocused: Bool
     
     // ViewModel for manage UI body editor and RISC-V CPU Emulator
     @StateObject private var bodyEditorViewModel = BodyEditorViewModel()
@@ -23,7 +25,7 @@ struct BodyEditorView: View {
 	    
     // Options emulator
     @State private var optionsWrapper: OptionsAssemblerWrapper = OptionsAssemblerWrapper()
-	
+		
     var body: some View {
 		NavigationSplitView { treeSection }
 		content: { editorArea }
@@ -83,46 +85,33 @@ struct BodyEditorView: View {
     private var editorArea: some View {
         let projectPath = URL(fileURLWithPath: appState.navigationState.navigationItem.selectedProjectPath)
         let isEmptyPath = self.bodyEditorViewModel.currentFileSelected == nil
+		
+		let viewModel = MultiSectionSpotlightViewModel<SpotlightFileItem>(
+			dataSource: FileSystemDataSource(
+				directory: projectPath,
+				fileExtensions: ["s", "txt"],
+			),
+			sections: [
+				SpotlightSection(
+					id: "test",
+					title: "Create file",
+					icon: "document",
+					view: { EmptyView() },
+					onSelect: { file in print(file) }
+				)
+			],
+			configuration: .init(
+				debounceInterval: 150,
+				maxHeight: 400,
+				showDividers: true,
+				onSelect: { file in
+					self.bodyEditorViewModel.changeOpenFile(file.url)
+					self.bodyEditorViewModel.isSearching(false)
+				},
+			)
+		)
         
         return ZStack {
-            
-            if isEmptyPath || self.bodyEditorViewModel.isSearchingFile {
-                
-				let viewModel = MultiSectionSpotlightViewModel<SpotlightFileItem>(
-					dataSource: FileSystemDataSource(
-						directory: projectPath,
-						fileExtensions: ["s", "txt"],
-					),
-					sections: [
-						SpotlightSection(
-							id: "test",
-							title: "Create file",
-							icon: "document",
-							view: { EmptyView() },
-							onSelect: { file in print(file) }
-						)
-					],
-					configuration: .init(
-						debounceInterval: 150,
-						maxHeight: 400,
-						showDividers: true,
-						onSelect: { file in
-							self.bodyEditorViewModel.changeOpenFile(file.url)
-							self.bodyEditorViewModel.isSearching(false)
-						},
-					)
-				)
-				
-				VStack(alignment: .center) {
-					MultiSectionSpotlightView(viewModel: viewModel, width: 600)
-						.zIndex(1)
-						.padding(.top, 170)
-					
-					Spacer()
-				}
-                
-            }
-            
             if  !isEmptyPath,
 				let editor = SettingsManager().load(file: "global_settings.json",GlobalSettings.self)?.editorUse {
 								
@@ -130,9 +119,25 @@ struct BodyEditorView: View {
 					projectRoot: projectPath,
 					editorUse  : editor
 				)
-                    .environmentObject(self.bodyEditorViewModel)
-					.environmentObject(self.terminal)
+				.environmentObject(self.bodyEditorViewModel)
+				.environmentObject(self.terminal)
+				.zIndex(0)
+				
             }
+			
+			if isEmptyPath || self.bodyEditorViewModel.isSearchingFile {
+				VStack(alignment: .center) {
+					MultiSectionSpotlightView(viewModel: viewModel, width: 600)
+						.focused($spotlightFocused)
+						.onAppear {
+							spotlightFocused = true
+						}
+						.zIndex(2)
+						.padding(.top, 170)
+					
+					Spacer()
+				}
+			}
         }
     }
 	
