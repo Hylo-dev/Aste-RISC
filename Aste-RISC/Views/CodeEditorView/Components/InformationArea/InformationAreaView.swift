@@ -17,7 +17,6 @@ struct InformationAreaView: View {
 				Image(systemName: section.rawValue)
 			}
 			.buttonFocusedColor(.accentColor)
-			.backgroundColor(.primary.opacity(0.18))
 			.clipShape(.rect(cornerRadius: 10))
 			.glassEffect()
 			.padding(.top, 5)
@@ -45,6 +44,7 @@ struct InformationAreaView: View {
 					Text(section.rawValue).tag(section.base)
 						.font(.body)
 				}
+				.glassEffect()
 				
 			case .stack:
 				SegmentedFlowPicker(
@@ -54,6 +54,7 @@ struct InformationAreaView: View {
 					Text(section.rawValue).tag(section.rawValue)
 						.font(.body)
 				}
+				.glassEffect()
 		}
 		
 		Divider()

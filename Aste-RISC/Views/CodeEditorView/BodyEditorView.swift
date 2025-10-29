@@ -88,9 +88,20 @@ struct BodyEditorView: View {
             
             if isEmptyPath || self.bodyEditorViewModel.isSearchingFile {
                 
-				let viewModel = SpotlightViewModel.initFileSearch(
-					directory: projectPath,
-					fileExtensions: ["s", "txt"],
+				let viewModel = MultiSectionSpotlightViewModel<SpotlightFileItem>(
+					dataSource: FileSystemDataSource(
+						directory: projectPath,
+						fileExtensions: ["s", "txt"],
+					),
+					sections: [
+						SpotlightSection(
+							id: "test",
+							title: "Create file",
+							icon: "document",
+							view: { EmptyView() },
+							onSelect: { file in print(file) }
+						)
+					],
 					configuration: .init(
 						debounceInterval: 150,
 						maxHeight: 400,
@@ -103,7 +114,7 @@ struct BodyEditorView: View {
 				)
 				
 				VStack(alignment: .center) {
-					SpotlightView(viewModel: viewModel, width: 600)
+					MultiSectionSpotlightView(viewModel: viewModel, width: 600)
 						.zIndex(1)
 						.padding(.top, 170)
 					
