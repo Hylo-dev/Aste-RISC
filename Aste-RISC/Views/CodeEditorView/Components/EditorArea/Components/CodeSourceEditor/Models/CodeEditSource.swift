@@ -45,8 +45,10 @@ struct CodeEditSourceEditorDocument: FileDocument, @unchecked Sendable {
 		)
 		if let nsString {
 			self.text = NSTextStorage(string: nsString as String)
+			
 		} else {
 			fatalError("Failed to read file")
+			
 		}
 	}
 
@@ -54,6 +56,7 @@ struct CodeEditSourceEditorDocument: FileDocument, @unchecked Sendable {
 		guard let data = (text.string as NSString?)?.data(using: NSUTF8StringEncoding) else {
 			throw DocumentError.failedToEncode
 		}
+		
 		return .init(regularFileWithContents: data)
 	}
 }

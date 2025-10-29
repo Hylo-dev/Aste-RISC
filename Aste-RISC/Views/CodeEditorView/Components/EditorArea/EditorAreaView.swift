@@ -33,7 +33,7 @@ struct EditorAreaView: View {
 //							maxHeight: topHeight(totalHeight: geo.size.height),
 //							alignment: .topLeading
 //						)
-						CodeSourceEditorView(document: $text, fileURL: self.bodyEditorViewModel.currentFileSelected)
+						CodeSourceEditorView(document: $text)
 							.frame(
 								maxWidth : .infinity,
 								maxHeight: topHeight(totalHeight: geo.size.height),
@@ -48,7 +48,7 @@ struct EditorAreaView: View {
 //								projectRoot: projectRoot,
 //								pathFile   : self.bodyEditorViewModel.currentFileSelected!
 //							)
-							CodeSourceEditorView(document: $text, fileURL: self.bodyEditorViewModel.currentFileSelected)
+							CodeSourceEditorView(document: $text)
 								.frame(
 									maxWidth : .infinity,
 									maxHeight: topHeight(totalHeight: geo.size.height),

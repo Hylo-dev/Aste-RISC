@@ -5,59 +5,61 @@
 //  Created by Eliomar Alejandro Rodriguez Ferrer on 25/10/25.
 //
 
-//
-//  ContentView.swift
-//  CodeEditSourceEditorExample
-//
-//  Created by Khan Winter on 2/24/24.
-//
-
-import SwiftUI
-import CodeEditSourceEditor
-import CodeEditLanguages
+import Foundation
 import CodeEditTextView
+@preconcurrency import CodeEditSourceEditor
+import CodeEditLanguages
+import SwiftUI
 
 struct CodeSourceEditorView: View {
-	@Environment(\.colorScheme)
-	var colorScheme
+	@Environment(\.colorScheme) var colorScheme
+	@EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
 
 	@Binding var document: CodeEditSourceEditorDocument
-	let fileURL: URL?
 
-	@State private var language: CodeLanguage = .c
-	@State private var theme: EditorTheme = .dark
+	@State private var language: CodeLanguage = .default
+	@State private var theme   : EditorTheme = .dark
+	
 	@State private var editorState = SourceEditorState(
 		cursorPositions: [CursorPosition(line: 1, column: 1)]
 	)
-	@StateObject private var suggestions: MockCompletionDelegate = MockCompletionDelegate()
+	@StateObject private var suggestions     : MockCompletionDelegate       = MockCompletionDelegate()
 	@StateObject private var jumpToDefinition: MockJumpToDefinitionDelegate = MockJumpToDefinitionDelegate()
 
 	@State private var font: NSFont = NSFont.monospacedSystemFont(ofSize: 12, weight: .medium)
-	@AppStorage("wrapLines") private var wrapLines: Bool = true
+	
+	@AppStorage("wrapLines")    private var wrapLines      : Bool = true
 	@AppStorage("systemCursor") private var useSystemCursor: Bool = false
 
 	@State private var indentOption: IndentOption = .spaces(count: 4)
+	
 	@AppStorage("reformatAtColumn") private var reformatAtColumn: Int = 80
 
 	@AppStorage("showGutter") private var showGutter: Bool = true
 	@AppStorage("showMinimap") private var showMinimap: Bool = true
 	@AppStorage("showReformattingGuide") private var showReformattingGuide: Bool = false
 	@AppStorage("showFoldingRibbon") private var showFoldingRibbon: Bool = true
+	
 	@State private var invisibleCharactersConfig: InvisibleCharactersConfiguration = .empty
 	@State private var warningCharacters: Set<UInt16> = []
 
 	@State private var isInLongParse = false
 	@State private var settingsIsPresented: Bool = false
-
-	@State private var treeSitterClient = TreeSitterClient()
-
+	
 	private func contentInsets(proxy: GeometryProxy) -> NSEdgeInsets {
 		NSEdgeInsets(top: proxy.safeAreaInsets.top, left: showGutter ? 0 : 1, bottom: 28.0, right: 0)
 	}
+	
+	private let highlightRiscV = [
+		RISCVCommentHighlightProvider(),
+		RISCVNumberHighlightProvider(),
+		RISCVTokenHighlightProvider(),
+		RISCVLabelHighlightProvider(),
+		RISCVKeywordHighlightProvider()
+	]
 
-	init(document: Binding<CodeEditSourceEditorDocument>, fileURL: URL?) {
+	init(document: Binding<CodeEditSourceEditorDocument>) {
 		self._document = document
-		self.fileURL = fileURL
 	}
 
 	var body: some View {
@@ -68,6 +70,7 @@ struct CodeSourceEditorView: View {
 				configuration: SourceEditorConfiguration(
 					appearance: .init(theme: theme, font: font, wrapLines: wrapLines),
 					behavior: .init(
+						isEditable: self.bodyEditorViewModel.editorState != .running,
 						indentOption: indentOption,
 						reformatAtColumn: reformatAtColumn
 					),
@@ -81,6 +84,7 @@ struct CodeSourceEditorView: View {
 					)
 				),
 				state: $editorState,
+				highlightProviders: highlightRiscV,
 				completionDelegate: suggestions,
 				jumpToDefinitionDelegate: jumpToDefinition
 			)
