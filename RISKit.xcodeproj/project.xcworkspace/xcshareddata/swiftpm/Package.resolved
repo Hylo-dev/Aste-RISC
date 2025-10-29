@@ -1,5 +1,5 @@
 {
-  "originHash" : "ba1f0321dd480c0dbf491e916f2c8c6f7f529ee54607391e3de070425cf763fc",
+  "originHash" : "74ea86f23c60ac7499efdb61b967e254e2634acd105f7e3de75e34ed2ca1fab7",
   "pins" : [
     {
       "identity" : "codeeditlanguages",
@@ -44,6 +44,15 @@
       "state" : {
         "revision" : "833177201d6421e6322296f39fce6ff6ae52618a",
         "version" : "0.2.0"
+      }
+    },
+    {
+      "identity" : "filespotlight",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Hylo-dev/FileSpotlight.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "fce43e645cbf99828a12a83679a445d6f432b090"
       }
     },
     {

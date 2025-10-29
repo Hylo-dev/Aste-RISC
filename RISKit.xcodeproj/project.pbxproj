@@ -10,6 +10,7 @@
 		1F041C5B2E9F054F00ED403A /* STTextView in Frameworks */ = {isa = PBXBuildFile; productRef = 1F041C5A2E9F054F00ED403A /* STTextView */; };
 		1F041C5E2E9F05F500ED403A /* Highlightr in Frameworks */ = {isa = PBXBuildFile; productRef = 1F041C5D2E9F05F500ED403A /* Highlightr */; };
 		1F041C732EA2A74500ED403A /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 1F041C722EA2A74500ED403A /* SwiftTerm */; };
+		1FDCB3BE2EB1745A002866F1 /* SpotlightView in Frameworks */ = {isa = PBXBuildFile; productRef = 1FDCB3BD2EB1745A002866F1 /* SpotlightView */; };
 		1FE758302EACBC79007E1897 /* CodeEditSourceEditor in Frameworks */ = {isa = PBXBuildFile; productRef = 1FE7582F2EACBC79007E1897 /* CodeEditSourceEditor */; };
 		EA29A30D2EB169AB007EB92F /* SegmentedFlowPicker in Frameworks */ = {isa = PBXBuildFile; productRef = EA29A30C2EB169AB007EB92F /* SegmentedFlowPicker */; };
 /* End PBXBuildFile section */
@@ -31,6 +32,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1FDCB3BE2EB1745A002866F1 /* SpotlightView in Frameworks */,
 				1FE758302EACBC79007E1897 /* CodeEditSourceEditor in Frameworks */,
 				1F041C5E2E9F05F500ED403A /* Highlightr in Frameworks */,
 				EA29A30D2EB169AB007EB92F /* SegmentedFlowPicker in Frameworks */,
@@ -91,6 +93,7 @@
 				1F041C722EA2A74500ED403A /* SwiftTerm */,
 				1FE7582F2EACBC79007E1897 /* CodeEditSourceEditor */,
 				EA29A30C2EB169AB007EB92F /* SegmentedFlowPicker */,
+				1FDCB3BD2EB1745A002866F1 /* SpotlightView */,
 			);
 			productName = RISKit;
 			productReference = 1FD053182E9ED36F00D734FD /* Aste-RISC.app */;
@@ -127,6 +130,7 @@
 				1F041C712EA2A74500ED403A /* XCRemoteSwiftPackageReference "SwiftTerm" */,
 				1FE7582E2EACBC79007E1897 /* XCRemoteSwiftPackageReference "CodeEditSourceEditor" */,
 				EA29A30B2EB169AB007EB92F /* XCRemoteSwiftPackageReference "SwiftFlowPicker" */,
+				1FDCB3BC2EB1745A002866F1 /* XCRemoteSwiftPackageReference "FileSpotlight" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 1FD053192E9ED36F00D734FD /* Products */;
@@ -288,7 +292,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = A6A5HQL6K4;
+				DEVELOPMENT_TEAM = 8KZQJ4JUGS;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -324,7 +328,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = A6A5HQL6K4;
+				DEVELOPMENT_TEAM = 8KZQJ4JUGS;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -398,6 +402,14 @@
 				minimumVersion = 1.5.0;
 			};
 		};
+		1FDCB3BC2EB1745A002866F1 /* XCRemoteSwiftPackageReference "FileSpotlight" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Hylo-dev/FileSpotlight.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		1FE7582E2EACBC79007E1897 /* XCRemoteSwiftPackageReference "CodeEditSourceEditor" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/CodeEditApp/CodeEditSourceEditor.git";
@@ -431,6 +443,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 1F041C712EA2A74500ED403A /* XCRemoteSwiftPackageReference "SwiftTerm" */;
 			productName = SwiftTerm;
+		};
+		1FDCB3BD2EB1745A002866F1 /* SpotlightView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1FDCB3BC2EB1745A002866F1 /* XCRemoteSwiftPackageReference "FileSpotlight" */;
+			productName = SpotlightView;
 		};
 		1FE7582F2EACBC79007E1897 /* CodeEditSourceEditor */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AppKit
+import SpotlightView
 
 struct BodyEditorView: View {
     
@@ -22,7 +23,7 @@ struct BodyEditorView: View {
 	    
     // Options emulator
     @State private var optionsWrapper: OptionsAssemblerWrapper = OptionsAssemblerWrapper()
-
+	
     var body: some View {
 		NavigationSplitView { treeSection }
 		content: { editorArea }
@@ -87,13 +88,27 @@ struct BodyEditorView: View {
             
             if isEmptyPath || self.bodyEditorViewModel.isSearchingFile {
                 
-                FileSearchView(directory: projectPath) { currentFile in
-                    self.bodyEditorViewModel.changeOpenFile(currentFile.url)
-                    self.bodyEditorViewModel.isSearching(false)
-                    
-                }
-                .transition(.opacity)
-                .zIndex(1)
+				let viewModel = SpotlightViewModel.initFileSearch(
+					directory: projectPath,
+					fileExtensions: ["s", "txt"],
+					configuration: .init(
+						debounceInterval: 150,
+						maxHeight: 400,
+						showDividers: true,
+						onSelect: { file in
+							self.bodyEditorViewModel.changeOpenFile(file.url)
+							self.bodyEditorViewModel.isSearching(false)
+						},
+					)
+				)
+				
+				VStack(alignment: .center) {
+					SpotlightView(viewModel: viewModel, width: 600)
+						.zIndex(1)
+						.padding(.top, 170)
+					
+					Spacer()
+				}
                 
             }
             
