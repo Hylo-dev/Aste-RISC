@@ -10,7 +10,7 @@ import SwiftUI
 // Vista dettagliata per ogni sezione
 struct DetailView: View {
 	let selectedSection: MemorySection.SectionType?
-	let sections: [MemorySection]
+	let sections	   : [MemorySection]
 	
 	@EnvironmentObject var cpu: CPU
 	
@@ -20,27 +20,30 @@ struct DetailView: View {
 			   let section = sections.first(where: { $0.type == sectionType }) {
 				
 				switch sectionType {
-				case .stack:
-					StackDetailView(
-						section		: section,
-						stackPointer: self.cpu.registers[2],
-						framePointer: self.cpu.registers[8],
-						stackFrames : self.cpu.stackFrames,
-						stackStores : self.cpu.stackStores
-					)
-						
-				case .text:
-					TextSectionView(
-						section		  : section,
-						programCounter: self.cpu.programCounter
-					)
-						
-				case .data:
-					DataSectionView(section: section)
-						
-				case .heap:
-					HeapSectionView(section: section)
-						
+					case .stack:
+						StackDetailView(
+							section		: section,
+							stackPointer: self.cpu.registers[2],
+							framePointer: self.cpu.registers[8],
+							stackFrames : self.cpu.stackFrames,
+							stackStores : self.cpu.stackStores
+						)
+							
+					case .text:
+						TextSectionView(
+							section		  : section,
+							programCounter: self.cpu.programCounter
+						)
+							
+					case .data:
+						DataSectionView(
+							section: section,
+							ram	   : self.cpu.ram
+						)
+							
+					case .heap:
+						HeapSectionView(section: section)
+							
 				}
 				
 			} else {

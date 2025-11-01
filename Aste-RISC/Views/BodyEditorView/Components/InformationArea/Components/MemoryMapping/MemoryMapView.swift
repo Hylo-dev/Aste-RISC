@@ -30,7 +30,7 @@ struct MemoryMapView: View {
 		// Sezione .text
 		if cpu.textSize > 0 {
 			sections.append(MemorySection(
-				name: ".text",
+				name: "text",
 				startAddress: cpu.textBase,
 				size: cpu.textSize,
 				color: .blue,
@@ -39,15 +39,13 @@ struct MemoryMapView: View {
 		}
 		
 		// Sezione .data
-		if cpu.dataSize > 0 {
-			sections.append(MemorySection(
-				name: ".data",
-				startAddress: cpu.dataBase,
-				size: cpu.dataSize,
-				color: .green,
-				type: .data
-			))
-		}
+		sections.append(MemorySection(
+			name: "data",
+			startAddress: cpu.dataBase,
+			size: cpu.dataSize,
+			color: .green,
+			type: .data
+		))
 		
 		// Heap (area tra .data e stack)
 		let heapStart = cpu.dataBase + cpu.dataSize
