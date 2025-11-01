@@ -18,18 +18,16 @@ struct ProjectListView: View {
         ScrollView {
             
             LazyVStack(spacing: 10) {
-                ForEach(projects, id: \.id) { project in
+                ForEach(projects) { project in
                     ProjectRowView(
                         project : project,
                         onSelect: { onSelect(project) },
                         onDelete: { onDelete(project) }
                         
                     )
-                    .id(project.id)
-                    
+                    .id(project)
                 }
             }
-            
         }
         .scrollContentBackground(.hidden)
     }

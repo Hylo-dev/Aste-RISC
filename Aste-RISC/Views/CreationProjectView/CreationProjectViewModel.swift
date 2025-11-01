@@ -10,7 +10,7 @@ internal import Combine
 
 @MainActor
 /// View model for manage read data on terminal
-final class CreationProjectViewModel: ObservableObject {
+class CreationProjectViewModel: ObservableObject {
     /// Info new project
     @Published var defaultProject = NewProjectItem()
 

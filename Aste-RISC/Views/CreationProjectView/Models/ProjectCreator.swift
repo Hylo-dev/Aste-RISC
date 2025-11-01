@@ -43,12 +43,15 @@ actor ProjectCreator {
         guard let url = Bundle.main.url(forResource: resourceName, withExtension: ext) else {
             throw ProjectCreationError.templateNotFound("\(resourceName).\(ext)")
         }
+		
         do {
             let data = try Data(contentsOf: url)
             guard let text = String(data: data, encoding: .utf8) else {
                 throw ProjectCreationError.bundleReadFailed(url)
             }
+			
             return text
+			
         } catch {
             throw ProjectCreationError.bundleReadFailed(url)
         }
@@ -57,6 +60,7 @@ actor ProjectCreator {
     private func writeText(_ text: String, to url: URL) throws {
         do {
             try text.data(using: .utf8)?.write(to: url, options: [.atomic])
+			
         } catch {
             throw ProjectCreationError.writeFailed(url)
         }

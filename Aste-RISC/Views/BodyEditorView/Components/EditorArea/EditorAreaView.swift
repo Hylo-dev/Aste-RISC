@@ -23,16 +23,6 @@ struct EditorAreaView: View {
 				
 				switch editorUse {
 					case .native:
-//						CodeEditorView(
-//							text       : $text,
-//							projectRoot: projectRoot,
-//							pathFile   : self.bodyEditorViewModel.currentFileSelected!
-//						)
-//						.frame(
-//							maxWidth : .infinity,
-//							maxHeight: topHeight(totalHeight: geo.size.height),
-//							alignment: .topLeading
-//						)
 						CodeSourceEditorView(document: $text)
 							.frame(
 								maxWidth : .infinity,
@@ -43,11 +33,6 @@ struct EditorAreaView: View {
 						
 					case .helix, .vim, .nvim:
 						if self.bodyEditorViewModel.editorState == .running {
-//							CodeEditorView(
-//								text       : $text,
-//								projectRoot: projectRoot,
-//								pathFile   : self.bodyEditorViewModel.currentFileSelected!
-//							)
 							CodeSourceEditorView(document: $text)
 								.frame(
 									maxWidth : .infinity,
@@ -57,7 +42,6 @@ struct EditorAreaView: View {
 							
 						} else {
 							EditorTerminalView(openFilePath: self.bodyEditorViewModel.currentFileSelected!.path)
-							
 						}
 				}
 				
@@ -91,6 +75,7 @@ struct EditorAreaView: View {
     private func topHeight(totalHeight: CGFloat) -> CGFloat {
         if self.bodyEditorViewModel.isOutputVisible {
             let top = totalHeight - terminalHeight - 18
+			
             return max(top, 40)
             
         } else {

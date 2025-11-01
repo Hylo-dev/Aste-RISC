@@ -40,7 +40,7 @@ private let ideFeatures: [FeatureItem] = [
 struct WelcomeView: View {
     
     /// Contains the prinripal state's app
-    @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var navigationViewModel: NavigationViewModel
     
     /// ViewModel manage WelcomeView logic
     @StateObject private var welcomeViewModel = WelcomeViewModel()
@@ -182,7 +182,7 @@ struct WelcomeView: View {
                         defaultTheme
                     ) // GruvBox theme is default
                     
-                    appState.navigationState.setPrincipalNavigation(principalNavigation: .home)
+					self.navigationViewModel.setPrincipalNavigation(principalNavigation: .home)
                     
                 }
                 .buttonStyle(.glassProminent)

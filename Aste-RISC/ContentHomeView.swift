@@ -8,38 +8,37 @@
 import SwiftUI
 
 struct ContentHomeView: View {
-    @EnvironmentObject private var appState: AppState
-    
+	@EnvironmentObject private var navigationViewModel: NavigationViewModel
+	
     @Environment(\.openWindow) private var openWindow /// Enviroment call for open new window
     @Environment(\.dismiss)    private var dismiss    /// Enviroment call for close the current window
-    
+	
     /// Binding state, this show the creation project
     private var isCreateProjectPresented: Binding<Bool> {
         Binding(
-            get: { appState.navigationState.navigationItem.secondaryNavigation == .CREATE_PROJECT },
-            set: { newValue in if !newValue { appState.navigationState.cleanSecondaryNavigation() } }
+			get: { self.navigationViewModel.secondaryNavigation == .createProject },
+            set: { newValue in if !newValue { self.navigationViewModel.cleanSecondaryNavigation() } }
         )
     }
     
     /// Binding state, this show alert to change view
     private var isOpenProjectAlertPresented: Binding<Bool> {
         Binding(
-            get: { appState.navigationState.navigationItem.secondaryNavigation == .CONTROL_OPEN_PROJECT },
-            set: { newValue in if !newValue { appState.navigationState.cleanSecondaryNavigation() } }
+            get: { self.navigationViewModel.secondaryNavigation == .openProject },
+            set: { newValue in if !newValue { self.navigationViewModel.cleanSecondaryNavigation() } }
         )
     }
     
     private let settingsManager: SettingsManager = SettingsManager()
     
     var body: some View {
-        let navigationState = appState.navigationState
         
-        switch navigationState.navigationItem.principalNavigation {
+        switch self.navigationViewModel.principalNavigation {
         case .home:
             HomeView()
                 .onAppear {
-                    if !appState.isSettingsFolderExist() {
-                        navigationState.setPrincipalNavigation(principalNavigation: .welcome)
+                    if !self.navigationViewModel.isSettingsFolderExist() {
+						self.navigationViewModel.setPrincipalNavigation(principalNavigation: .welcome)
                     }
                 }
                 .sheet(isPresented: isCreateProjectPresented) {
@@ -48,7 +47,7 @@ struct ContentHomeView: View {
                     
                 }
                 .alert(
-                    "Open Project '\(navigationState.navigationItem.selectedProjectName)'",
+                    "Open Project '\(self.navigationViewModel.selectedProjectName)'",
                     isPresented: isOpenProjectAlertPresented,
                     actions: alertContent
                 )
@@ -60,32 +59,25 @@ struct ContentHomeView: View {
     
     @ViewBuilder
     private func alertContent() -> some View {
-        let navigationState = appState.navigationState
-        
         Button("No", role: .cancel) {
-            navigationState.cleanProjectInformation()
-            navigationState.cleanSecondaryNavigation()
+			self.navigationViewModel.cleanProjectInformation()
+			self.navigationViewModel.cleanSecondaryNavigation()
         }
         .buttonStyle(.glass)
         
         Button("Yes") {
-            let path = navigationState.navigationItem.selectedProjectPath
-            let name = navigationState.navigationItem.selectedProjectName
+            let path = self.navigationViewModel.selectedProjectPath
+            let name = self.navigationViewModel.selectedProjectName
 
-            withTransaction(Transaction(animation: nil)) {
-                appState.setEditorProjectPath(path)
-                
-                var oldSettings = settingsManager.load(file: "global_settings.json",GlobalSettings.self)
+            withTransaction(Transaction(animation: nil)) {                
+                var oldSettings = settingsManager.load(file: "global_settings.json", GlobalSettings.self)
                 
                 if oldSettings != nil {
                     oldSettings?.addRecentProject(name: name, path: path)
+					oldSettings?.lastProjectOpened = path
                     
-                    settingsManager.save(oldSettings!)
-                    
-                    //appState.recentProjectsStore.addProject(name: name, path: path)
-                    
-                    navigationState.saveCurrentProjectState(path: path)
-                }                
+                    settingsManager.save(oldSettings!)                                        
+                }
             }
             
             Task { @MainActor in

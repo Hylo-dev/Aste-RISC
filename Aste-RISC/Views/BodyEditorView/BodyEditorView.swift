@@ -13,9 +13,6 @@ struct BodyEditorView: View {
     
     @Environment(\.openWindow) private var openWindow
     
-    // Application state, contains all global view models
-    @EnvironmentObject private var appState: AppState
-	
 	@FocusState private var spotlightFocused: Bool
     
     // ViewModel for manage UI body editor and RISC-V CPU Emulator
@@ -25,6 +22,9 @@ struct BodyEditorView: View {
 	    
     // Options emulator
     @State private var optionsWrapper: OptionsAssemblerWrapper = OptionsAssemblerWrapper()
+	
+	let selectedProjectPath: String
+	let selectedProjectName: String
 		
     var body: some View {
 		NavigationSplitView { treeSection }
@@ -33,35 +33,35 @@ struct BodyEditorView: View {
 			informationArea
 				.frame(minWidth: 350, idealWidth: 400, maxWidth: .infinity)
 		}
-			.onAppear { self.bodyEditorViewModel.changeCurrentInstruction(index: cpu.programCounter) }
-			.onChange(of: cpu.programCounter, handleProgramCounterChange)
-			.onChange(of: bodyEditorViewModel.currentFileSelected, handleFileSelectionChange)
-			.onDisappear(perform: viewDisappearHandle)
-			.frame(maxWidth: .infinity, maxHeight: .infinity)
-			.toolbar {
+		.onAppear { self.bodyEditorViewModel.changeCurrentInstruction(index: cpu.programCounter) }
+		.onChange(of: cpu.programCounter, handleProgramCounterChange)
+		.onChange(of: bodyEditorViewModel.currentFileSelected, handleFileSelectionChange)
+		.frame(maxWidth: .infinity, maxHeight: .infinity)
+		.toolbar {
 				
-				// Section toolbar, this contains running execution button
-				ToolbarItem(placement: .navigation) {
-					ToolbarExecuteView(optionsWrapper: optionsWrapper)
-						.environmentObject(self.bodyEditorViewModel)
-						.environmentObject(self.cpu)
-						.environmentObject(self.terminal)
-				}
-				.sharedBackgroundVisibility(.hidden)
-
-				// Center Section for view current file working and search file
-				ToolbarItem(placement: .principal) {
-					ToolbarStatusView().environmentObject(self.bodyEditorViewModel)
-				}
-				.sharedBackgroundVisibility(.hidden)
-				
-				// Search button
-				ToolbarItem(placement: .principal) {
-					ToolbarSearchView().environmentObject(self.bodyEditorViewModel)
-					
-				}
-				.sharedBackgroundVisibility(.hidden)
+			// Section toolbar, this contains running execution button
+			ToolbarItem(placement: .navigation) {
+				ToolbarExecuteView(optionsWrapper: optionsWrapper)
+					.environmentObject(self.bodyEditorViewModel)
+					.environmentObject(self.cpu)
+					.environmentObject(self.terminal)
 			}
+			.sharedBackgroundVisibility(.hidden)
+
+			// Center Section for view current file working and search file
+			ToolbarItem(placement: .principal) {
+				ToolbarStatusView(selectProjectName: self.selectedProjectName)
+					.environmentObject(self.bodyEditorViewModel)
+			}
+			.sharedBackgroundVisibility(.hidden)
+				
+			// Search button
+			ToolbarItem(placement: .principal) {
+				ToolbarSearchView().environmentObject(self.bodyEditorViewModel)
+					
+			}
+			.sharedBackgroundVisibility(.hidden)
+		}
     }
     
     // MARK: Variable show tree directory project
@@ -69,7 +69,7 @@ struct BodyEditorView: View {
         return VStack {
             DirectoryTreeView(
                 rootURL : URL(
-                    fileURLWithPath: appState.navigationState.navigationItem.selectedProjectPath
+                    fileURLWithPath: selectedProjectPath
                 )
                 
             ) { url in self.bodyEditorViewModel.changeOpenFile(url) }
@@ -83,7 +83,7 @@ struct BodyEditorView: View {
     
     // MARK: Show content editor
     private var editorArea: some View {
-        let projectPath = URL(fileURLWithPath: appState.navigationState.navigationItem.selectedProjectPath)
+        let projectPath = URL(fileURLWithPath: selectedProjectPath)
         let isEmptyPath = self.bodyEditorViewModel.currentFileSelected == nil
 		
 		let viewModel = MultiSectionSpotlightViewModel<SpotlightFileItem>(
@@ -161,19 +161,12 @@ struct BodyEditorView: View {
 		let pathCString = strdup(newValue.path)
 		self.optionsWrapper.opts = start_options(pathCString)
     }
-    
-    private func viewDisappearHandle() {
-        withTransaction(Transaction(animation: nil)) {
-            appState.setEditorProjectPath(nil)
-            appState.navigationState.saveCurrentProjectState(path: "")
-        }
-        
-        Task { openWindow(id: "home") }
-    }
-
 }
 
 #Preview {
-    BodyEditorView()
+	BodyEditorView(
+		selectedProjectPath: "",
+		selectedProjectName: ""
+	)
 }
 

@@ -3,8 +3,8 @@ import SwiftUI
 /// The view contain the principal menu IDE, for create and open projects
 struct HomeView: View {
     
-    /// Contains the prinripal state's app
-    @EnvironmentObject private var appState: AppState
+    /// Use for manage principal navigation
+	@EnvironmentObject private var navigationViewModel: NavigationViewModel
     
     /// Contain the glow color in cache
     @State static private var cachedColor: NSColor? = nil
@@ -49,7 +49,7 @@ struct HomeView: View {
                 Spacer()
                 
                 // Version sim
-                Text("RISKit • \(Self.appVersionString)")
+                Text("Aste-RISC • \(Self.appVersionString)")
                     .font(.footnote)
                     .foregroundStyle(.tertiary)
                     .padding(.leading, 12)
@@ -77,9 +77,9 @@ struct HomeView: View {
                         description: "Create a new Assembly project",
                         icon: "plus.app",
                         function: {
-                            self.appState.navigationState.setSecondaryNavigation(
-                                currentSecondaryNavigation: .CREATE_PROJECT
-                            )
+							self.navigationViewModel.setSecondaryNavigation(
+								secondaryNavigation: .createProject
+							)
                         }
                     ),
                     
@@ -87,7 +87,7 @@ struct HomeView: View {
                         name: "Open A Existing Project",
                         description: "Browse your existing projects",
                         icon: "folder",
-                        function: { showFinderPanel(navigationState: self.appState.navigationState) }
+                        function: { showFinderPanel(navigationViewModel: self.navigationViewModel) }
                     )
                 ]
             }

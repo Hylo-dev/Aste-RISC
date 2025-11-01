@@ -9,21 +9,32 @@ import SwiftUI
 
 @main
 struct RISKitApp: App {
-    @StateObject private var appState = AppState()
-    
     @Environment(\.openWindow) private var openWindow
 	@Environment(\.dismiss)    private var dismiss
+	
+	@StateObject private var navigationViewModel = NavigationViewModel()
     
     var body: some Scene {
         // Home screen
         WindowGroup(id: "home") {
-            ContentHomeView().environmentObject(self.appState)
+            ContentHomeView()
+				.environmentObject(self.navigationViewModel)
         }
         .windowStyle(.hiddenTitleBar)
         
         // Editor screen
         WindowGroup(id: "editor") {
-			EditorWindowWrapper().environmentObject(self.appState)
+			EditorWindowWrapper(
+				selectedProjectPath: self.navigationViewModel.selectedProjectPath,
+				selectedProjectName: self.navigationViewModel.selectedProjectName
+			)
+			.onDisappear {
+				withTransaction(Transaction(animation: nil)) {
+					self.navigationViewModel.saveCurrentProjectState(path: "")
+				}
+					
+				Task { openWindow(id: "home") }
+			}
         }
         .windowStyle(.hiddenTitleBar)
         
@@ -47,17 +58,17 @@ struct RISKitApp: App {
     }
 }
 
-struct EditorWindowWrapper: View {
-	@EnvironmentObject var appState: AppState
+private struct EditorWindowWrapper: View {
 	@Environment(\.openWindow) private var openWindow
-	@Environment(\.dismiss) private var dismiss
+	@Environment(\.dismiss)    private var dismiss
 	
 	@State private var hasHandledInvalidPath = false
+	let selectedProjectPath: String
+	let selectedProjectName: String
 	
 	var body: some View {
-		let path = appState.navigationState.navigationItem.selectedProjectPath
 		
-		if path.isEmpty || path == "/" {
+		if selectedProjectPath.isEmpty || selectedProjectPath == "/" {
 			Color.clear
 				.onAppear {
 					guard !hasHandledInvalidPath else { return }
@@ -69,8 +80,12 @@ struct EditorWindowWrapper: View {
 						openWindow(id: "home")
 					}
 				}
+			
 		} else {
-			BodyEditorView()
+			BodyEditorView(
+				selectedProjectPath: self.selectedProjectPath,
+				selectedProjectName: self.selectedProjectName
+			)
 		}
 	}
 }

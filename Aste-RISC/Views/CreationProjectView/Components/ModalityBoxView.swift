@@ -43,12 +43,14 @@ struct ModalityBoxView: View {
                 }
 
                 Spacer()
+				
             }
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
             .background(background)
             .overlay(overlay)
+			
         }
         .buttonStyle(.plain)
         .onHover { hovering in withAnimation(.easeInOut(duration: 0.12)) { isHovering = hovering } }

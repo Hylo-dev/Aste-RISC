@@ -9,7 +9,7 @@ import Foundation
 
 /// Rappresenting each modality IDE
 struct ModalityItem: Identifiable {
-    let id         : UUID   = UUID()
+    let id         : UUID = UUID()
     let name       : String
     let description: String
     let icon       : String

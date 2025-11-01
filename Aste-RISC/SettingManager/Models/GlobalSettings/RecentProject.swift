@@ -7,8 +7,8 @@
 
 import Foundation
 
-struct RecentProject: Identifiable, Codable, Equatable {
-    var id: String { path }
+struct RecentProject: Identifiable, Codable, Equatable, Hashable {
+    var id	: String { path }
     let name: String
     let path: String
 

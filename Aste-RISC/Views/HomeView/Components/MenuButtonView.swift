@@ -89,7 +89,6 @@ struct MenuButtonView: View {
             
         } else {
             return .clear
-            
         }
     }
     
@@ -100,7 +99,6 @@ struct MenuButtonView: View {
             
         } else {
             return .clear
-            
         }
     }
 }

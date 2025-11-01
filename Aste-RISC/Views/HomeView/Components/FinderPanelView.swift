@@ -8,7 +8,7 @@
 import AppKit
 import Foundation
 
-func showFinderPanel(navigationState: NavigationState) {
+func showFinderPanel(navigationViewModel: NavigationViewModel) {
     let panel = NSOpenPanel()
     
     panel.canChooseDirectories = true
@@ -21,17 +21,18 @@ func showFinderPanel(navigationState: NavigationState) {
         if response == .OK, let url = panel.url {
 
             Task {
-                if navigationState.navigationItem.selectedProjectPath != url.path || navigationState.navigationItem.selectedProjectName != url.lastPathComponent {
+				if navigationViewModel.selectedProjectPath != url.path ||
+					navigationViewModel.selectedProjectName != url.lastPathComponent {
                     
-                    navigationState.setProjectPath(url: url.path())
-                    navigationState.setProjectName(name: url.lastPathComponent)
-                    navigationState.setSecondaryNavigation(currentSecondaryNavigation: .CONTROL_OPEN_PROJECT)
+                    navigationViewModel.setProjectPath(url: url.path())
+                    navigationViewModel.setProjectName(name: url.lastPathComponent)
+                    navigationViewModel.setSecondaryNavigation(secondaryNavigation: .openProject)
                 }
             }
         }
     }
 }
 
-func closeCreateProjectPanel(navigationState: NavigationState) {
+func closeCreateProjectPanel(navigationState: NavigationViewModel) {
     navigationState.cleanSecondaryNavigation()
 }

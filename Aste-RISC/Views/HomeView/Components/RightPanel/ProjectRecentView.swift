@@ -12,8 +12,8 @@ import SwiftUI
 /// Contain each project recent open on IDE
 struct ProjectRecentView: View {
     
-    /// Navigation app state
-    @EnvironmentObject private var appState: AppState
+    /// Navigation to principal tabs on IDE
+    @EnvironmentObject private var navigationViewModel: NavigationViewModel
     
     @State private var globalSetting: GlobalSettings? = nil
     
@@ -40,10 +40,8 @@ struct ProjectRecentView: View {
     
     /// Handle for open project and change view
     private func handleProjectSelection(_ project: RecentProject) {
-        let navigationState = appState.navigationState
-        
-        navigationState.setProjectInformation(url: project.path, name: project.name)
-        navigationState.setSecondaryNavigation(currentSecondaryNavigation: .CONTROL_OPEN_PROJECT)
+		self.navigationViewModel.setProjectInformation(url: project.path, name: project.name)
+		self.navigationViewModel.setSecondaryNavigation(secondaryNavigation: .openProject)
     }
     
     /// Handle for remove recent project

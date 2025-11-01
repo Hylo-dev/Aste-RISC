@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct ToolbarStatusView: View {
-    @EnvironmentObject private var appState           : AppState
     @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
+	
+	let selectProjectName: String
     
     var body: some View {
         
@@ -19,7 +20,7 @@ struct ToolbarStatusView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 
-                Text(appState.navigationState.navigationItem.selectedProjectName)
+                Text(selectProjectName)
                     .font(.subheadline)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
@@ -45,36 +46,34 @@ struct ToolbarStatusView: View {
             .layoutPriority(1)
             
             Spacer()
-            
-            let projectName = appState.navigationState.navigationItem.selectedProjectName
-            
+                        
             switch self.bodyEditorViewModel.editorState {
                 case .readyToBuild:
-                    Text("\(projectName) is ready to build")
+                    Text("\(selectProjectName) is ready to build")
                     .font(.subheadline)
                     .fontWeight(.light)
                 
                 case .building:
-                    Text("\(projectName) is building")
+                    Text("\(selectProjectName) is building")
                     .font(.subheadline)
                     .fontWeight(.light)
                 
                 case .build:
-                    Text("\(projectName) is build")
+                    Text("\(selectProjectName) is build")
                     .font(.subheadline)
                     .fontWeight(.light)
                 
                 case .running:
-                    Text("\(projectName) is running")
+                    Text("\(selectProjectName) is running")
                     .font(.subheadline)
                     .fontWeight(.light)
                 
                 case .stopped:
-                    Text("Finished running \(projectName)")
+                    Text("Finished running \(selectProjectName)")
                     .font(.subheadline)
                     .fontWeight(.light)
-                    
             }
+			
         }
         .frame(minWidth: 200, idealWidth: 500)
         .padding(12)

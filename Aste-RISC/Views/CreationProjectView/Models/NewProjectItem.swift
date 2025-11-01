@@ -11,6 +11,4 @@ struct NewProjectItem {
     var nameProject    : String = ""
     var locationProject: String = FileManager.default.homeDirectoryForCurrentUser
         .appendingPathComponent("AsteRiscProjects", isDirectory: true).path
-    
-    var versionLanguageSelect: String = ""
 }
