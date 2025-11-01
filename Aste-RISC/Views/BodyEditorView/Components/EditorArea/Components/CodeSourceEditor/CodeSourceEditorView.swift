@@ -22,10 +22,11 @@ struct CodeSourceEditorView: View {
 	
 	@State private var editorState = SourceEditorState(
 		cursorPositions: [
-			CursorPosition(line: 9, column: 6),
+			CursorPosition(line: 9,  column: 6),
 			CursorPosition(line: 10, column: 6)
-		],
+		]
 	)
+	
 	@StateObject private var suggestions     : MockCompletionDelegate       = MockCompletionDelegate()
 	@StateObject private var jumpToDefinition: MockJumpToDefinitionDelegate = MockJumpToDefinitionDelegate()
 

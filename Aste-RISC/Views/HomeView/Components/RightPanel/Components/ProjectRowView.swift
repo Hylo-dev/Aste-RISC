@@ -75,7 +75,6 @@ struct ProjectRowView: View {
             
         } else {
             return .secondary.opacity(0.12)
-            
         }
     }
 
@@ -85,7 +84,6 @@ struct ProjectRowView: View {
             
         } else {
             return .clear
-            
         }
     }
 }

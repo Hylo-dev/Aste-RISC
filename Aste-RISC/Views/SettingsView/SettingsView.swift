@@ -14,7 +14,7 @@ struct SettingsView: View {
     
     var body: some View {
         TabView(selection: $selectedSection) {
-            ForEach(SettingsSection.allCases, id: \.id) { section in
+            ForEach(SettingsSection.allCases) { section in
             
                 getScreenSetting(section)
                     .tabItem { Label(section.rawValue, systemImage: section.systemImageName) }

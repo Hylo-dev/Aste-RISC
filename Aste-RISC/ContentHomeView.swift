@@ -34,26 +34,26 @@ struct ContentHomeView: View {
     var body: some View {
         
         switch self.navigationViewModel.principalNavigation {
-        case .home:
-            HomeView()
-                .onAppear {
-                    if !self.navigationViewModel.isSettingsFolderExist() {
-						self.navigationViewModel.setPrincipalNavigation(principalNavigation: .welcome)
-                    }
-                }
-                .sheet(isPresented: isCreateProjectPresented) {
-                    CreationProjectView()
-                        .frame(width: 600, height: 400)
-                    
-                }
-                .alert(
-                    "Open Project '\(self.navigationViewModel.selectedProjectName)'",
-                    isPresented: isOpenProjectAlertPresented,
-                    actions: alertContent
-                )
-            
-        case .welcome:
-            WelcomeView()
+			case .home:
+				HomeView()
+					.onAppear {
+						if !self.navigationViewModel.isSettingsFolderExist() {
+							self.navigationViewModel.setPrincipalNavigation(principalNavigation: .welcome)
+						}
+					}
+					.sheet(isPresented: isCreateProjectPresented) {
+						CreationProjectView()
+							.frame(width: 600, height: 400)
+						
+					}
+					.alert(
+						"Open Project '\(self.navigationViewModel.selectedProjectName)'",
+						isPresented: isOpenProjectAlertPresented,
+						actions: alertContent
+					)
+				
+			case .welcome:
+				WelcomeView()
         }
     }
     
@@ -69,7 +69,7 @@ struct ContentHomeView: View {
             let path = self.navigationViewModel.selectedProjectPath
             let name = self.navigationViewModel.selectedProjectName
 
-            withTransaction(Transaction(animation: nil)) {                
+            withTransaction(Transaction(animation: nil)) {
                 var oldSettings = settingsManager.load(file: "global_settings.json", GlobalSettings.self)
                 
                 if oldSettings != nil {

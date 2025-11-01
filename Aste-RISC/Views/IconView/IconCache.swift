@@ -21,7 +21,6 @@ class IconCache {
             
         } else {
             key = ".s"
-            
         }
         
         lock.lock()

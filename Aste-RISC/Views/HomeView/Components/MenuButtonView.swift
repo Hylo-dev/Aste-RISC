@@ -87,9 +87,7 @@ struct MenuButtonView: View {
         if isHovering {
             return .accentColor.opacity(0.08)
             
-        } else {
-            return .clear
-        }
+        } else { return .clear }
     }
     
     /// Border color, this is condition and depends if the button is hovering or not
@@ -97,8 +95,6 @@ struct MenuButtonView: View {
         if isHovering {
             return .accentColor.opacity(0.2)
             
-        } else {
-            return .clear
-        }
+        } else { return .clear }
     }
 }
