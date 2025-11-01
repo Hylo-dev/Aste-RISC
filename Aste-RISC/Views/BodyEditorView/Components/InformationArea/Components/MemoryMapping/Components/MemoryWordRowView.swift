@@ -24,6 +24,7 @@ struct MemoryWordRow: View {
 				Text("ERROR")
 					.font(.caption)
 					.foregroundColor(.red)
+				
 			} else {
 				VStack(alignment: .trailing, spacing: 2) {
 					Text("0x\(String(format: "%08x", UInt32(bitPattern: value)))")

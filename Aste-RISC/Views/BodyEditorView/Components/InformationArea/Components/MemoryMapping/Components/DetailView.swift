@@ -21,10 +21,19 @@ struct DetailView: View {
 				
 				switch sectionType {
 				case .stack:
-					StackDetailView(section: section)
+					StackDetailView(
+						section		: section,
+						stackPointer: self.cpu.registers[2],
+						framePointer: self.cpu.registers[8],
+						stackFrames : self.cpu.stackFrames,
+						stackStores : self.cpu.stackStores
+					)
 						
 				case .text:
-					TextSectionView(section: section)
+					TextSectionView(
+						section		  : section,
+						programCounter: self.cpu.programCounter
+					)
 						
 				case .data:
 					DataSectionView(section: section)

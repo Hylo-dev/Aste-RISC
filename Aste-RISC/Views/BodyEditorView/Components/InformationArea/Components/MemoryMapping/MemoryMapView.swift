@@ -14,7 +14,7 @@ struct MemoryMapView: View {
 	var body: some View {
 		DetailView(
 			selectedSection: self.informationAreaViewModel.memoryMapSelected,
-			sections: memorySections
+			sections	   : self.memorySections
 		)
 	}
 	
@@ -23,7 +23,7 @@ struct MemoryMapView: View {
 		
 		let ramBase = ram.pointee.base_vaddr
 		let ramSize = UInt32(ram.pointee.size)
-		let sp = UInt32(cpu.registers[2])
+		let sp 		= UInt32(cpu.registers[2])
 		
 		var sections: [MemorySection] = []
 		

@@ -9,28 +9,28 @@ import SwiftUI
 
 // Vista per una singola word nello stack
 struct StackWordRow: View {
-	@EnvironmentObject private var cpu: CPU
 	
-	let word: StackFrame
-	let index: Int
-	let isInFrame: Bool
+	let stackFrame : StackFrame
+	let stackStores: [UInt32: Int]
+	let index	   : Int
+	let isInFrame  : Bool
 	
 	var body: some View {
 		HStack(spacing: 8) {
 			// Indicatore visuale
 			Circle()
-				.fill(word.color)
+				.fill(self.stackFrame.color)
 				.frame(width: 8, height: 8)
 			
 			// Offset
-			Text("SP+\(word.offsetFromSP * 4)")
+			Text("SP+\(self.stackFrame.offsetFromSP * 4)")
 				.font(.caption2)
 				.foregroundColor(.secondary)
 				.frame(width: 50, alignment: .leading)
 				.monospacedDigit()
 			
 			// Indirizzo
-			Text(word.label)
+			Text(self.stackFrame.label)
 				.font(.caption2)
 				.monospacedDigit()
 				.foregroundColor(.secondary)
@@ -38,25 +38,25 @@ struct StackWordRow: View {
 			
 			// Tipo di dato
 			HStack(spacing: 4) {
-				if word.isError {
+				if self.stackFrame.isError {
 					Label("ERR", systemImage: "exclamationmark.triangle")
 						.font(.caption2)
 						.foregroundColor(.red)
 					
-				} else if word.isFrameBoundary && word.isPointer {
+				} else if self.stackFrame.isFrameBoundary && self.stackFrame.isPointer {
 					Label("RA", systemImage: "arrow.turn.up.right")
 						.font(.caption2)
 						.foregroundColor(.orange)
 					
-				} else if word.isPointer {
+				} else if self.stackFrame.isPointer {
 					Label("PTR", systemImage: "arrow.right")
 						.font(.caption2)
 						.foregroundColor(.blue)
 					
-				} else if word.isNonZero {
+				} else if self.stackFrame.isNonZero {
 					
 					// Set label reginter saved
-					let label = identifyWordType(word, index: index)
+					let label = identifyWordType(self.stackFrame, index: index)
 					Text(label)
 						.font(.caption2)
 						.foregroundColor(.secondary)
@@ -73,14 +73,14 @@ struct StackWordRow: View {
 			Spacer()
 			
 			// Value store memory
-			if !word.isError {
+			if !self.stackFrame.isError {
 				VStack(alignment: .trailing, spacing: 2) {
-					Text(String(format: "0x%08x", UInt32(bitPattern: word.value)))
+					Text(String(format: "0x%08x", UInt32(bitPattern: self.stackFrame.value)))
 						.font(.caption2)
 						.lineLimit(1)
 						.monospacedDigit()
 					
-					Text("\(word.value)")
+					Text("\(self.stackFrame.value)")
 						.lineLimit(1)
 						.font(.caption2)
 						.foregroundColor(.secondary)
@@ -94,17 +94,18 @@ struct StackWordRow: View {
 		.cornerRadius(4)
 	}
 	
-	private func identifyWordType(_ word: StackFrame, index: Int) -> String {
+	private func identifyWordType(_ stackFrame: StackFrame, index: Int) -> String {
 
-		if let registerNum = cpu.stackStores[word.address] {
+		if let registerNum = stackStores[stackFrame.address] {
 			return riscvRegisters.first(
 				where: { $0.registerDetail!.number == registerNum && !$0.label.contains("x")}
+				
 			)?.label ?? "x\(registerNum)"
 		}
 		
-		if index == 0 && word.isFrameBoundary { return "ra" }
+		if index == 0 && stackFrame.isFrameBoundary { return "ra" }
 		
-		if word.isNonZero { return "local" }
+		if stackFrame.isNonZero { return "local" }
 		
 		return "data"
 	}

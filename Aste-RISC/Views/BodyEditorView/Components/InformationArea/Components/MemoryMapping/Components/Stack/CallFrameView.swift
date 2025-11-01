@@ -8,17 +8,21 @@
 import SwiftUI
 
 struct CallFrameView: View {
-	private let frame: CallFrame
-	private let frameIndex: Int
-	@Binding var isExpanded: Bool
+	private let frame	   : CallFrame
+	private let stackStores: [UInt32: Int]
+	private let frameIndex : Int
+	
+	@Binding private var isExpanded: Bool
 	
 	init(
-		frame	  : CallFrame,
-		frameIndex: Int,
-		isExpanded: Binding<Bool>
+		frame	   : CallFrame,
+		stackStores: [UInt32: Int],
+		frameIndex : Int,
+		isExpanded : Binding<Bool>
 	) {
-		self.frame = frame
-		self.frameIndex = frameIndex
+		self.frame 		 = frame
+		self.stackStores = stackStores
+		self.frameIndex  = frameIndex
 		self._isExpanded = isExpanded
 		
 	}
@@ -69,8 +73,13 @@ struct CallFrameView: View {
 			// Frame content
 			if isExpanded {
 				VStack(spacing: 4) {
-					ForEach(Array(frame.words.enumerated()), id: \.element.id) { index, word in
-						StackWordRow(word: word, index: index, isInFrame: true)
+					ForEach(frame.words.enumerated(), id: \.element.id) { index, frame in
+						StackWordRow(
+							stackFrame : frame,
+							stackStores: stackStores,
+							index	   : index,
+							isInFrame  : true
+						)
 					}
 				}
 				.padding(.leading, 8)

@@ -14,6 +14,7 @@ struct UnusedSectionView: View {
 			Image(systemName: "circle.slash")
 				.font(.system(size: 40))
 				.foregroundColor(.secondary)
+			
 			Text("Memoria non utilizzata")
 				.foregroundColor(.secondary)
 		}

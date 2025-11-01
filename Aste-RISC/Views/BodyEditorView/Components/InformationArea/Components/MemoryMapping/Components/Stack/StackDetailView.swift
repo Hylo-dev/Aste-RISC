@@ -8,50 +8,39 @@
 import SwiftUI
 
 struct StackDetailView: View {
-	@EnvironmentObject var cpu: CPU
-	
 	@State private var expandedFrames: Set<Int>
-		   private let section		 : MemorySection
 	
-	init(section: MemorySection) {
+	private let section: MemorySection
+	private let stackPointer: Int
+	private let framePointer: Int
+	private let stackFrames : [StackFrame]
+	private let stackStores : [UInt32: Int]
+	
+	init(
+		section		: MemorySection,
+		stackPointer: Int,
+		framePointer: Int,
+		stackFrames : [StackFrame],
+		stackStores : [UInt32: Int]
+	) {
 		self.expandedFrames = [0]
 		self.section 		= section
+		self.stackPointer   = stackPointer
+		self.framePointer	= framePointer
+		self.stackFrames	= stackFrames
+		self.stackStores 	= stackStores
 	}
-	
 		
 	var body: some View {
 		VStack(alignment: .leading, spacing: 8) {
 			// Header
-			HStack {
-				VStack(alignment: .leading) {
-					Text("Stack")
-						.font(.title2)
-						.foregroundStyle(.purple)
-						.fontWeight(.bold)
-					
-					Text("\(detectedFrames.count) Active frame's")
-						.font(.caption)
-						.foregroundColor(.secondary)
-					
-					Text("Space: \(formatSize(section.size))")
-						.font(.caption)
-						.foregroundColor(.secondary)
-				}
-				
-				Spacer()
-				
-				VStack(alignment: .trailing) {
-					Text("SP: 0x\(String(format: "%08x", cpu.registers[2]))")
-						.font(.caption)
-						.monospacedDigit()
-					
-					Text("FP: 0x\(String(format: "%08x", cpu.registers[8]))")
-						.font(.caption)
-						.monospacedDigit()
-						.foregroundColor(.purple)
-				}
-			}
-			.padding()
+			
+			HeaderStackDetailView(
+				activeFrames: self.detectedFrames.count,
+				freeSpace	: self.section.size,
+				stackPointer: self.stackPointer,
+				framePointer: self.framePointer
+			)
 			
 			Divider()
 			
@@ -71,11 +60,12 @@ struct StackDetailView: View {
 				}
 				
 			} else {
-				ForEach(Array(detectedFrames.enumerated()), id: \.element.id) { index, frame in
+				ForEach(detectedFrames.enumerated(), id: \.element.id) { index, frame in
 					CallFrameView(
-						frame	  : frame,
-						frameIndex: index,
-						isExpanded: Binding(
+						frame	   : frame,
+						stackStores: stackStores,
+						frameIndex : index,
+						isExpanded : Binding(
 							get: { expandedFrames.contains(index) },
 							set: { newValue in
 								if newValue {
@@ -97,7 +87,7 @@ struct StackDetailView: View {
 	
 	// Rileva i frame analizzando lo stack
 	private var detectedFrames: [CallFrame] {
-		guard !cpu.stackFrames.isEmpty else { return [] }
+		guard !stackFrames.isEmpty else { return [] }
 		
 		var frames			 : [CallFrame]  = []
 		var currentFrameWords: [StackFrame] = []
@@ -106,7 +96,7 @@ struct StackDetailView: View {
 		var savedFP			 : UInt32?
 		
 		// Iterate all stack frames
-		for word in cpu.stackFrames {
+		for word in stackFrames {
 			
 			// Init new frame when found return address
 			if word.isFrameBoundary && word.isPointer {
@@ -160,17 +150,5 @@ struct StackDetailView: View {
 		}
 		
 		return frames
-	}
-	
-	private func formatSize(_ size: UInt32) -> String {
-		if size < 1024 {
-			return "\(size)B"
-			
-		} else if size < 1024 * 1024 {
-			return String(format: "%.1fKB", Double(size) / 1024.0)
-			
-		} else {
-			return String(format: "%.1fMB", Double(size) / (1024.0 * 1024.0))
-		}
 	}
 }
