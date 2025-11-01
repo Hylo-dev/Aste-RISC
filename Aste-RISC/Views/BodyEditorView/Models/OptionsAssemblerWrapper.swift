@@ -8,6 +8,13 @@
 import Foundation
 internal import Combine
 
-final class OptionsAssemblerWrapper: ObservableObject {
+class OptionsAssemblerWrapper: ObservableObject {
 	@Published var opts: UnsafeMutablePointer<options_t>? = nil
+	
+	deinit {
+		free_options(self.opts)
+		
+		self.opts = nil
+	}
+	
 }

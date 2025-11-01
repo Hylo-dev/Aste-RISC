@@ -5,18 +5,16 @@
  * This file contains functions to create, free, write to, and read from RAM.
  */
 
-#include <stdint.h>
 #include "ram.h"
 
-#include <stdlib.h>
-#include <string.h>
+bool destroy_ram(RAM ram) {
 
-void destroy_ram(RAM ram) {
-
-    if (!ram) return;
+    if (!ram) return false;
 
     free(ram->data);
     free(ram);
+	
+	return true;
 }
 
 /**
@@ -35,6 +33,7 @@ RAM new_ram(size_t size, uint32_t base_vaddr) {
     main_memory->data = (u_int8_t *)malloc(size);
     if (!main_memory->data) {
         free(main_memory);
+		
         return NULL;
     }
 
@@ -43,19 +42,6 @@ RAM new_ram(size_t size, uint32_t base_vaddr) {
 
     memset(main_memory->data, 0, size);
     return main_memory;
-
-}
-
-/**
- * @brief Free the RAM instance and its data.
- * @param ram Pointer to the RAM instance to be freed.
- */
-void free_ram(RAM ram) {
-    free(ram->data);
-    ram->data = NULL;
-	ram->base_vaddr = 0;
-    ram->size = 0;
-
 }
 
 /**

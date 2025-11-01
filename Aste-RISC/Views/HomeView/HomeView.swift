@@ -67,31 +67,32 @@ struct HomeView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(15)
-        .onAppear {
-            
-            // When column show, this get the values
-            if defaultsMode.isEmpty {
-                defaultsMode = [
-                    ModalityItem(
-                        name: "Create A New Project",
-                        description: "Create a new Assembly project",
-                        icon: "plus.app",
-                        function: {
-							self.navigationViewModel.setSecondaryNavigation(
+		.onAppear {
+			if defaultsMode.isEmpty {
+				defaultsMode = [
+					ModalityItem(
+						name: "Create A New Project",
+						description: "Create a new Assembly project",
+						icon: "plus.app",
+						function: { [weak navigationViewModel] in
+							navigationViewModel?.setSecondaryNavigation(
 								secondaryNavigation: .createProject
 							)
-                        }
-                    ),
-                    
-                    ModalityItem(
-                        name: "Open A Existing Project",
-                        description: "Browse your existing projects",
-                        icon: "folder",
-                        function: { showFinderPanel(navigationViewModel: self.navigationViewModel) }
-                    )
-                ]
-            }
-        }
+						}
+					),
+					
+					ModalityItem(
+						name: "Open A Existing Project",
+						description: "Browse your existing projects",
+						icon: "folder",
+						function: { [weak navigationViewModel] in
+							guard let vm = navigationViewModel else { return }
+							showFinderPanel(navigationViewModel: vm)
+						}
+					)
+				]
+			}
+		}
     }
     
     private var titleEditor: some View {

@@ -7,10 +7,11 @@
 
 #ifndef RAM_H
 #define RAM_H
-#include <stdint.h>
-#include <stdio.h>
 
-#define DEFAULT_RAM_SIZE 1048576
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
 
 /**
  * @brief Header file for RAM management in a RISC-V CPU simulator.
@@ -21,7 +22,7 @@
  */
 typedef struct ram {
     uint8_t *data;
-    size_t size;
+    size_t   size;
 	uint32_t base_vaddr;
 
 } *RAM;
@@ -32,7 +33,7 @@ typedef struct ram {
  *
  * This function frees the memory allocated for the RAM data and the RAM instance itself.
  */
-void destroy_ram(RAM ram);
+bool destroy_ram(RAM ram);
 
 /**
  * @brief Create a new RAM instance with the specified size.
@@ -41,12 +42,6 @@ void destroy_ram(RAM ram);
  * @return Pointer to the newly created RAM instance, or NULL if allocation fails.
  */
 RAM new_ram(size_t size, uint32_t base_vaddr);
-
-/**
- * @brief Free the RAM instance and its data.
- * @param ram Pointer to the RAM instance to be freed.
- */
-void free_ram(RAM ram);
 
 /**
  * @brief Write a 32-bit value to the specified address in RAM.

@@ -43,9 +43,6 @@ typedef struct {
  * @param opcode The opcode of the instruction
  * @return ControlSignals structure with the control signals set
  */
-ControlSignals getControlSignals(
-    uint8_t opcode
-
-);
+ControlSignals getControlSignals(uint8_t opcode);
 
 #endif //CONTROLUNIT_H

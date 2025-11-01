@@ -11,7 +11,6 @@
 
 #include "args_handler.h"
 #include "asm_file_parser.h"
-#include "assembly_data.h"
 #include "elf.h"
 #include "ram.h"
 #include "control_unit.h"

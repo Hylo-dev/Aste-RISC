@@ -14,9 +14,11 @@ class CPU: ObservableObject {
 	@Published var programCounter: UInt32
 	@Published var stackStores   : [UInt32: Int] = [:] // address -> register number
 	
-	var registers: [Int]
+	
 	private let resetFlag: Int
-	private let alu: ALU
+	private let alu		 : ALU
+	
+	var registers: [Int]
 	var ram: RAM? = nil
 	
 	var textBase: UInt32 = 0
@@ -28,7 +30,6 @@ class CPU: ObservableObject {
 	private var lastFP: UInt32 = 0
 	private var stackUpdateCounter: Int = 0
 	
-	// Tracking frame pointer for identify each frame
 	private var framePointers: [UInt32] = []
 	
 	init() {
@@ -38,8 +39,10 @@ class CPU: ObservableObject {
 		self.alu = ALU()
 	}
 	
-	func initRam(ram: RAM) { self.ram = ram }
-	
+	deinit {
+		if destroy_ram(self.ram) { self.ram = nil }
+	}
+		
 	/// Run code step by step
 	func runStep(optionsSource: options_t) -> Bool {
 		if programCounter >= optionsSource.text_vaddr &&

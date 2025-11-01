@@ -25,8 +25,7 @@ typedef struct {
 	const char *text;
 } assembler_message_t;
 
-
-// definisci il tipo di callback che Swift chiamerà
+// Define the type that swift call
 typedef void (*LogCallback)(assembler_message_t);
 
 /**

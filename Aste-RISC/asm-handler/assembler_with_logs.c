@@ -7,6 +7,12 @@
 
 #include "assembler_with_logs.h"
 
+/**
+ * @brief Execute command shell and send stdout/stderr to Swift using Callback function
+ * @param cmd Pass command to execute
+ * @param callback Function to get std outputs
+ * @return -1 for errors, else retuls
+ */
 int run_command_with_log(
 	const char *cmd,
 	LogCallback callback
@@ -16,6 +22,7 @@ int run_command_with_log(
 	if (!pipe) {
 		const assembler_message_t message = { MESSAGE_ERROR, "Failed to open process pipe" };
 		callback(message);
+		
 		return -1;
 	}
 
@@ -35,6 +42,7 @@ int run_command_with_log(
 			
 		} else {
 			message.type = MESSAGE_INFO;
+			
 		}
 
 		message.text = strdup(buffer);
@@ -42,9 +50,16 @@ int run_command_with_log(
 	}
 
 	const int status = pclose(pipe);
+	
 	return WEXITSTATUS(status);
 }
 
+/**
+ * @brief Compile and link assembly RISC-V file, send log to Swift
+ * @param filepath Path file to compile
+ * @param output_elf_path Elf file assembled
+ * @param callback Function passed for get std output
+ */
 int compile_assembly_with_log(
 	const char *filepath,
 	char *output_elf_path,
@@ -54,8 +69,17 @@ int compile_assembly_with_log(
 	char cmd[512]; // Command to execute
 	char temp_obj[256];
 
-	sprintf(temp_obj, "%s.o", filepath);
-	sprintf(output_elf_path, "%s.elf", filepath);
+	sprintf(
+		temp_obj,
+		"%s.o",
+		filepath
+	);
+	
+	sprintf(
+		output_elf_path,
+		"%s.elf",
+		filepath
+	);
 
 	// Compile (stdout + stderr)
 	sprintf(
@@ -74,6 +98,7 @@ int compile_assembly_with_log(
 		callback(message);
 		
 		unlink(temp_obj);
+		
 		return -1;
 	}
 
@@ -93,6 +118,7 @@ int compile_assembly_with_log(
 		message.type = MESSAGE_ERROR;
 		message.text = "Error during linking";
 		unlink(temp_obj);
+		
 		return -1;
 	}
 
@@ -101,5 +127,6 @@ int compile_assembly_with_log(
 	message.type = MESSAGE_INFO;
 	message.text = "Assembly complete!";
 	callback(message);
+	
 	return 0;
 }

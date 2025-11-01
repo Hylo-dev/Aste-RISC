@@ -156,10 +156,16 @@ struct BodyEditorView: View {
     }
 
     private func handleFileSelectionChange(oldValue: URL?, newValue: URL?) {
+		if self.optionsWrapper.opts != nil {
+			free_options(self.optionsWrapper.opts)
+			self.optionsWrapper.opts = nil
+		}
+		
         guard let newValue = newValue else { return }
 		
-		let pathCString = strdup(newValue.path)
-		self.optionsWrapper.opts = start_options(pathCString)
+		newValue.path.withCString { pathAsCString in
+			self.optionsWrapper.opts = start_options(UnsafeMutablePointer(mutating: pathAsCString))
+		}
     }
 }
 

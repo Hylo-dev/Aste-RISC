@@ -9,10 +9,6 @@
 
 #include "ram.h"
 
-typedef enum {
-    DEFAULT, FULL, STEP_BY_STEP
-} execution_mode;
-
 typedef struct {
     uint32_t address;       // address of the instruction
     uint32_t instruction;   // machine code of the instruction (32-bit)
@@ -21,23 +17,16 @@ typedef struct {
 // struct with the options for the binary
 typedef struct {
     char *binary_file;                // path to asm riscv 32bit binary file
-    // @TODO: implement args
-    char **args;                      // args for the asm (after the -a flag)
-    int args_count;                   // number of args for the asm
-    execution_mode execution_mode;    // execution mode
-    // @TODO: implement breakpoints
-    char **breakpoints;               // breakpoints for the asm program
-    int breakpoint_count;
 
     // Add options for load in memory the instructions
     // Instruction (.text)
     uint8_t* text_data;       // binary buffer.text
-    size_t text_size;         // byte
+    size_t   text_size;         // byte
     uint32_t text_vaddr;      // virtual address .text
 
     // Data (.data)
     uint8_t* data_data;      // binary buffer .data
-    size_t data_size;         // byte
+    size_t   data_size;         // byte
     uint32_t data_vaddr;      // virtual address .data
 
     // Entry point
@@ -47,25 +36,6 @@ typedef struct {
 
 // public functions
 options_t* start_options(char *url);
-void print_options(const options_t *opts);
 void free_options (options_t *opts);
-
-/**
- * @brief print help message
- * @param program_name name of the binary
- */
-static void print_help(const char *program_name) {
-
-    printf("Usage: %s [binary_file] [options]\n\nOptions:\n", program_name);
-    printf("\t-f, --full-execution\tExecute the binary without stopping\n");
-    printf("\t-s, --step\t\tExecute step-by-step\n");
-    printf("\t-h, --help\t\tShow this help message\n");
-    printf("\t-r, --ram <SIZE>\tSet the RAM size\n");
-    printf("\t-a, --args <ARGS>\tArguments to pass to the binary (space-separated)\tNOTE: NOT IMPLEMENTED YET\n");
-    printf("\t-b, --breakpoint <ADDR>\tSet breakpoint at address (can be used multiple times)\tNOTE: NOT IMPLEMENTED YET\n");
-    printf("\nExample:\n");
-    printf("\t%s program.bin -a \"arg1 arg2\" -b 0x1004\n", program_name);
-
-}
 
 #endif //ARGS_HANDLER_H
