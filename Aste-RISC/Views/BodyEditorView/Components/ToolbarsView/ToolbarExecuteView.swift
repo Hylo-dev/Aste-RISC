@@ -83,7 +83,9 @@ struct ToolbarExecuteView: View {
                 GlassEffectContainer(spacing: 30) {
                     HStack(spacing: 10) {
                         Button {
-                            let _ = cpu.runStep(optionsSource: optionsWrapper.opts!.pointee)
+							if !self.cpu.backwardExecute() {
+								print("Cronology is empty. Not possible execute backward instruction.")
+							}
                             
                         } label: {
                             Image(systemName: "backward.fill")
@@ -92,9 +94,14 @@ struct ToolbarExecuteView: View {
                         }
                         .frame(width: 35, height: 35)
                         .buttonStyle(.glass)
+						.disabled(self.cpu.historyStack.isEmpty)
 
                         Button {
-                            let _ = cpu.runStep(optionsSource: optionsWrapper.opts!.pointee)
+							let result = self.cpu.runStep(optionsSource: optionsWrapper.opts!.pointee)
+							
+							if result != .success {
+								print(result.rawValue)
+							}
                             
                         } label: {
                             Image(systemName: "forward.fill")

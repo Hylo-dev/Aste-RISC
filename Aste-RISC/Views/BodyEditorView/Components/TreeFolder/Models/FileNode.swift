@@ -9,8 +9,9 @@ import SwiftUI
 import Foundation
 internal import Combine
 
-final class FileNode: ObservableObject, Identifiable {
-    let id: String
+@MainActor
+class FileNode: ObservableObject, Identifiable {
+    let id		   : String
     let url        : URL
     let name       : String
     let isDirectory: Bool
@@ -98,6 +99,30 @@ final class FileNode: ObservableObject, Identifiable {
 
         Task { work() }
     }
+	
+	func expandTo(url: URL) -> Bool {
+		guard url.path.hasPrefix(self.url.path) else {
+			return false
+		}
+
+		if self.url == url {
+			return true
+		}
+
+		if isDirectory {
+
+			loadChildrenPreservingState(forceReload: false)
+			isExpanded = true
+			
+			for child in children {
+				if child.expandTo(url: url) {
+					return true
+				}
+			}
+		}
+		
+		return false
+	}
 
     private func loadIcon() {
         let nsIcon  = NSWorkspace.shared.icon(forFile: url.path)

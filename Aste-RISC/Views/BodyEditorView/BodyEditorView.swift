@@ -70,7 +70,8 @@ struct BodyEditorView: View {
             DirectoryTreeView(
                 rootURL : URL(
                     fileURLWithPath: selectedProjectPath
-                )
+				),
+				fileOpen: self.$bodyEditorViewModel.currentFileSelected
                 
             ) { url in self.bodyEditorViewModel.changeOpenFile(url) }
             .environmentObject(self.bodyEditorViewModel)

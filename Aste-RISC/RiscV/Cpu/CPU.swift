@@ -18,7 +18,8 @@ class CPU: ObservableObject {
 	private let resetFlag: Int
 	private let alu		 : ALU
 	
-	var registers: [Int]
+	var registers	: [Int]
+	var historyStack: [StateChange] = []
 	var ram: RAM? = nil
 	
 	var textBase: UInt32 = 0
@@ -44,18 +45,20 @@ class CPU: ObservableObject {
 	}
 		
 	/// Run code step by step
-	func runStep(optionsSource: options_t) -> Bool {
+	func runStep(optionsSource: options_t) -> ExecutionStatus {
 		if programCounter >= optionsSource.text_vaddr &&
 			programCounter < optionsSource.text_vaddr + UInt32(optionsSource.text_size) {
 			
 			return execute(optionsSource: optionsSource)
 		}
 		
-		return false
+		return .success
 	}
 	
 	/// Execute single istruction
-	private func execute(optionsSource: options_t) -> Bool {
+	private func execute(optionsSource: options_t) -> ExecutionStatus {
+		let oldPC = self.programCounter
+		
 		defer { updateStackFrames() }
 
 		var nextProgramCounter = programCounter + 4
@@ -63,7 +66,7 @@ class CPU: ObservableObject {
 		let rawInstruction = fetch(optionsSource: optionsSource)
 				
 		if rawInstruction == -1 {
-			return false
+			return .instructionFetchFailed
 		}
 		
 		let decodedInstruction = decode(Int(rawInstruction))
@@ -77,8 +80,7 @@ class CPU: ObservableObject {
 		)
 		
 		if aluOperation == .unknown {
-			print("Invalid operation")
-			return false
+			return .invalidOperation
 		}
 		
 		var firstOperand = 0
@@ -95,33 +97,56 @@ class CPU: ObservableObject {
 		}
 		
 		if (decodedInstruction.operationCode == 0x67 && decodedInstruction.funz3 == 0) ||
-			decodedInstruction.operationCode == 0x6F {
+			decodedInstruction.operationCode == 0x6F
+		{
+			
+			let change = StateChange(
+				oldProgramCounter: oldPC,
+				target: .register(index: Int(decodedInstruction.registerDestination)),
+				oldValue: registers[Int(decodedInstruction.registerDestination)]
+			)
+			historyStack.append(change)
 			
 			if controlUnitState.reg_write {
 				if !writeRegister(value: Int(nextProgramCounter), destination: Int(decodedInstruction.registerDestination)) {
-					return false
+					return .registerWriteFailed
 				}
 			}
 			
-			nextProgramCounter = UInt32(decodedInstruction.operationCode == 0x6F ?
-									  Int(programCounter) + secondOperand & ~1:
-									  firstOperand + secondOperand & ~1)
+			nextProgramCounter = UInt32(
+				decodedInstruction.operationCode == 0x6F ?
+					Int(programCounter) + secondOperand & ~1:
+					firstOperand + secondOperand & ~1
+			)
 			
 		} else if controlUnitState.reg_write && aluOperation == .skip {
+			let change = StateChange(
+				oldProgramCounter: oldPC,
+				target: .register(index: Int(decodedInstruction.registerDestination)),
+				oldValue: registers[Int(decodedInstruction.registerDestination)]
+			)
+			historyStack.append(change)
+			
 			if !writeRegister(value: decodedInstruction.immediate, destination: Int(decodedInstruction.registerDestination)) {
-				return false
+				return .registerWriteFailed
 			}
 			
 		} else if controlUnitState.mem_read && controlUnitState.alu_src {
 			let valueRamRead = read_ram32bit(ram, UInt32(resultAlu.result))
 			
 			if valueRamRead == -1 {
-				print("Ram value not read")
-				return false
+				return .ramReadFailed
 			}
 			
+			let change = StateChange(
+				oldProgramCounter: oldPC,
+				target: .register(index: Int(decodedInstruction.registerDestination)),
+				oldValue: registers[Int(decodedInstruction.registerDestination)]
+			)
+			historyStack.append(change)
+						
 			if !writeRegister(value: Int(valueRamRead), destination: Int(decodedInstruction.registerDestination)) {
-				return false
+				return .registerWriteFailed
 			}
 			
 		} else if controlUnitState.mem_write && controlUnitState.alu_src {
@@ -136,21 +161,58 @@ class CPU: ObservableObject {
 			if memoryAddress >= sp && memoryAddress < sp + 512 {
 				stackStores[memoryAddress] = registerSource2
 			}
+			
+			let originalValue = read_ram32bit(ram, memoryAddress)
+			let change = StateChange(
+				oldProgramCounter: oldPC,
+				target: .memory(address: memoryAddress),
+				oldValue: Int(originalValue)
+			)
+			historyStack.append(change)
 		   
 		   // Perform store based on funct3
 		   if !performStore(address: memoryAddress, value: valueToStore, funct3: decodedInstruction.funz3) {
-			   print("Store instruction failed")
-			   return false
+			   return .ramStoreFailed
 		   }
 			
 		} else if controlUnitState.reg_write {
+			let change = StateChange(
+				oldProgramCounter: oldPC,
+				target: .register(index: Int(decodedInstruction.registerDestination)),
+				oldValue: registers[Int(decodedInstruction.registerDestination)]
+			)
+			historyStack.append(change)
+			
 			if !writeRegister(value: resultAlu.result, destination: Int(decodedInstruction.registerDestination)) {
-				return false
+				return .registerWriteFailed
 			}
 		}
 		
 		programCounter = nextProgramCounter
 		
+		return .success
+	}
+	
+	func backwardExecute() -> Bool {
+		
+		guard let lastChange = historyStack.popLast() else {
+			return false
+		}
+		
+		self.programCounter = lastChange.oldProgramCounter
+		
+		switch lastChange.target {
+			case .register(index: let index):
+				_ = writeRegister(value: lastChange.oldValue, destination: index)
+				
+			case .memory(address: let address):
+				write_ram32bit(ram, address, UInt32(lastChange.oldValue))
+			
+			case .none:
+				break
+		}
+		
+		updateStackFrames()
 		return true
 	}
 	
