@@ -14,6 +14,7 @@ struct BodyEditorView: View {
     @Environment(\.openWindow) private var openWindow
     
 	@FocusState private var spotlightFocused: Bool
+	@AppStorage("lastFileOpen") private var fileSelected: URL?
     
     // ViewModel for manage UI body editor and RISC-V CPU Emulator
     @StateObject private var bodyEditorViewModel = BodyEditorViewModel()
@@ -35,9 +36,17 @@ struct BodyEditorView: View {
 				informationArea
 					.frame(minWidth: 350, idealWidth: 400, maxWidth: .infinity)
 			}
-			.onAppear { self.bodyEditorViewModel.changeCurrentInstruction(index: cpu.programCounter) }
+			.onAppear {
+				
+				if let file = self.fileSelected, !file.absoluteString.contains(self.selectedProjectPath) {
+					self.fileSelected = nil
+				}
+				
+				self.bodyEditorViewModel.changeCurrentInstruction(index: self.cpu.programCounter)
+			}
 			.onChange(of: cpu.programCounter, handleProgramCounterChange)
-			.onChange(of: bodyEditorViewModel.currentFileSelected, handleFileSelectionChange)
+			.onChange(of: self.fileSelected, handleFileSelectionChange)
+			//.onChange(of: bodyEditorViewModel.currentFileSelected, handleFileSelectionChange)
 			.frame(maxWidth: .infinity, maxHeight: .infinity)
 			.toolbar {
 					
@@ -48,7 +57,8 @@ struct BodyEditorView: View {
 						isOutputVisible    : self.$bodyEditorViewModel.isOutputVisible,
 						editorState        : self.$bodyEditorViewModel.editorState,
 						mapInstruction 	   : self.$bodyEditorViewModel.mapInstruction,
-						currentFileSelected: self.bodyEditorViewModel.currentFileSelected
+						currentFileSelected: self.fileSelected
+						//currentFileSelected: self.bodyEditorViewModel.currentFileSelected
 					)
 						.environmentObject(self.bodyEditorViewModel)
 						.environmentObject(self.cpu)
@@ -58,14 +68,18 @@ struct BodyEditorView: View {
 
 				// Center Section for view current file working and search file
 				ToolbarItem(placement: .principal) {
-					ToolbarStatusView(selectProjectName: self.selectedProjectName)
-						.environmentObject(self.bodyEditorViewModel)
+					ToolbarStatusView(
+						fileSelected	 : self.$fileSelected,
+						selectProjectName: self.selectedProjectName
+					)
+					.environmentObject(self.bodyEditorViewModel)
 				}
 				.sharedBackgroundVisibility(.hidden)
 					
 				// Search button
 				ToolbarItem(placement: .principal) {
-					ToolbarSearchView().environmentObject(self.bodyEditorViewModel)
+					ToolbarSearchView(fileSelected: self.$fileSelected)
+						.environmentObject(self.bodyEditorViewModel)
 						
 				}
 				.sharedBackgroundVisibility(.hidden)
@@ -91,9 +105,9 @@ struct BodyEditorView: View {
                 rootURL : URL(
                     fileURLWithPath: selectedProjectPath
 				),
-				fileOpen: self.$bodyEditorViewModel.currentFileSelected
+				fileOpen: self.$fileSelected //self.$bodyEditorViewModel.currentFileSelected
                 
-            ) { url in self.bodyEditorViewModel.changeOpenFile(url) }
+			) { url in self.fileSelected = url } // self.bodyEditorViewModel.changeOpenFile(url)
             .environmentObject(self.bodyEditorViewModel)
             
             Spacer()
@@ -105,7 +119,7 @@ struct BodyEditorView: View {
     // MARK: Show content editor
     private var editorArea: some View {
         let projectPath = URL(fileURLWithPath: selectedProjectPath)
-        let isEmptyPath = self.bodyEditorViewModel.currentFileSelected == nil
+		let isEmptyPath = self.fileSelected == nil // self.bodyEditorViewModel.currentFileSelected == nil
 		
 		let viewModel = MultiSectionSpotlightViewModel<SpotlightFileItem>(
 			dataSource: FileSystemDataSource(
@@ -126,7 +140,9 @@ struct BodyEditorView: View {
 				maxHeight: 400,
 				showDividers: true,
 				onSelect: { file in
-					self.bodyEditorViewModel.changeOpenFile(file.url)
+					self.fileSelected = file.url
+
+					//self.bodyEditorViewModel.changeOpenFile(file.url)
 					self.bodyEditorViewModel.isSearching(false)
 				},
 			)
@@ -137,8 +153,9 @@ struct BodyEditorView: View {
 				let editor = SettingsManager().load(file: "global_settings.json",GlobalSettings.self)?.editorUse {
 								
                 EditorAreaView(
-					projectRoot: projectPath,
-					editorUse  : editor
+					projectRoot : projectPath,
+					editorUse   : editor,
+					fileSelected: self.$fileSelected
 				)
 				.environmentObject(self.bodyEditorViewModel)
 				.environmentObject(self.terminal)

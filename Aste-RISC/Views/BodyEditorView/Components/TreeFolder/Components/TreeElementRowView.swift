@@ -9,7 +9,7 @@ import SwiftUI
 
 struct TreeElementRowView: View {
     @ObservedObject var node: FileNode
-    
+    	
 	@Binding var isSelected: Int
 	
     var fileOpen  : URL?
@@ -32,6 +32,10 @@ struct TreeElementRowView: View {
 				RoundedRectangle(cornerRadius: 8)
 					.fill(self.isSelected == level ? Color.accentColor : .clear)
 			)
+			.onChange(of: self.fileOpen) { _, newValue in
+				if newValue == self.node.url { self.isSelected = level }
+			}
+			.onAppear { if self.fileOpen == self.node.url { self.isSelected = level } }
 			.contextMenu {
 				Button {
 					print("Azione 'Modifica' selezionata")
@@ -39,12 +43,6 @@ struct TreeElementRowView: View {
 				} label: {
 					Label("Modifica", systemImage: "pencil")
 				}
-			}
-			.onChange(of: self.fileOpen) { _, newValue in
-				print("file open: \(newValue?.absoluteString ?? "nil")")
-				print("file node: \(self.node.url.absoluteString)")
-				
-				if newValue == self.node.url { self.isSelected = level }
 			}
             
             // Show element child
@@ -100,7 +98,7 @@ struct TreeElementRowView: View {
     private var isDirectoryIcon: some View {
         return Group {
             if node.isDirectory {
-                Image(systemName: "chevron.right") // node.isExpanded ? "chevron.down" : "chevron.right"
+                Image(systemName: "chevron.right")
 					.font(.caption)
 					.fontWeight(.bold)
 					.foregroundStyle(.secondary)

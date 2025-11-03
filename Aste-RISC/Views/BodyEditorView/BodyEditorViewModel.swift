@@ -12,21 +12,21 @@ import SwiftUI
 class BodyEditorViewModel: ObservableObject {
     @Published var isSearchingFile    : Bool            // Searching File
     @Published var editorState        : EditorState     // Runnig section
-    @Published var currentFileSelected: URL?            // Tree file section
+    //@Published var currentFileSelected: URL?            // Tree file section
     @Published var mapInstruction     : MapInstructions // Map instruction source to view
-	@Published var isOutputVisible    : Bool			 // Show output section
+	@Published var isOutputVisible    : Bool			// Show output section
     
     init() {
         self.isSearchingFile     = false
         self.editorState         = .readyToBuild
-        self.currentFileSelected = nil
+        //self.currentFileSelected = nil
         self.mapInstruction      = MapInstructions()
 		self.isOutputVisible 	 = false
     }
     
     func isSearching      (_ status: Bool)        { Task { @MainActor in self.isSearchingFile     = status } }
     func changeEditorState(_ state : EditorState) { Task { @MainActor in self.editorState         = state  } }
-    func changeOpenFile   (_ file  : URL)         { Task { @MainActor in self.currentFileSelected = file   } }
+    //func changeOpenFile   (_ file  : URL)         { Task { @MainActor in self.currentFileSelected = file   } }
     
     func isEditorStopped() -> Bool { return self.editorState == .readyToBuild || self.editorState == .stopped }
     

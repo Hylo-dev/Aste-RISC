@@ -9,8 +9,17 @@ import SwiftUI
 
 struct ToolbarStatusView: View {
     @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
+	@Binding private var fileSelected: URL?
 	
 	let selectProjectName: String
+	
+	init(
+		fileSelected	 : Binding<URL?>,
+		selectProjectName: String
+	) {
+		self._fileSelected = fileSelected
+		self.selectProjectName = selectProjectName
+	}
     
     var body: some View {
         
@@ -27,7 +36,8 @@ struct ToolbarStatusView: View {
                     .truncationMode(.middle)
                     .layoutPriority(1)
                 
-                if let fileOpen = self.bodyEditorViewModel.currentFileSelected {
+				// self.bodyEditorViewModel.currentFileSelected
+				if let fileOpen = self.fileSelected {
                 
                     Image(systemName: "chevron.right")
                         .font(.subheadline)

@@ -9,12 +9,18 @@ import SwiftUI
 
 struct ToolbarSearchView: View {
     @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
+	@Binding private var fileSelected: URL?
+	
+	init(fileSelected: Binding<URL?>) {
+		self._fileSelected = fileSelected
+	}
     
     var body: some View {
         
         Button {
             withAnimation(.spring()) {
-                if self.bodyEditorViewModel.currentFileSelected != nil {
+				//self.bodyEditorViewModel.currentFileSelected
+				if self.fileSelected != nil {
                     self.bodyEditorViewModel.toggleSearching()
                 }
             }

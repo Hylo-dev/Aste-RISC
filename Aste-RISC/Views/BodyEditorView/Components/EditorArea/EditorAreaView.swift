@@ -9,12 +9,19 @@ struct EditorAreaView: View {
            
     private static let collapsedHeight: CGFloat = 48
     
+	@Binding private var fileSelected: URL?
+	
     var projectRoot: URL // Principal path, this is project path
 	let editorUse  : Editors
 	
-	init (projectRoot: URL, editorUse: Editors) {
-		self.projectRoot = projectRoot
-		self.editorUse   = editorUse
+	init (
+		projectRoot : URL,
+		editorUse   : Editors,
+		fileSelected: Binding<URL?>
+	) {
+		self.projectRoot   = projectRoot
+		self.editorUse     = editorUse
+		self._fileSelected = fileSelected
 	}
             
     var body: some View {
@@ -40,8 +47,8 @@ struct EditorAreaView: View {
 									alignment: .topLeading
 								)
 							
-						} else {
-							EditorTerminalView(openFilePath: self.bodyEditorViewModel.currentFileSelected!.path)
+						} else { // self.bodyEditorViewModel.currentFileSelected!.path
+							EditorTerminalView(openFilePath: self.fileSelected!.path)
 							
 						}
 				}
@@ -57,14 +64,15 @@ struct EditorAreaView: View {
             .padding(.bottom, 16)
             .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
 			.animation(.spring(), value: self.bodyEditorViewModel.isOutputVisible)
-            // Set file selected to editor text
-			.onChange(of: self.bodyEditorViewModel.currentFileSelected, handleFileSelected)
+            // Set file selected to editor text self.bodyEditorViewModel.currentFileSelected
+			.onChange(of: self.fileSelected, handleFileSelected)
             .onAppear { handleFileSelected(oldValue: nil, newValue: nil) }
         }
     }
     
 	private func handleFileSelected(oldValue: URL?, newValue: URL?) {
-		guard let url = self.bodyEditorViewModel.currentFileSelected else {
+		// self.bodyEditorViewModel.currentFileSelected
+		guard let url = self.fileSelected else {
 			return
 		}
 
