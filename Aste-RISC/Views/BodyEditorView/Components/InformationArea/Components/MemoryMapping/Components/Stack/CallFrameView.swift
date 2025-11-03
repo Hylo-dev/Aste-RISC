@@ -8,11 +8,12 @@
 import SwiftUI
 
 struct CallFrameView: View {
+	@Binding
+	private var isExpanded: Bool
+	
 	private let frame	   : CallFrame
 	private let stackStores: [UInt32: Int]
 	private let frameIndex : Int
-	
-	@Binding private var isExpanded: Bool
 	
 	init(
 		frame	   : CallFrame,
@@ -30,65 +31,79 @@ struct CallFrameView: View {
 	var body: some View {
 		VStack(alignment: .leading, spacing: 0) {
 			// Frame header
-			Button(action: { withAnimation { isExpanded.toggle() } }) {
-				HStack {
-					Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-						.font(.caption)
-						.foregroundColor(.secondary)
-					
-					VStack(alignment: .leading, spacing: 2) {
-						HStack {
-							Text("Frame #\(frameIndex)")
-								.font(.headline)
-							
-							if let ra = frame.returnAddress {
-								Text("→ 0x\(String(format: "%x", ra))")
-									.font(.caption)
-									.foregroundColor(.orange)
-									.padding(.horizontal, 6)
-									.padding(.vertical, 2)
-									.background(Color.orange.opacity(0.2))
-									.cornerRadius(4)
-							}
-						}
-						
-						Text("0x\(String(format: "%08x", frame.startAddress)) • \(frame.size) bytes")
-							.font(.caption2)
-							.foregroundColor(.secondary)
-							.monospacedDigit()
-					}
-					
-					Spacer()
-					
-					Text("\(frame.words.count) words")
-						.font(.caption2)
-						.foregroundColor(.secondary)
-				}
-				.padding(12)
-				.background(Color.purple.opacity(0.1))
-				.cornerRadius(8)
-			}
-			.buttonStyle(.plain)
+			headerCell
 			
-			// Frame content
-			if isExpanded {
-				VStack(spacing: 4) {
-					ForEach(frame.words.enumerated(), id: \.element.id) { index, frame in
-						StackWordRow(
-							stackFrame : frame,
-							stackStores: stackStores,
-							index	   : index,
-							isInFrame  : true
-						)
+			VStack(spacing: 0) {
+				// Frame content
+				if isExpanded {
+					VStack(spacing: 4) {
+						ForEach(frame.words.enumerated(), id: \.element.id) { index, frame in
+							StackWordRow(
+								stackFrame : frame,
+								stackStores: stackStores,
+								index	   : index,
+								isInFrame  : true
+							)
+						}
 					}
+					.padding(.leading, 8)
+					.padding(.vertical, 8)
+					.transition(.move(edge: .top).combined(with: .opacity))
 				}
-				.padding(.leading, 8)
-				.padding(.vertical, 8)
 			}
+			.frame(maxWidth: .infinity)
+			.clipped()
+			
 		}
 		.background(
 			RoundedRectangle(cornerRadius: 10)
 				.stroke(Color.purple.opacity(0.3), lineWidth: 2)
 		)
+	}
+	
+	// MARK: - Views
+	
+	private var headerCell: some View {
+		return Button(action: { withAnimation(.spring()) { isExpanded.toggle() } }) {
+			HStack {
+				Image(systemName: "chevron.right")
+					.rotationEffect(Angle(degrees: isExpanded ? 90 : 0))
+					.font(.caption)
+					.foregroundColor(.secondary)
+				
+				VStack(alignment: .leading, spacing: 2) {
+					HStack {
+						Text("Frame #\(frameIndex)")
+							.font(.headline)
+						
+						if let ra = frame.returnAddress {
+							Text("→ 0x\(String(format: "%x", ra))")
+								.font(.caption)
+								.foregroundColor(.orange)
+								.padding(.horizontal, 6)
+								.padding(.vertical, 2)
+								.background(Color.orange.opacity(0.2))
+								.cornerRadius(4)
+						}
+					}
+					
+					Text("0x\(String(format: "%08x", frame.startAddress)) • \(frame.size) bytes")
+						.font(.caption2)
+						.foregroundColor(.secondary)
+						.monospacedDigit()
+				}
+				
+				Spacer()
+				
+				Text("\(frame.words.count) words")
+					.font(.caption2)
+					.foregroundColor(.secondary)
+			}
+			.padding(12)
+			.background(Color.purple.opacity(0.1))
+			.cornerRadius(8)
+			
+		}
+		.buttonStyle(.plain)
 	}
 }

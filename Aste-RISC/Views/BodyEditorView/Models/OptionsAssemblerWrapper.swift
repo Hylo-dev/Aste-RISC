@@ -13,7 +13,6 @@ class OptionsAssemblerWrapper: ObservableObject {
 	
 	deinit {
 		free_options(self.opts)
-		
 		self.opts = nil
 	}
 	

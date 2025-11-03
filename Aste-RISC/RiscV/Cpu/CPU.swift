@@ -10,15 +10,19 @@ import Foundation
 internal import Combine
 
 class CPU: ObservableObject {
-	@Published var stackFrames   : [StackFrame] = []
-	@Published var programCounter: UInt32
-	@Published var stackStores   : [UInt32: Int] = [:] // address -> register number
+	@Published
+	var programCounter: UInt32
 	
+	@Published
+	var registers: [Int]
 	
-	private let resetFlag: Int
-	private let alu		 : ALU
+	@Published
+	var stackStores: [UInt32: Int] = [:]
+		
+	private let resetFlag	 : Int
+	private let alu			 : ALU
+	private var framePointers: [UInt32] = []
 	
-	var registers	: [Int]
 	var historyStack: [StateChange] = []
 	var ram: RAM? = nil
 	
@@ -26,13 +30,7 @@ class CPU: ObservableObject {
 	var textSize: UInt32 = 0
 	var dataBase: UInt32 = 0
 	var dataSize: UInt32 = 0
-	
-	private var lastSP: UInt32 = 0
-	private var lastFP: UInt32 = 0
-	private var stackUpdateCounter: Int = 0
-	
-	private var framePointers: [UInt32] = []
-	
+		
 	init() {
 		self.programCounter = 0
 		self.resetFlag = -1
@@ -59,8 +57,6 @@ class CPU: ObservableObject {
 	private func execute(optionsSource: options_t) -> ExecutionStatus {
 		let oldPC = self.programCounter
 		
-		defer { updateStackFrames() }
-
 		var nextProgramCounter = programCounter + 4
 		
 		let rawInstruction = fetch(optionsSource: optionsSource)
@@ -212,7 +208,6 @@ class CPU: ObservableObject {
 				break
 		}
 		
-		updateStackFrames()
 		return true
 	}
 	
@@ -322,110 +317,6 @@ class CPU: ObservableObject {
 	
 	func loadEntryPoint(value: UInt32) {
 		self.programCounter = value
-	}
-	
-	@MainActor
-	private func updateStackFrames() {
-		guard let ram = ram else { return }
-		
-		let sp = UInt32(registers[2])
-		let fp = UInt32(registers[8])
-		
-		// Aggiorna solo ogni N istruzioni O se SP/FP cambiano significativamente
-		stackUpdateCounter += 1
-		let spChanged = abs(Int(sp) - Int(lastSP)) >= 4 // Minimo 1 words di differenza
-		let fpChanged = fp != lastFP
-		
-		// Aggiorna solo se necessario
-		guard stackUpdateCounter >= 2 || spChanged || fpChanged else {
-			return
-		}
-		
-		stackUpdateCounter = 0
-		lastSP = sp
-		lastFP = fp
-				
-		// Ora procedi con l'aggiornamento reale
-		var frames: [StackFrame] = []
-		
-		let wordsToShow = 128
-		var consecutiveErrors = 0
-		let maxConsecutiveErrors = 8
-		
-		let ramStart = ram.pointee.base_vaddr
-		let ramEnd = ramStart + UInt32(ram.pointee.size)
-
-		for i in 0..<wordsToShow {
-			let addr = sp &+ UInt32(i * 4)
-			
-			if addr < ramStart || addr + 4 > ramEnd {
-				consecutiveErrors += 1
-				if consecutiveErrors >= maxConsecutiveErrors { break }
-				continue
-			}
-			
-			let rawInstruction = read_ram32bit(ram, addr)
-			let isError = (rawInstruction == -1)
-			
-			let isNonZero = (!isError && rawInstruction != 0)
-			let rawInstructionUnsigned = UInt32(bitPattern: rawInstruction)
-			
-			let isPointerToText = (
-				rawInstructionUnsigned >= self.textBase &&
-				rawInstructionUnsigned < self.textBase &+ self.textSize
-			)
-			
-			let isFrameBoundary = isPointerToText && isNonZero
-			let isFramePointer = (addr == fp)
-			let isSavedRegister = isNonZero && !isPointerToText && i < 32
-
-			if isError {
-				consecutiveErrors += 1
-				if consecutiveErrors >= maxConsecutiveErrors { break }
-				
-			} else {
-				consecutiveErrors = 0
-				
-			}
-
-			let color: Color
-			if isError {
-				color = Color(.systemGray)
-			} else if isFramePointer {
-				color = Color(.systemPurple).opacity(0.85)
-			} else if isFrameBoundary {
-				color = Color(.systemRed).opacity(0.85)
-			} else if isSavedRegister {
-				color = Color(.systemOrange).opacity(0.6)
-			} else if isNonZero {
-				color = Color(.systemBlue).opacity(0.6)
-			} else {
-				color = Color(.systemMint)
-			}
-
-			let frame = StackFrame(
-				address: addr,
-				value: rawInstruction,
-				color: color,
-				label: String(format: "0x%08x", addr),
-				isPointer: isPointerToText,
-				isNonZero: isNonZero,
-				isError: isError,
-				isFrameBoundary: isFrameBoundary,
-				offsetFromSP: i
-			)
-			
-			frames.append(frame)
-		}
-
-		// Usa animazione più leggera se i frame sono simili
-		let animationStyle: Animation = frames.count == self.stackFrames.count ?
-			.easeInOut(duration: 0.15) :
-			.spring(response: 0.3, dampingFraction: 0.8)
-		
-		withAnimation(animationStyle) {
-			self.stackFrames = frames
-		}
 	}
 	
 	/// Perform store operation based on funct3 (store size)

@@ -63,6 +63,8 @@ struct TreeElementRowView: View {
 						}
 					}
 				}
+				.frame(maxWidth: .infinity)
+				.clipped()
 				
 			}
 

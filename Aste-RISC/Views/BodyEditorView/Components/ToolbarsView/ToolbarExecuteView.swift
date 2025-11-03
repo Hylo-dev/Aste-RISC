@@ -9,12 +9,11 @@ import SwiftUI
 
 struct ToolbarExecuteView: View {
 	@EnvironmentObject private var cpu: CPU
-	
-    @ObservedObject var optionsWrapper: OptionsAssemblerWrapper
-	
+		
 	@Binding var isOutputVisible: Bool
 	@Binding var editorState	: EditorState
 	@Binding var mapInstruction : MapInstructions
+	@Binding var optionsWrapper : OptionsAssemblerWrapper
 	
 	let currentFileSelected: URL?
 	

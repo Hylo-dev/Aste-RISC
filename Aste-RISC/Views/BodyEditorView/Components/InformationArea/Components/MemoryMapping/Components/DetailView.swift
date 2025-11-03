@@ -7,12 +7,15 @@
 
 import SwiftUI
 
-// Vista dettagliata per ogni sezione
 struct DetailView: View {
+	@EnvironmentObject
+	private var cpu: CPU
+	
+	@EnvironmentObject
+	private var stackViewModel: StackViewModel
+	
 	let selectedSection: MemorySection.SectionType?
 	let sections	   : [MemorySection]
-	
-	@EnvironmentObject var cpu: CPU
 	
 	var body: some View {
 		Group {
@@ -23,10 +26,10 @@ struct DetailView: View {
 					case .stack:
 						StackDetailView(
 							section		: section,
+							callFrames  : self.$stackViewModel.callFrames,
+							stackStores : self.$cpu.stackStores,
 							stackPointer: self.cpu.registers[2],
-							framePointer: self.cpu.registers[8],
-							stackFrames : self.cpu.stackFrames,
-							stackStores : self.cpu.stackStores
+							framePointer: self.cpu.registers[8]
 						)
 							
 					case .text:

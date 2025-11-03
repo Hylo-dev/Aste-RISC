@@ -21,7 +21,7 @@ struct ToolbarSearchView: View {
             withAnimation(.spring()) {
 				//self.bodyEditorViewModel.currentFileSelected
 				if self.fileSelected != nil {
-                    self.bodyEditorViewModel.toggleSearching()
+					self.bodyEditorViewModel.isSearchingFile.toggle()
                 }
             }
             
