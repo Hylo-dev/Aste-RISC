@@ -68,16 +68,16 @@ struct TreeFilesView: View {
 		.frame(minWidth: 220)
 		.padding(.horizontal, 10)
 		.onAppear {
-			guard rootNode.isDirectory else { return }
+			guard self.rootNode.isDirectory else { return }
 
-			rootNode.loadChildrenPreservingState(forceReload: true)
-			rootNode.isExpanded = true
+			self.rootNode.loadChildrenPreservingState(forceReload: true)
+			self.rootNode.isExpanded = true
 		}
 		.onChange(of: self.selectedFile) { _, newURL in
 			// When the externally selected file changes,
 			// expand the tree to reveal it.
 			guard let urlToOpen = newURL else { return }
-			_ = rootNode.expandTo(url: urlToOpen)
+			_ = self.rootNode.expandTo(url: urlToOpen)
 		}
 	}
 }

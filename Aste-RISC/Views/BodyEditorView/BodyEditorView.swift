@@ -124,7 +124,7 @@ struct BodyEditorView: View {
 					.onTapGesture {
 						withAnimation(.spring()) { self.bodyEditorViewModel.isSearchingFile = false }
 					}
-					.zIndex(1)
+					.zIndex(0)
 			}
 		}
 	}
