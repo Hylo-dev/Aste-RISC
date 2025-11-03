@@ -27,13 +27,31 @@ struct ToolbarExecuteView: View {
 			HStack(spacing: 10) {
 				// Run and stop button
 				Button {
-					runCode()
+										
+					if isEditorStopped() {
+						runCode()
+						
+					} else {
+						withAnimation {
+							self.editorState   					 = .stopped
+							self.mapInstruction.indexInstruction = nil
+							
+							// Set reset state true
+							self.cpu.resetCpu()
+						}
+					}
 					
 				} label: {
 					Image(systemName: isEditorStopped() ? "play" : "stop.fill")
 						.font(.caption)
 					
 				}
+				.if(isEditorStopped(), transform: { view in
+					view.keyboardShortcut("r", modifiers: .command)
+				})
+				.if(!isEditorStopped(), transform: { view in
+					view.keyboardShortcut(".", modifiers: .command)
+				})
 				.glassEffect(in: .circle)
 				.disabled(optionsWrapper.opts == nil)
 
@@ -49,21 +67,22 @@ struct ToolbarExecuteView: View {
 								.font(.caption)
 							
 						}
+						.keyboardShortcut("p", modifiers: .command)
 						.glassEffect(in: .circle)
-						.disabled(self.cpu.historyStack.isEmpty)
+						.disabled(self.cpu.historyStack.isEmpty || self.cpu.resetFlag)
 
 						Button {
 							let result = self.cpu.runStep(optionsSource: optionsWrapper.opts!.pointee)
 							
-							if result != .success {
-								print(result.rawValue)
-							}
+							if result != .success { print(result.rawValue) }
 							
 						} label: {
 							Image(systemName: "forward.fill")
 								.font(.caption)
 						}
+						.keyboardShortcut("n", modifiers: .command)
 						.glassEffect(in: .circle)
+						.disabled(self.cpu.resetFlag)
 						
 					}
 					.transition(.move(edge: .leading).combined(with: .opacity))
@@ -85,53 +104,49 @@ struct ToolbarExecuteView: View {
 	}
 	
 	private func runCode() {
-		if isEditorStopped() {
-			// Execute Assembly
-			let resultAssembling = AssemblerBridge.shared.assemble(
-				optionsAsembler: optionsWrapper.opts!
-			)
-			
-			self.isOutputVisible = true
-								
-			if resultAssembling == 0 {
-				let opt = optionsWrapper.opts!.pointee
-			
-				let textStart = Int(opt.text_vaddr)
-				let textEnd   = textStart + opt.text_size
-				let dataStart = Int(opt.data_vaddr)
-				let dataEnd   = dataStart + opt.data_size
+		
+		// WARNING, THIS CONTROL IS A PRIORITY
+		self.cpu.resetFlag = false
+		
+		// Execute Assembly
+		let resultAssembling = AssemblerBridge.shared.assemble(
+			optionsAsembler: optionsWrapper.opts!
+		)
+		
+		self.isOutputVisible = true
+							
+		if resultAssembling == 0 {
+			let opt = optionsWrapper.opts!.pointee
+		
+			let textStart = Int(opt.text_vaddr)
+			let textEnd   = textStart + opt.text_size
+			let dataStart = Int(opt.data_vaddr)
+			let dataEnd   = dataStart + opt.data_size
 
-				let stackSize = 0x10000 // 64 KB di stack
-				let stackTop = max(textEnd, dataEnd) + stackSize
+			let stackSize = 0x10000 // 64 KB di stack
+			let stackTop = max(textEnd, dataEnd) + stackSize
 
-				let ramBase = min(textStart, dataStart)
-				let ramSize = stackTop - ramBase
+			let ramBase = min(textStart, dataStart)
+			let ramSize = stackTop - ramBase
 
-				self.cpu.ram = new_ram(ramSize, UInt32(ramBase))
-				
-				load_binary_to_ram(cpu.ram, opt.data_data, opt.data_size, opt.data_vaddr)
-				load_binary_to_ram(cpu.ram, opt.text_data, opt.text_size, opt.text_vaddr)
-				
-				self.cpu.textBase = opt.text_vaddr
-				self.cpu.textSize = UInt32(opt.text_size)
-				self.cpu.dataBase = opt.data_vaddr
-				self.cpu.dataSize = UInt32(opt.data_size)
-
-				self.cpu.loadEntryPoint(value: opt.entry_point)
-
-				self.cpu.registers[2] = Int(stackTop - 4)
-			}
+			self.cpu.ram = new_ram(ramSize, UInt32(ramBase))
 			
-			getIndexSourceAssembly()
+			load_binary_to_ram(cpu.ram, opt.data_data, opt.data_size, opt.data_vaddr)
+			load_binary_to_ram(cpu.ram, opt.text_data, opt.text_size, opt.text_vaddr)
 			
-			withAnimation { self.editorState = .running }
-			
-		} else {
-			withAnimation {
-				self.editorState   					 = .stopped
-				self.mapInstruction.indexInstruction = nil
-			}
+			self.cpu.textBase = opt.text_vaddr
+			self.cpu.textSize = UInt32(opt.text_size)
+			self.cpu.dataBase = opt.data_vaddr
+			self.cpu.dataSize = UInt32(opt.data_size)
+
+			self.cpu.loadEntryPoint(value: opt.entry_point)
+
+			self.cpu.registers[2] = Int(stackTop - 4)
 		}
+		
+		getIndexSourceAssembly()
+		
+		withAnimation { self.editorState = .running }
 	}
     
     private func getIndexSourceAssembly() {

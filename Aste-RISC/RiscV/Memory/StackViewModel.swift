@@ -62,13 +62,24 @@ class StackViewModel: ObservableObject {
 		// Set up a Combine pipeline to observe the CPU.
 		// We merge changes from registers (for SP/FP) and the PC.
 		Publishers.Merge(
-			cpu.$registers.map { _ in () },      // We only care *that* it changed
+			cpu.$registers.map { _ in () },     // We only care *that* it changed
 			cpu.$programCounter.map { _ in () } // not what the new value is.
 		)
 		// Throttle updates to prevent UI churn during rapid execution.
 		.throttle(for: .milliseconds(100), scheduler: RunLoop.main, latest: true)
 		// When a throttled update comes through, call our main work function.
-		.sink { [weak self] _ in self?.updateStackFrames() }
+		.sink { [weak self] _ in
+			
+			if !(self?.cpu.resetFlag ?? true) {
+				self?.updateStackFrames()
+				
+			} else {
+				withAnimation(.spring()) {
+					self?.callFrames.removeAll()
+					self?.stackFrames.removeAll()
+				}
+			}
+		}
 		.store(in: &cancellables)
 	}
 	

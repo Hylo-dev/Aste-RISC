@@ -62,7 +62,7 @@ class BodyEditorViewModel: ObservableObject {
 		oldValue: UInt32,
 		newValue: UInt32
 	) {
-		guard let opts = optionsWrapper.opts else { return }
+		guard let opts = optionsWrapper.opts, newValue != 0 else { return }
 		
 		// Calculate the zero-based instruction index
 		self.mapInstruction.indexInstruction = UInt32((newValue - (opts.pointee.text_vaddr)) / 4)

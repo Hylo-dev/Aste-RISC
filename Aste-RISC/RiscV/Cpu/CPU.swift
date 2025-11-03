@@ -19,10 +19,10 @@ class CPU: ObservableObject {
 	@Published
 	var stackStores: [UInt32: Int] = [:]
 		
-	private let resetFlag	 : Int
 	private let alu			 : ALU
 	private var framePointers: [UInt32] = []
 	
+	var resetFlag: Bool
 	var historyStack: [StateChange] = []
 	var ram: RAM? = nil
 	
@@ -33,13 +33,24 @@ class CPU: ObservableObject {
 		
 	init() {
 		self.programCounter = 0
-		self.resetFlag = -1
-		self.registers = [Int](repeating: 0, count: 32)
-		self.alu = ALU()
+		self.resetFlag 		= false
+		self.registers	    = [Int](repeating: 0, count: 32)
+		self.alu 			= ALU()
 	}
 	
 	deinit {
 		if destroy_ram(self.ram) { self.ram = nil }
+	}
+	
+	/// Reset CPU status
+	func resetCpu() {
+		self.stackStores 	= [:]
+		self.registers 		= [Int](repeating: 0, count: 32)
+		self.programCounter = 0
+		self.framePointers  = []
+		self.historyStack   = []
+		
+		self.resetFlag	    = true
 	}
 		
 	/// Run code step by step
