@@ -43,7 +43,7 @@
       "location" : "https://github.com/Hylo-dev/FileSpotlight.git",
       "state" : {
         "branch" : "main",
-        "revision" : "1617cdf5c503dc51538e33d7b7f1d5f3797efd59"
+        "revision" : "39c4430910b131a04c9c0333fa61383b547340ce"
       }
     },
     {
@@ -79,7 +79,7 @@
       "location" : "https://github.com/Hylo-dev/SwiftFlowPicker.git",
       "state" : {
         "branch" : "main",
-        "revision" : "c8698e39e4c1bd5f843134ecb14d7ddf570b658b"
+        "revision" : "fc028ef82fbaf239ced9a55f3b3c10dda545b9ac"
       }
     },
     {

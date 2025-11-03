@@ -9,13 +9,13 @@ import SwiftUI
 
 struct TerminalContainerView: View {
 	@EnvironmentObject private var terminal: TerminalOutputModel
-	@EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
 	
-	@Binding var terminalHeight: CGFloat
-	@State private var isDragging: Bool = false
+	@Binding var isOutputVisible: Bool
+	@Binding var terminalHeight : CGFloat
 	
-	@State private var isHoveringSlider: Bool = false
-	@State private var showSliderHighlight: Bool = false
+	@State private var isDragging			: Bool = false
+	@State private var isHoveringSlider		: Bool = false
+	@State private var showSliderHighlight	: Bool = false
 	@State private var highlightFadeWorkItem: DispatchWorkItem?
 	
 	private let minTerminalHeight: CGFloat = 80
@@ -55,8 +55,14 @@ struct TerminalContainerView: View {
 					}
 					
 					highlightFadeWorkItem = workItem
-					DispatchQueue.main.asyncAfter(deadline: .now() + highlightFadeDelay, execute: workItem)
 					
+					Task {
+						try? await Task.sleep(for: .seconds(highlightFadeDelay))
+
+						await MainActor.run {
+							_ = workItem
+						}
+					}
 				}
 			}
 			.gesture(
@@ -66,12 +72,9 @@ struct TerminalContainerView: View {
 						let newHeight = terminalHeight - value.translation.height
 						
 						if newHeight >= Self.collapsedHeight {
-							if !self.bodyEditorViewModel.isOutputVisible {
-								self.bodyEditorViewModel.isOutputVisible = true
-							}
+							if !self.isOutputVisible { self.isOutputVisible = true }
 							
 							isDragging = true
-							
 							terminalHeight = min(newHeight, maxTerminalHeight)
 						}
 						
@@ -81,7 +84,7 @@ struct TerminalContainerView: View {
 						
 						if terminalHeight <= minTerminalHeight + 10 {
 							withAnimation(.spring()) {
-								self.bodyEditorViewModel.isOutputVisible = false
+								self.isOutputVisible = false
 							}
 						}
 					}
@@ -93,37 +96,40 @@ struct TerminalContainerView: View {
 		VStack(spacing: 0) {
 			HStack(alignment: .center) {
 				Spacer()
+				
 				Button {
 					withAnimation(.spring()) {
-						self.bodyEditorViewModel.isOutputVisible.toggle()
+						self.isOutputVisible.toggle()
 						
-						if self.bodyEditorViewModel.isOutputVisible && terminalHeight < minTerminalHeight {
+						if self.isOutputVisible && terminalHeight < minTerminalHeight {
 							terminalHeight = minTerminalHeight
 						}
 						
 					}
 				} label: {
 					Image(systemName: "dock.rectangle")
-						.foregroundColor(self.bodyEditorViewModel.isOutputVisible ? .accentColor : .primary)
+						.foregroundColor(self.isOutputVisible ? .accentColor : .primary)
 					
 				}
 				.buttonStyle(.plain)
 			}
 			.zIndex(1)
 			
-			if self.bodyEditorViewModel.isOutputVisible {
-				Spacer()
-			}
+			Spacer()
+				.frame(height: self.isOutputVisible ? 8 : 0)
+				.animation(.easeInOut(duration: 0.25), value: isOutputVisible)
 			
 			// Contain list output assembler
 			outputAssembler
+			
 		}
 		.padding()
 		.frame(
 			maxWidth: .infinity,
-			maxHeight: self.bodyEditorViewModel.isOutputVisible ? terminalHeight : Self.collapsedHeight,
+			maxHeight: self.isOutputVisible ? terminalHeight : Self.collapsedHeight,
 			alignment: .top
 		)
+		.clipped()
 		.background(roundedBackgroundTerminal)
 		.onAppear(perform: handleOutputAssemblerAppear)
 		
@@ -170,7 +176,7 @@ struct TerminalContainerView: View {
 	}
     
     private var roundedBackgroundTerminal: some View {
-        RoundedRectangle(cornerRadius: self.bodyEditorViewModel.isOutputVisible ? 26 : 20)
+        RoundedRectangle(cornerRadius: self.isOutputVisible ? 26 : 20)
             .fill(.windowBackground)
             .stroke(.secondary.opacity(0.23), style: .init(lineWidth: 1))
             .shadow(color: .black.opacity(0.2), radius: 24, x: 0, y: 8)

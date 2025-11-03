@@ -10,11 +10,11 @@ internal import Combine
 import SwiftUI
 
 class BodyEditorViewModel: ObservableObject {
-    @Published private(set) var isSearchingFile    : Bool            // Searching File
-    @Published private(set) var editorState        : EditorState     // Runnig section
-    @Published 		 	    var currentFileSelected: URL?            // Tree file section
-    @Published private(set) var mapInstruction     : MapInstructions // Map instruction source to view
-	@Published   	   	    var isOutputVisible    : Bool			 // Show output section
+    @Published var isSearchingFile    : Bool            // Searching File
+    @Published var editorState        : EditorState     // Runnig section
+    @Published var currentFileSelected: URL?            // Tree file section
+    @Published var mapInstruction     : MapInstructions // Map instruction source to view
+	@Published var isOutputVisible    : Bool			 // Show output section
     
     init() {
         self.isSearchingFile     = false

@@ -8,125 +8,137 @@
 import SwiftUI
 
 struct ToolbarExecuteView: View {
-    @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
-	@EnvironmentObject private var cpu 				  : CPU
+	@EnvironmentObject private var cpu: CPU
 	
     @ObservedObject var optionsWrapper: OptionsAssemblerWrapper
+	
+	@Binding var isOutputVisible: Bool
+	@Binding var editorState	: EditorState
+	@Binding var mapInstruction : MapInstructions
+	
+	let currentFileSelected: URL?
+	
 	    
     static private let instructionRegex = try! NSRegularExpression(pattern: #"^\s*(?!\.)(?:[A-Za-z_]\w*:)?([A-Za-z]{2,7})\b"#)
     
     var body: some View {
-        
-        HStack(spacing: 10) {
-            
-            // Run and stop button
-            Button {
-                if self.bodyEditorViewModel.isEditorStopped() {
-					// Execute Assembly
-					let resultAssembling = AssemblerBridge.shared.assemble(
-						optionsAsembler: optionsWrapper.opts!
-					)
+		
+		GlassEffectContainer(spacing: 13) {
+			
+			HStack(spacing: 10) {
+				// Run and stop button
+				Button {
+					runCode()
 					
-					self.bodyEditorViewModel.isOutputVisible = true
-										
-					if resultAssembling == 0 {
-						let opt = optionsWrapper.opts!.pointee
+				} label: {
+					Image(systemName: isEditorStopped() ? "play" : "stop.fill")
+						.font(.caption)
 					
-						let textStart = Int(opt.text_vaddr)
-						let textEnd   = textStart + opt.text_size
-						let dataStart = Int(opt.data_vaddr)
-						let dataEnd   = dataStart + opt.data_size
+				}
+				.glassEffect(in: .circle)
+				.disabled(optionsWrapper.opts == nil)
 
-						let stackSize = 0x10000 // 64 KB di stack
-						let stackTop = max(textEnd, dataEnd) + stackSize
-
-						let ramBase = min(textStart, dataStart)
-						let ramSize = stackTop - ramBase
-
-						self.cpu.ram = new_ram(ramSize, UInt32(ramBase))
-						
-						load_binary_to_ram(cpu.ram, opt.data_data, opt.data_size, opt.data_vaddr)
-						load_binary_to_ram(cpu.ram, opt.text_data, opt.text_size, opt.text_vaddr)
-						
-						self.cpu.textBase = opt.text_vaddr
-						self.cpu.textSize = UInt32(opt.text_size)
-						self.cpu.dataBase = opt.data_vaddr
-						self.cpu.dataSize = UInt32(opt.data_size)
-
-						self.cpu.loadEntryPoint(value: opt.entry_point)
-
-						self.cpu.registers[2] = Int(stackTop - 4)
-					}
-					
-                    getIndexSourceAssembly()
-                    
-                    withAnimation { self.bodyEditorViewModel.changeEditorState(.running) }
-                    
-                } else {
-                    withAnimation {
-                        self.bodyEditorViewModel.changeEditorState(.stopped)
-                        self.bodyEditorViewModel.changeCurrentInstruction(index: nil)
-                    }
-                    
-                }
-                
-            } label: {
-                Image(systemName: self.bodyEditorViewModel.isEditorStopped() ? "play" : "stop.fill")
-                    .font(.system(size: 17))
-                
-            }
-            .frame(width: 35, height: 35)
-            .buttonStyle(.glass)
-			.disabled(optionsWrapper.opts == nil)
-
-            if self.bodyEditorViewModel.editorState == .running {
-                GlassEffectContainer(spacing: 30) {
-                    HStack(spacing: 10) {
-                        Button {
+				if self.editorState == .running {
+					HStack(spacing: 2) {
+						Button {
 							if !self.cpu.backwardExecute() {
 								print("Cronology is empty. Not possible execute backward instruction.")
 							}
-                            
-                        } label: {
-                            Image(systemName: "backward.fill")
-                                .font(.title3)
-                            
-                        }
-                        .frame(width: 35, height: 35)
-                        .buttonStyle(.glass)
+							
+						} label: {
+							Image(systemName: "backward.fill")
+								.font(.caption)
+							
+						}
+						.glassEffect(in: .circle)
 						.disabled(self.cpu.historyStack.isEmpty)
 
-                        Button {
+						Button {
 							let result = self.cpu.runStep(optionsSource: optionsWrapper.opts!.pointee)
 							
 							if result != .success {
 								print(result.rawValue)
 							}
-                            
-                        } label: {
-                            Image(systemName: "forward.fill")
-                                .font(.title3)
-                        }
-                        .frame(width: 35, height: 35)
-                        .buttonStyle(.glass)
-                    }
-                    .transition(.move(edge: .leading).combined(with: .opacity))
-                }
-                
-            } else {
-                Color.clear
-                    .frame(width: 80.0, height: 35.0)
-                    .allowsHitTesting(false)
-            }
-        }
-        .animation(.spring(), value: self.bodyEditorViewModel.editorState)
-        
+							
+						} label: {
+							Image(systemName: "forward.fill")
+								.font(.caption)
+						}
+						.glassEffect(in: .circle)
+						
+					}
+					.transition(.move(edge: .leading).combined(with: .opacity))
+					
+				} else {
+					Color.clear
+						.frame(width: 80.0, height: 35.0)
+						.allowsHitTesting(false)
+				}
+				
+			}
+			.animation(.spring(), value: self.editorState)
+			
+		}
     }
+	
+	private func isEditorStopped() -> Bool {
+		return self.editorState == .readyToBuild || self.editorState == .stopped
+	}
+	
+	private func runCode() {
+		if isEditorStopped() {
+			// Execute Assembly
+			let resultAssembling = AssemblerBridge.shared.assemble(
+				optionsAsembler: optionsWrapper.opts!
+			)
+			
+			self.isOutputVisible = true
+								
+			if resultAssembling == 0 {
+				let opt = optionsWrapper.opts!.pointee
+			
+				let textStart = Int(opt.text_vaddr)
+				let textEnd   = textStart + opt.text_size
+				let dataStart = Int(opt.data_vaddr)
+				let dataEnd   = dataStart + opt.data_size
+
+				let stackSize = 0x10000 // 64 KB di stack
+				let stackTop = max(textEnd, dataEnd) + stackSize
+
+				let ramBase = min(textStart, dataStart)
+				let ramSize = stackTop - ramBase
+
+				self.cpu.ram = new_ram(ramSize, UInt32(ramBase))
+				
+				load_binary_to_ram(cpu.ram, opt.data_data, opt.data_size, opt.data_vaddr)
+				load_binary_to_ram(cpu.ram, opt.text_data, opt.text_size, opt.text_vaddr)
+				
+				self.cpu.textBase = opt.text_vaddr
+				self.cpu.textSize = UInt32(opt.text_size)
+				self.cpu.dataBase = opt.data_vaddr
+				self.cpu.dataSize = UInt32(opt.data_size)
+
+				self.cpu.loadEntryPoint(value: opt.entry_point)
+
+				self.cpu.registers[2] = Int(stackTop - 4)
+			}
+			
+			getIndexSourceAssembly()
+			
+			withAnimation { self.editorState = .running }
+			
+		} else {
+			withAnimation {
+				self.editorState   					 = .stopped
+				self.mapInstruction.indexInstruction = nil
+			}
+		}
+	}
     
     private func getIndexSourceAssembly() {
-        self.bodyEditorViewModel.cleanInstructionsMapped()
+		self.mapInstruction.indexesInstructions.removeAll()
         
-        let fileOpen    = self.bodyEditorViewModel.currentFileSelected!
+		let fileOpen    = self.currentFileSelected!
         let fileContent = (try? String(contentsOf: fileOpen, encoding: .utf8)) ?? ""
         
         var controlTextSection = false
@@ -137,7 +149,7 @@ struct ToolbarExecuteView: View {
             let range = NSRange(location: 0, length: line.utf16.count)
             
             if Self.instructionRegex.firstMatch(in: String(line), options: [], range: range) != nil {
-                self.bodyEditorViewModel.appendInstruction(index)
+				self.mapInstruction.indexesInstructions.append(index)
             }
         }
     }

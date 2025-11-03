@@ -27,40 +27,60 @@ struct BodyEditorView: View {
 	let selectedProjectName: String
 		
     var body: some View {
-		NavigationSplitView { treeSection }
-		content: { editorArea }
-		detail : {
-			informationArea
-				.frame(minWidth: 350, idealWidth: 400, maxWidth: .infinity)
-		}
-		.onAppear { self.bodyEditorViewModel.changeCurrentInstruction(index: cpu.programCounter) }
-		.onChange(of: cpu.programCounter, handleProgramCounterChange)
-		.onChange(of: bodyEditorViewModel.currentFileSelected, handleFileSelectionChange)
-		.frame(maxWidth: .infinity, maxHeight: .infinity)
-		.toolbar {
-				
-			// Section toolbar, this contains running execution button
-			ToolbarItem(placement: .navigation) {
-				ToolbarExecuteView(optionsWrapper: optionsWrapper)
-					.environmentObject(self.bodyEditorViewModel)
-					.environmentObject(self.cpu)
-					.environmentObject(self.terminal)
+		ZStack {
+		
+			NavigationSplitView { treeSection }
+			content: { editorArea }
+			detail : {
+				informationArea
+					.frame(minWidth: 350, idealWidth: 400, maxWidth: .infinity)
 			}
-			.sharedBackgroundVisibility(.hidden)
-
-			// Center Section for view current file working and search file
-			ToolbarItem(placement: .principal) {
-				ToolbarStatusView(selectProjectName: self.selectedProjectName)
-					.environmentObject(self.bodyEditorViewModel)
-			}
-			.sharedBackgroundVisibility(.hidden)
-				
-			// Search button
-			ToolbarItem(placement: .principal) {
-				ToolbarSearchView().environmentObject(self.bodyEditorViewModel)
+			.onAppear { self.bodyEditorViewModel.changeCurrentInstruction(index: cpu.programCounter) }
+			.onChange(of: cpu.programCounter, handleProgramCounterChange)
+			.onChange(of: bodyEditorViewModel.currentFileSelected, handleFileSelectionChange)
+			.frame(maxWidth: .infinity, maxHeight: .infinity)
+			.toolbar {
 					
+				// Section toolbar, this contains running execution button
+				ToolbarItem(placement: .navigation) {
+					ToolbarExecuteView(
+						optionsWrapper     : self.optionsWrapper,
+						isOutputVisible    : self.$bodyEditorViewModel.isOutputVisible,
+						editorState        : self.$bodyEditorViewModel.editorState,
+						mapInstruction 	   : self.$bodyEditorViewModel.mapInstruction,
+						currentFileSelected: self.bodyEditorViewModel.currentFileSelected
+					)
+						.environmentObject(self.bodyEditorViewModel)
+						.environmentObject(self.cpu)
+						.environmentObject(self.terminal)
+				}
+				.sharedBackgroundVisibility(.hidden)
+
+				// Center Section for view current file working and search file
+				ToolbarItem(placement: .principal) {
+					ToolbarStatusView(selectProjectName: self.selectedProjectName)
+						.environmentObject(self.bodyEditorViewModel)
+				}
+				.sharedBackgroundVisibility(.hidden)
+					
+				// Search button
+				ToolbarItem(placement: .principal) {
+					ToolbarSearchView().environmentObject(self.bodyEditorViewModel)
+						
+				}
+				.sharedBackgroundVisibility(.hidden)
 			}
-			.sharedBackgroundVisibility(.hidden)
+			
+			if self.bodyEditorViewModel.isSearchingFile {
+				Rectangle()
+					.fill(.black.opacity(0.18))
+					.ignoresSafeArea()
+					.frame(maxWidth: .infinity, maxHeight: .infinity)
+					.onTapGesture {
+						withAnimation(.spring()) { self.bodyEditorViewModel.isSearchingFile = false }
+					}
+					.zIndex(1)
+			}
 		}
     }
     
@@ -131,7 +151,7 @@ struct BodyEditorView: View {
 					MultiSectionSpotlightView(viewModel: viewModel, width: 600)
 						.focused($spotlightFocused)
 						.onAppear {
-							spotlightFocused = true
+							self.spotlightFocused = true
 						}
 						.zIndex(2)
 						.padding(.top, 170)

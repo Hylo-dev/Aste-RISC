@@ -4,8 +4,8 @@ struct EditorAreaView: View {
     @EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
 	
     // Internal var struct for UI
-    @State private var text           : CodeEditSourceEditorDocument = CodeEditSourceEditorDocument()
-    @State private var terminalHeight : CGFloat = 200
+    @State private var codeEditorDocument: CodeEditSourceEditorDocument = CodeEditSourceEditorDocument()
+    @State private var terminalHeight    : CGFloat = 200
            
     private static let collapsedHeight: CGFloat = 48
     
@@ -23,7 +23,7 @@ struct EditorAreaView: View {
 				
 				switch editorUse {
 					case .native:
-						CodeSourceEditorView(document: $text)
+						CodeSourceEditorView(document: $codeEditorDocument)
 							.frame(
 								maxWidth : .infinity,
 								maxHeight: topHeight(totalHeight: geo.size.height),
@@ -33,7 +33,7 @@ struct EditorAreaView: View {
 						
 					case .helix, .vim, .nvim:
 						if self.bodyEditorViewModel.editorState == .running {
-							CodeSourceEditorView(document: $text)
+							CodeSourceEditorView(document: $codeEditorDocument)
 								.frame(
 									maxWidth : .infinity,
 									maxHeight: topHeight(totalHeight: geo.size.height),
@@ -42,10 +42,14 @@ struct EditorAreaView: View {
 							
 						} else {
 							EditorTerminalView(openFilePath: self.bodyEditorViewModel.currentFileSelected!.path)
+							
 						}
 				}
 				
-                TerminalContainerView(terminalHeight: $terminalHeight)
+                TerminalContainerView(
+					isOutputVisible: self.$bodyEditorViewModel.isOutputVisible,
+					terminalHeight: $terminalHeight
+				)
                 
             }
             .padding(.leading, 16)
@@ -53,7 +57,8 @@ struct EditorAreaView: View {
             .padding(.bottom, 16)
             .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
 			.animation(.spring(), value: self.bodyEditorViewModel.isOutputVisible)
-            .onChange(of: self.bodyEditorViewModel.currentFileSelected, handleFileSelected)
+            // Set file selected to editor text
+			.onChange(of: self.bodyEditorViewModel.currentFileSelected, handleFileSelected)
             .onAppear { handleFileSelected(oldValue: nil, newValue: nil) }
         }
     }
@@ -65,9 +70,9 @@ struct EditorAreaView: View {
 
 		let fileString = (try? String(contentsOf: url, encoding: .utf8)) ?? ""
 
-		Task {
-			if self.text.text.string != fileString {
-				self.text.text.setAttributedString(NSAttributedString(string: fileString))
+		Task { @MainActor in
+			if self.codeEditorDocument.text.string != fileString {
+				self.codeEditorDocument.text.setAttributedString(NSAttributedString(string: fileString))
 			}
 		}
 	}
@@ -77,10 +82,7 @@ struct EditorAreaView: View {
             let top = totalHeight - terminalHeight - 18
 			
             return max(top, 40)
-            
-        } else {
-            return totalHeight - Self.collapsedHeight - 10
-        }
+        } else {  return totalHeight - Self.collapsedHeight - 10 }
     }
     
 }

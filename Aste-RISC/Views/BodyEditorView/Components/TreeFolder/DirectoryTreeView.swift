@@ -9,7 +9,8 @@ import SwiftUI
 
 struct DirectoryTreeView: View {
     @StateObject private var rootNode: FileNode
-                 
+	@State private var rowSelected	 : Int = 0
+	
 	@Binding private var currentFileSelected: URL?
 	private var onOpenFile: ((URL) -> Void)
     
@@ -39,9 +40,10 @@ struct DirectoryTreeView: View {
     }
     
     private var treeView: some View {
-        return LazyVStack(alignment: .leading, spacing: 0) {
+        return LazyVStack(alignment: .leading, spacing: 5) {
             TreeElementRowView(
-                node	  : rootNode,
+				node	  : rootNode,
+				isSelected: $rowSelected,
 				fileOpen  : self.currentFileSelected,
                 level	  : 0,
                 onOpenFile: onOpenFile

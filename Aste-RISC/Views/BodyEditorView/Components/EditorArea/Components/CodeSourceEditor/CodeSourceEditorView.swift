@@ -13,7 +13,7 @@ import SwiftUI
 
 struct CodeSourceEditorView: View {
 	@Environment(\.colorScheme) var colorScheme
-	@EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
+	//@EnvironmentObject private var bodyEditorViewModel: BodyEditorViewModel
 
 	@Binding var document: CodeEditSourceEditorDocument
 	
@@ -74,7 +74,7 @@ struct CodeSourceEditorView: View {
 				configuration: SourceEditorConfiguration(
 					appearance: .init(theme: theme, font: font, wrapLines: wrapLines),
 					behavior: .init(
-						isEditable: self.bodyEditorViewModel.editorState != .running,
+						//isEditable: self.bodyEditorViewModel.editorState != .running,
 						indentOption: indentOption,
 						reformatAtColumn: reformatAtColumn
 					),
@@ -94,7 +94,7 @@ struct CodeSourceEditorView: View {
 				
 			)
 			.frame(maxWidth: .infinity, maxHeight: .infinity)
-			.clipShape(RoundedRectangle(cornerRadius: 26))
+			.clipShape(RoundedRectangle(cornerRadius: 28))
 			.onReceive(NotificationCenter.default.publisher(for: TreeSitterClient.Constants.longParse)) { _ in
 				withAnimation(.easeIn(duration: 0.1)) {
 					isInLongParse = true
