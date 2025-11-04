@@ -21,25 +21,19 @@ struct TreeFilesView: View {
 	@StateObject
 	private var rootNode: FileNode
 	
+	/// ViewModel for manage the status row's
+	@StateObject
+	private var treeElementViewModel: TreeElementViewModel
+	
 	/// Manage textfield focus state when is seleceted
 	@FocusState
 	private var focusTextField: Bool
-	
-	/// Tracks the currently focused row (e.g., for keyboard navigation).
-	@State
-	private var rowSelected: Int = 0
 	
 	/// A binding to the URL of the file currently considered "open" or "active"
 	/// in the wider application.
 	@Binding
 	private var selectedFile: URL?
-	
-	@State
-	private var changeNameFile: Bool = false
-	
-	@State
-	private var nameFile: String = ""
-	
+		
 	/// A closure executed when the user attempts to open a file (e.g., by double-clicking).
 	private var onOpenFile: ((URL) -> Void)
 	 
@@ -54,8 +48,12 @@ struct TreeFilesView: View {
 		selectedFile  : Binding<URL?>,
 		onOpenFile    : @escaping ((URL) -> Void)
 	) {
-		self._rootNode      = StateObject(wrappedValue: FileNode(url: URL(fileURLWithPath: projectPath)))
-		self._selectedFile = selectedFile
+		// Viewmodels variables
+		self._rootNode = StateObject(wrappedValue: FileNode(url: URL(fileURLWithPath: projectPath)))
+		self._treeElementViewModel = StateObject(wrappedValue: TreeElementViewModel())
+		
+		// Simple variables
+		self._selectedFile  = selectedFile
 		self.onOpenFile     = onOpenFile
 	}
 
@@ -63,13 +61,11 @@ struct TreeFilesView: View {
 		ScrollView {
 			LazyVStack(alignment: .leading, spacing: 5) {
 				TreeElementRowView(
-					node       	  : self.rootNode,
-					isSelected 	  : self.$rowSelected,
-					changeNameFile: self.$changeNameFile,
-					nameFile	  : self.$nameFile,
-					fileOpen   	  : self.selectedFile,
-					level     	  : 0,
-					onOpenFile 	  : self.onOpenFile
+					node      : self.rootNode,
+					viewModel : self.treeElementViewModel,
+					fileOpen  : self.selectedFile,
+					level     : 0,
+					onOpenFile: self.onOpenFile
 				)
 				.focused(self.$focusTextField)
 				

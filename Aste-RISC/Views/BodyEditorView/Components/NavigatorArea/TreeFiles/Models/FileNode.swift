@@ -12,8 +12,8 @@ internal import Combine
 @MainActor
 class FileNode: ObservableObject, Identifiable {
     let id		   : String
-    let url        : URL
-    let name       : String
+    var url        : URL
+    var name       : String
     let isDirectory: Bool
     
     private var loaded: Bool = false
