@@ -11,6 +11,10 @@
 		1FDCB3BE2EB1745A002866F1 /* SpotlightView in Frameworks */ = {isa = PBXBuildFile; productRef = 1FDCB3BD2EB1745A002866F1 /* SpotlightView */; };
 		1FE758302EACBC79007E1897 /* CodeEditSourceEditor in Frameworks */ = {isa = PBXBuildFile; productRef = 1FE7582F2EACBC79007E1897 /* CodeEditSourceEditor */; };
 		EA29A30D2EB169AB007EB92F /* SegmentedFlowPicker in Frameworks */ = {isa = PBXBuildFile; productRef = EA29A30C2EB169AB007EB92F /* SegmentedFlowPicker */; };
+		EA9BB1EF2EBA0DDF00EC182D /* LanguageServer in Frameworks */ = {isa = PBXBuildFile; productRef = EA9BB1EE2EBA0DDF00EC182D /* LanguageServer */; };
+		EA9BB1F22EBA0DEB00EC182D /* LanguageClient in Frameworks */ = {isa = PBXBuildFile; productRef = EA9BB1F12EBA0DEB00EC182D /* LanguageClient */; };
+		EA9BB1F52EBA0DF300EC182D /* JSONRPC in Frameworks */ = {isa = PBXBuildFile; productRef = EA9BB1F42EBA0DF300EC182D /* JSONRPC */; };
+		EA9BB1F82EBA0DFA00EC182D /* LanguageServerProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = EA9BB1F72EBA0DFA00EC182D /* LanguageServerProtocol */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,9 +35,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				1FDCB3BE2EB1745A002866F1 /* SpotlightView in Frameworks */,
+				EA9BB1EF2EBA0DDF00EC182D /* LanguageServer in Frameworks */,
 				1FE758302EACBC79007E1897 /* CodeEditSourceEditor in Frameworks */,
+				EA9BB1F82EBA0DFA00EC182D /* LanguageServerProtocol in Frameworks */,
+				EA9BB1F52EBA0DF300EC182D /* JSONRPC in Frameworks */,
 				EA29A30D2EB169AB007EB92F /* SegmentedFlowPicker in Frameworks */,
 				1F041C732EA2A74500ED403A /* SwiftTerm in Frameworks */,
+				EA9BB1F22EBA0DEB00EC182D /* LanguageClient in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -88,6 +96,10 @@
 				1FE7582F2EACBC79007E1897 /* CodeEditSourceEditor */,
 				EA29A30C2EB169AB007EB92F /* SegmentedFlowPicker */,
 				1FDCB3BD2EB1745A002866F1 /* SpotlightView */,
+				EA9BB1EE2EBA0DDF00EC182D /* LanguageServer */,
+				EA9BB1F12EBA0DEB00EC182D /* LanguageClient */,
+				EA9BB1F42EBA0DF300EC182D /* JSONRPC */,
+				EA9BB1F72EBA0DFA00EC182D /* LanguageServerProtocol */,
 			);
 			productName = RISKit;
 			productReference = 1FD053182E9ED36F00D734FD /* Aste-RISC.app */;
@@ -123,6 +135,10 @@
 				1FE7582E2EACBC79007E1897 /* XCRemoteSwiftPackageReference "CodeEditSourceEditor" */,
 				EA29A30B2EB169AB007EB92F /* XCRemoteSwiftPackageReference "SwiftFlowPicker" */,
 				1FDCB3BC2EB1745A002866F1 /* XCRemoteSwiftPackageReference "FileSpotlight" */,
+				EA9BB1ED2EBA0DDF00EC182D /* XCRemoteSwiftPackageReference "LanguageServer" */,
+				EA9BB1F02EBA0DEB00EC182D /* XCRemoteSwiftPackageReference "LanguageClient" */,
+				EA9BB1F32EBA0DF300EC182D /* XCRemoteSwiftPackageReference "JSONRPC" */,
+				EA9BB1F62EBA0DFA00EC182D /* XCRemoteSwiftPackageReference "LanguageServerProtocol" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 1FD053192E9ED36F00D734FD /* Products */;
@@ -189,6 +205,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8KZQJ4JUGS;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -214,6 +231,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -253,6 +271,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8KZQJ4JUGS;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -271,6 +290,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -284,6 +304,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 8KZQJ4JUGS;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -320,6 +341,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 8KZQJ4JUGS;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -402,6 +424,38 @@
 				kind = branch;
 			};
 		};
+		EA9BB1ED2EBA0DDF00EC182D /* XCRemoteSwiftPackageReference "LanguageServer" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ChimeHQ/LanguageServer.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		EA9BB1F02EBA0DEB00EC182D /* XCRemoteSwiftPackageReference "LanguageClient" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ChimeHQ/LanguageClient.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.8.2;
+			};
+		};
+		EA9BB1F32EBA0DF300EC182D /* XCRemoteSwiftPackageReference "JSONRPC" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ChimeHQ/JSONRPC.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.2;
+			};
+		};
+		EA9BB1F62EBA0DFA00EC182D /* XCRemoteSwiftPackageReference "LanguageServerProtocol" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ChimeHQ/LanguageServerProtocol.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.14.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -424,6 +478,26 @@
 			isa = XCSwiftPackageProductDependency;
 			package = EA29A30B2EB169AB007EB92F /* XCRemoteSwiftPackageReference "SwiftFlowPicker" */;
 			productName = SegmentedFlowPicker;
+		};
+		EA9BB1EE2EBA0DDF00EC182D /* LanguageServer */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EA9BB1ED2EBA0DDF00EC182D /* XCRemoteSwiftPackageReference "LanguageServer" */;
+			productName = LanguageServer;
+		};
+		EA9BB1F12EBA0DEB00EC182D /* LanguageClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EA9BB1F02EBA0DEB00EC182D /* XCRemoteSwiftPackageReference "LanguageClient" */;
+			productName = LanguageClient;
+		};
+		EA9BB1F42EBA0DF300EC182D /* JSONRPC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EA9BB1F32EBA0DF300EC182D /* XCRemoteSwiftPackageReference "JSONRPC" */;
+			productName = JSONRPC;
+		};
+		EA9BB1F72EBA0DFA00EC182D /* LanguageServerProtocol */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EA9BB1F62EBA0DFA00EC182D /* XCRemoteSwiftPackageReference "LanguageServerProtocol" */;
+			productName = LanguageServerProtocol;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
