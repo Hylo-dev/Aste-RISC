@@ -54,11 +54,14 @@ struct NavigatiorAreaView: View {
 				// selects a different file, updating the parent's state.
 				self.fileSelected = newURL
 			}
+			.padding(.horizontal, 10) // Adds horizontal padding to the entire sidebar
 			
 			// Pushes the TreeFilesView to the top of the VStack
 			Spacer()
 			
+			Divider()
+			
+			FilterFilesView()
 		}
-		.padding(.horizontal, 10) // Adds horizontal padding to the entire sidebar
 	}
 }

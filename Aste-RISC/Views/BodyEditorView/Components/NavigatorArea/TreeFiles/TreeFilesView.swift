@@ -21,6 +21,10 @@ struct TreeFilesView: View {
 	@StateObject
 	private var rootNode: FileNode
 	
+	/// Manage textfield focus state when is seleceted
+	@FocusState
+	private var focusTextField: Bool
+	
 	/// Tracks the currently focused row (e.g., for keyboard navigation).
 	@State
 	private var rowSelected: Int = 0
@@ -29,6 +33,12 @@ struct TreeFilesView: View {
 	/// in the wider application.
 	@Binding
 	private var selectedFile: URL?
+	
+	@State
+	private var changeNameFile: Bool = false
+	
+	@State
+	private var nameFile: String = ""
 	
 	/// A closure executed when the user attempts to open a file (e.g., by double-clicking).
 	private var onOpenFile: ((URL) -> Void)
@@ -53,12 +63,15 @@ struct TreeFilesView: View {
 		ScrollView {
 			LazyVStack(alignment: .leading, spacing: 5) {
 				TreeElementRowView(
-					node       : self.rootNode,
-					isSelected : self.$rowSelected,
-					fileOpen   : self.selectedFile,
-					level      : 0,
-					onOpenFile : self.onOpenFile
+					node       	  : self.rootNode,
+					isSelected 	  : self.$rowSelected,
+					changeNameFile: self.$changeNameFile,
+					nameFile	  : self.$nameFile,
+					fileOpen   	  : self.selectedFile,
+					level     	  : 0,
+					onOpenFile 	  : self.onOpenFile
 				)
+				.focused(self.$focusTextField)
 				
 			}
 			.padding(.vertical, 8)

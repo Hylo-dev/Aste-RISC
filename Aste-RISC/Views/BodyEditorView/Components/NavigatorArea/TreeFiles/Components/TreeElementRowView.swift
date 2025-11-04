@@ -18,10 +18,21 @@ struct TreeElementRowView: View {
 	@ObservedObject
 	var node: FileNode
 	
+	/// Manage textfield focus state when is seleceted
+	private var focusTextField: FocusState<Bool>.Binding?
+	
 	/// A binding to track selection. The row is considered "selected"
 	/// when this value matches its own `level`.
 	@Binding
-	var isSelected: Int
+	private var isSelected: Int
+	
+	/// Status for change name file to textfield, this change name for single file
+	@Binding
+	private var changeNameFile: Bool
+	
+	/// Get name file selected and modified name
+	@Binding
+	private var nameFile: String
 	
 	/// The URL of the file currently open in the main editor.
 	/// This is used to coordinate selection and expansion when the file
@@ -34,21 +45,31 @@ struct TreeElementRowView: View {
 	/// A callback closure executed when a user clicks on a file row
 	/// (not a directory) to open it.
 	var onOpenFile: ((URL) -> Void)
+	
+	init(
+		node	  	  : FileNode,
+		isSelected	  : Binding<Int>,
+		changeNameFile: Binding<Bool>,
+		nameFile	  : Binding<String>,
+		fileOpen  	  : URL?,
+		level	  	  : Int,
+		onOpenFile	  : @escaping (URL) -> Void
+		
+	) {
+		self.node		 	 = node
+		self._isSelected 	 = isSelected
+		self._changeNameFile = changeNameFile
+		self._nameFile       = nameFile
+		self.fileOpen		 = fileOpen
+		self.level		 	 = level
+		self.onOpenFile 	 = onOpenFile
+	}
 
 	var body: some View {
 		
 		VStack(alignment: .leading, spacing: 0) {
 			// The main clickable button for the entire row.
-			Button(action: {
-				// If this node is a file, trigger the open file callback.
-				if !self.node.isDirectory {
-					onOpenFile(node.url)
-				}
-				
-				// Tapping the row always selects it.
-				self.isSelected = level
-				
-			}) { bodyButtonElement }  // The visual content of the row
+			Button(action: handleOnSelectRow) { bodyButtonElement }  // The visual content of the row
 				.buttonStyle(.plain)
 				.background(
 					// Apply a background highlight if this row's level
@@ -77,26 +98,41 @@ struct TreeElementRowView: View {
 			if self.node.isDirectory {
 				
 				VStack(spacing: 0) {
-					if node.isExpanded {
+					if self.node.isExpanded {
 						ForEach(node.children) { child in
 							// Recursively create a new row for each child
 							TreeElementRowView(
-								node: child,
-								isSelected: $isSelected,
-								fileOpen: fileOpen,
-								level: level + 1, // Increment the indentation level
-								onOpenFile: onOpenFile
+								node	 	  : child,
+								isSelected	  : self.$isSelected,
+								changeNameFile: self.$changeNameFile,
+								nameFile	  : self.$nameFile,
+								fileOpen  	  : self.fileOpen,
+								level	  	  : self.level + 1, // Increment the indentation level
+								onOpenFile	  : self.onOpenFile
 							)
+							.if(self.focusTextField != nil, transform: { view in
+								view.focused(self.focusTextField!)
+							})
 							.transition(.move(edge: .top).combined(with: .opacity))
 						}
 					}
 				}
 				.frame(maxWidth: .infinity)
 				.clipped()
+				.animation(.spring(response: 0.1, dampingFraction: 0.7), value: self.node.isExpanded)
 			}
-			
 		}
 		.clipped()
+	}
+	
+	// MARK: - Modifiers
+	
+	/// Get focusable state.
+	/// - Parameter binding: Focusable state
+	public func focused(_ binding: FocusState<Bool>.Binding) -> Self {
+		var view = self
+		view.focusTextField = binding
+		return view
 	}
 
 	// MARK: - Views
@@ -132,10 +168,33 @@ struct TreeElementRowView: View {
 				}
 			}
 			
-			// --- Name ---
-			Text(node.name.isEmpty ? node.url.path : node.name)
-				.font(.body)
-				.lineLimit(1)
+			if self.changeNameFile && self.isSelected == level {
+				TextField(node.name.isEmpty ? node.url.path : node.name, text: self.$nameFile)
+					.background(
+						Rectangle()
+							.fill(.background)
+					)
+					.textFieldStyle(.plain)
+					.if(self.focusTextField != nil) { view in
+						view.focused(self.focusTextField!)
+					}
+				
+			} else {
+				
+				// --- Name ---
+				Text(node.name.isEmpty ? node.url.path : node.name)
+					.font(.body)
+					.lineLimit(1)
+					.onTapGesture {
+						if self.isSelected == level {
+							self.changeNameFile = true
+							self.nameFile   	= node.name
+							
+							self.focusTextField?.wrappedValue = true
+							
+						} else { handleOnSelectRow()}
+					}
+			}
 			
 			Spacer(minLength: 0)
 			
@@ -149,28 +208,32 @@ struct TreeElementRowView: View {
 	private var isDirectoryIcon: some View {
 		return Group {
 			if node.isDirectory {
-				// --- Directory Chevron ---
-				Image(systemName: "chevron.right")
-					.font(.caption)
-					.fontWeight(.bold)
-					.foregroundStyle(.secondary)
-					.padding(3)
-					.contentShape(Rectangle())
 				
-				// Rotate the chevron when the node is expanded
-					.rotationEffect(.degrees(self.node.isExpanded ? 90 : 0))
-					.animation(.spring(response: 0.2, dampingFraction: 0.7), value: self.node.isExpanded)
-					.onTapGesture {
-						// This gesture *only* handles expansion/collapse.
-						// Tapping the main row handles selection.
-						if node.isDirectory {
-							withAnimation(.spring()) {
-								node.isExpanded.toggle()
-								// Load children if expanding for the first time
-								if node.isExpanded { node.loadChildrenPreservingState(forceReload: false) }
-							}
+				Button(action: {
+					// This gesture *only* handles expansion/collapse.
+					// Tapping the main row handles selection.
+					if node.isDirectory {
+						withAnimation(.spring()) {
+							node.isExpanded.toggle()
+							// Load children if expanding for the first time
+							if node.isExpanded { node.loadChildrenPreservingState(forceReload: false) }
 						}
 					}
+					
+				}) {
+					// --- Directory Chevron ---
+					Image(systemName: "chevron.right")
+						.font(.caption)
+						.fontWeight(.bold)
+						.foregroundStyle(.secondary)
+						.padding(5)
+						.contentShape(Rectangle())
+					
+					// Rotate the chevron when the node is expanded
+						.rotationEffect(.degrees(self.node.isExpanded ? 90 : 0))
+						.animation(.spring(response: 0.1, dampingFraction: 0.7), value: self.node.isExpanded)
+				}
+				.buttonStyle(.plain)
 				
 			} else {
 				// --- File Spacer ---
@@ -194,5 +257,20 @@ struct TreeElementRowView: View {
 		// If this row's node *is* the currently open file,
 		// set its selection state.
 		if self.fileOpen == self.node.url { self.isSelected = level }
+	}
+	
+	/// Handles task on row is selected for first time, set focus row and set variables
+	/// for modified the file title
+	private func handleOnSelectRow() {
+		// If this node is a file, trigger the open file callback.
+		if !self.node.isDirectory {
+			onOpenFile(node.url)
+		}
+		
+		// Tapping the row always selects it.
+		self.isSelected 	= level
+		self.changeNameFile = false
+		
+		self.focusTextField?.wrappedValue = false
 	}
 }
