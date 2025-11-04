@@ -115,10 +115,21 @@ struct TreeElementRowView: View {
 				isDirectoryIcon
 				
 				// Renders the file/folder icon from a shared cache
-				Image(nsImage: IconCache.shared.icon(for: node.url))
-					.resizable()
-					.aspectRatio(contentMode: .fit)
-					.frame(width: 17, height: 17)
+				if self.node.isDirectory {
+					Image(systemName: "folder.fill")
+						.resizable()
+						.aspectRatio(contentMode: .fit)
+						.frame(width: 15, height: 15)
+						.if(self.isSelected != level, transform: { view in
+							view.foregroundStyle(.tint)
+						})
+					
+				} else {
+					Image(nsImage: IconCache.shared.icon(for: node.url))
+						.resizable()
+						.aspectRatio(contentMode: .fit)
+						.frame(width: 15, height: 15)
+				}
 			}
 			
 			// --- Name ---
@@ -147,7 +158,8 @@ struct TreeElementRowView: View {
 					.contentShape(Rectangle())
 				
 				// Rotate the chevron when the node is expanded
-					.rotationEffect(Angle(degrees: self.node.isExpanded ? 90 : 0))
+					.rotationEffect(.degrees(self.node.isExpanded ? 90 : 0))
+					.animation(.spring(response: 0.2, dampingFraction: 0.7), value: self.node.isExpanded)
 					.onTapGesture {
 						// This gesture *only* handles expansion/collapse.
 						// Tapping the main row handles selection.

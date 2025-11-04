@@ -20,6 +20,7 @@ struct InformationAreaView: View {
 			.clipShape(.rect(cornerRadius: 10))
 			.glassEffect()
 			.padding(.top, 5)
+			.frame(height: 30)
 
 			VStack(alignment: .leading) {
 				scrollHeader()
@@ -45,6 +46,7 @@ struct InformationAreaView: View {
 						.font(.body)
 				}
 				.glassEffect()
+				.frame(height: 27)
 				
 			case .stack:
 				SegmentedFlowPicker(
@@ -55,6 +57,7 @@ struct InformationAreaView: View {
 						.font(.body)
 				}
 				.glassEffect()
+				.frame(height: 27)
 		}
 		
 		Divider()
