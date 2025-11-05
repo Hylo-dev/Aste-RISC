@@ -102,7 +102,9 @@ class TreeElementViewModel: ObservableObject {
 			
 			parentNode.loadChildrenPreservingState(forceReload: true)
 
-			DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+			Task { @MainActor in
+				try? await Task.sleep(nanoseconds: 100_000_000)
+				
 				if let newNode = parentNode.children.first(where: { $0.url == newURL }) {
 					self.nodeSelected    = newNode
 					self.rowSelected	 = newNode.id.uuidString
@@ -113,4 +115,55 @@ class TreeElementViewModel: ObservableObject {
 			}
 		}
 	}
+	
+	/// Delete the file/directory of the selected node and select the previous one
+	func deleteFile() {
+		guard let selectedNode = nodeSelected else { return }
+		
+		let fileManager = FileManager.default
+		let parentNode = selectedNode.parent
+		
+		var previousNode: FileNode?
+		if let parent = parentNode,
+		   let currentIndex = parent.children.firstIndex(where: { $0.id == selectedNode.id }) {
+			
+			if currentIndex > 0 {
+				previousNode = parent.children[currentIndex - 1]
+				
+			} else if parent.children.count > 1 {
+				previousNode = parent.children[currentIndex + 1]
+				
+			} else {
+				previousNode = parent
+			}
+		}
+		
+		do {
+			try fileManager.removeItem(at: selectedNode.url)
+			
+			if let parent = parentNode {
+				parent.loadChildrenPreservingState(forceReload: true)
+			}
+			
+			Task { @MainActor in
+				try? await Task.sleep(nanoseconds: 100_000_000)
+				
+				if let prevNode = previousNode {
+					self.nodeSelected  = prevNode
+					self.rowSelected   = prevNode.id.uuidString
+					self.focusedNodeID = prevNode.id
+					
+				} else {
+					// No node to select
+					self.nodeSelected  = nil
+					self.rowSelected   = ""
+					self.focusedNodeID = nil
+				}
+			}
+			
+		} catch {
+			print("Error deleting file: \(error.localizedDescription)")
+		}
+	}
+	
 }

@@ -130,7 +130,7 @@ struct TreeElementRowView: View {
 			// MARK: - File's section
 			
 			Button {
-				
+				self.viewModel.createFile()
 				
 			} label: { Label("New Empty File", systemImage: "document.badge.plus") }
 			
@@ -139,7 +139,7 @@ struct TreeElementRowView: View {
 			// MARK: - Options section
 			
 			Button {
-				
+				self.viewModel.deleteFile()
 				
 			} label: { Label("Delete", systemImage: "trash") }
 			
