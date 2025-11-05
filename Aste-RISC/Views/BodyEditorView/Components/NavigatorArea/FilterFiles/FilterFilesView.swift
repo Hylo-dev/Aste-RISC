@@ -19,16 +19,19 @@ struct FilterFilesView: View {
 	
 	var body: some View {
 		
-		HStack {
+		HStack(spacing: 5) {
 			
 			// Button for add item's on tree view
 			Menu {
-				Button("Modifica") {
-					print("Modifica")
-				}
+				Button {
+					self.treeElementViewModel.createFile()
+					
+				} label: { Label("New Empty File", systemImage: "document.badge.plus") }
 				
-				Button("Elimina") {
-					print("Elimina")
+				Button {
+					
+				} label: {
+					Label("New Folder", systemImage: "folder.badge.plus")
 				}
 				
 			} label: {

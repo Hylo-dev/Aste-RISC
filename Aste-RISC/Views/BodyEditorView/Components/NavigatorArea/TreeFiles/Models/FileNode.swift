@@ -11,19 +11,19 @@ internal import Combine
 
 @MainActor
 class FileNode: ObservableObject, Identifiable {
-    let id		   : String
+    let id		   : UUID = UUID()
     var url        : URL
     var name       : String
     let isDirectory: Bool
     
     private var loaded: Bool = false
+	weak var parent: FileNode?
 
     @Published var children  : [FileNode] = []
     @Published var isExpanded: Bool       = false
     @Published var icon      : Image?     = nil
 
     init(url: URL) {
-        self.id   = url.path
         self.url  = url
         self.name = url.lastPathComponent
 
@@ -71,16 +71,18 @@ class FileNode: ObservableObject, Identifiable {
             Task { @MainActor [weak self] in
                 guard let self = self else { return }
 
-                var existingMap = Dictionary(uniqueKeysWithValues: self.children.map { ($0.id, $0) })
+				var existingMap = Dictionary(uniqueKeysWithValues: self.children.map { ($0.url, $0) })
                 var newChildren: [FileNode] = []
 
                 for url in urls {
-                    if let existing = existingMap[url.path] {
+					if let existing = existingMap[url] {
+						existing.parent = self
                         newChildren.append(existing)
-                        existingMap.removeValue(forKey: url.path)
+                        existingMap.removeValue(forKey: url)
                         
                     } else {
                         let node = FileNode(url: url)
+						node.parent = self
                         newChildren.append(node)
                         
                     }

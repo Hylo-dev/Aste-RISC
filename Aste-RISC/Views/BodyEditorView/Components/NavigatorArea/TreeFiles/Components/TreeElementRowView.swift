@@ -22,9 +22,9 @@ struct TreeElementRowView: View {
 	@ObservedObject
 	var viewModel: TreeElementViewModel
 	
-	/// Manage textfield focus state when is seleceted
-	private var focusTextField: FocusState<Bool>.Binding?
-	
+	@FocusState
+	private var isTextFieldFocused: Bool
+
 	/// The URL of the file currently open in the main editor.
 	/// This is used to coordinate selection and expansion when the file
 	/// is changed externally.
@@ -62,12 +62,22 @@ struct TreeElementRowView: View {
 					// Apply a background highlight if this row's level
 					// matches the currently selected level.
 					RoundedRectangle(cornerRadius: 8)
-						.fill(self.viewModel.rowSelected == level ? Color.accentColor : .clear)
+						.fill(
+							self.viewModel.rowSelected == self.node.id.uuidString ?
+															Color.accentColor :
+															.clear
+						)
 				)
 				.onChange(of: self.fileOpen) { _, newValue in
 					// If the globally open file changes to this node's URL,
 					// update the selection state to match.
-					if newValue == self.node.url { self.viewModel.rowSelected = level }
+					if newValue == self.node.url {
+						self.viewModel.rowSelected  = self.node.id.uuidString
+						self.viewModel.nodeSelected = node
+					}
+				}
+				.onChange(of: self.viewModel.focusedNodeID) { _, newID in
+					self.isTextFieldFocused = (newID == self.node.id)
 				}
 				.onAppear(perform: handleOnAppear)
 				.contextMenu { self.contextMenu } // Right clik button
@@ -90,19 +100,7 @@ struct TreeElementRowView: View {
 								level	  : self.level + 1, // Increment the indentation level
 								onOpenFile: self.onOpenFile
 							)
-							.if(self.focusTextField != nil, transform: { view in
-								view.focused(self.focusTextField!)
-							})
 							.transition(.move(edge: .top).combined(with: .opacity))
-							.background {
-								Button("") {
-									self.viewModel.isChangeName = false
-									self.focusTextField?.wrappedValue = false
-								}
-								.buttonStyle(.plain)
-								.keyboardShortcut(.escape, modifiers: [])
-								
-							}
 						}
 					}
 				}
@@ -112,16 +110,6 @@ struct TreeElementRowView: View {
 			}
 		}
 		.clipped()
-	}
-	
-	// MARK: - Modifiers
-	
-	/// Get focusable state.
-	/// - Parameter binding: Focusable state
-	public func focused(_ binding: FocusState<Bool>.Binding) -> Self {
-		var view = self
-		view.focusTextField = binding
-		return view
 	}
 
 	// MARK: - Views
@@ -158,7 +146,7 @@ struct TreeElementRowView: View {
 			Button {
 				self.viewModel.isChangeName	   	  = true
 				self.viewModel.currentFileName 	  = node.name
-				self.focusTextField?.wrappedValue = true
+				self.viewModel.focusedNodeID   	  = node.id
 				
 			} label: { Label("Rename", systemImage: "pencil") }
 			
@@ -194,7 +182,7 @@ struct TreeElementRowView: View {
 						.resizable()
 						.aspectRatio(contentMode: .fit)
 						.frame(width: 15, height: 15)
-						.if(self.viewModel.rowSelected != level, transform: { view in
+						.if(self.viewModel.rowSelected != self.node.id.uuidString, transform: { view in
 							view.foregroundStyle(.tint)
 						})
 					
@@ -210,21 +198,19 @@ struct TreeElementRowView: View {
 				}
 			}
 			
-			if self.viewModel.isChangeName && self.viewModel.rowSelected == level {
+			if self.viewModel.isChangeName && self.viewModel.rowSelected == self.node.id.uuidString {
 				TextField(self.node.name, text: self.$viewModel.currentFileName)
 					.background(
 						Rectangle()
 							.fill(.background)
 					)
 					.textFieldStyle(.plain)
-					.if(self.focusTextField != nil) { view in
-						view.focused(self.focusTextField!)
-					}
+					.focused($isTextFieldFocused)
 					.onSubmit {
 						self.viewModel.renameFile(self.node) { newURL, newName in
 							self.node.url 					  = newURL
 							self.node.name 					  = newName
-							self.focusTextField?.wrappedValue = false
+							self.viewModel.focusedNodeID 	  = nil
 							
 							onOpenFile(self.node.url)
 						}
@@ -244,11 +230,10 @@ struct TreeElementRowView: View {
 				})
 				.lineLimit(1)
 				.onTapGesture {
-					if self.viewModel.rowSelected == level {
+					if self.viewModel.rowSelected == self.node.id.uuidString {
 						self.viewModel.isChangeName	   = true
 						self.viewModel.currentFileName = node.name
-						
-						self.focusTextField?.wrappedValue = true
+						self.viewModel.focusedNodeID   = node.id
 						
 					} else { handleOnSelectRow() }
 				}
@@ -313,7 +298,10 @@ struct TreeElementRowView: View {
 		
 		// If this row's node *is* the currently open file,
 		// set its selection state.
-		if self.fileOpen == self.node.url { self.viewModel.rowSelected = level }
+		if self.fileOpen == self.node.url {
+			self.viewModel.rowSelected  = self.node.id.uuidString
+			self.viewModel.nodeSelected = node
+		}
 	}
 	
 	/// Handles task on row is selected for first time, set focus row and set variables
@@ -325,9 +313,10 @@ struct TreeElementRowView: View {
 		}
 		
 		// Tapping the row always selects it.
-		self.viewModel.rowSelected  = level
+		self.viewModel.rowSelected  = self.node.id.uuidString
+		self.viewModel.nodeSelected = node
 		self.viewModel.isChangeName = false
 		
-		self.focusTextField?.wrappedValue = false
+		self.viewModel.focusedNodeID = node.id
 	}
 }
