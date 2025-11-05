@@ -22,7 +22,7 @@ struct TreeFilesView: View {
 	private var rootNode: FileNode
 	
 	/// ViewModel for manage the status row's
-	@StateObject
+	@ObservedObject
 	private var treeElementViewModel: TreeElementViewModel
 	
 	/// Manage textfield focus state when is seleceted
@@ -44,13 +44,14 @@ struct TreeFilesView: View {
 	///   - selectedFile: A binding to the currently active file URL.
 	///   - onOpenFile: A callback invoked when a file is selected for opening.
 	init(
-		projectPath   : String,
-		selectedFile  : Binding<URL?>,
-		onOpenFile    : @escaping ((URL) -> Void)
+		treeElementViewModel: TreeElementViewModel,
+		projectPath  	    : String,
+		selectedFile  		: Binding<URL?>,
+		onOpenFile    		: @escaping ((URL) -> Void)
 	) {
 		// Viewmodels variables
 		self._rootNode = StateObject(wrappedValue: FileNode(url: URL(fileURLWithPath: projectPath)))
-		self._treeElementViewModel = StateObject(wrappedValue: TreeElementViewModel())
+		self.treeElementViewModel = treeElementViewModel
 		
 		// Simple variables
 		self._selectedFile  = selectedFile

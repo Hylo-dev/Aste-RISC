@@ -123,6 +123,26 @@ class FileNode: ObservableObject, Identifiable {
 		
 		return false
 	}
+	
+	func matchesFilter(_ filterText: String) -> Bool {
+
+		guard !filterText.isEmpty else { return true }
+		
+		if self.isDirectory {
+			
+			if self.name.localizedCaseInsensitiveContains(filterText) {
+				return true
+			}
+
+			if self.children.isEmpty {
+				loadChildrenPreservingState(forceReload: false)
+			}
+			
+			return self.children.contains { $0.matchesFilter(filterText) }
+		}
+		
+		return self.name.localizedCaseInsensitiveContains(filterText)
+	}
 
     private func loadIcon() {
         let nsIcon  = NSWorkspace.shared.icon(forFile: url.path)

@@ -10,8 +10,8 @@ import SwiftUI
 struct FilterFilesView: View {
 	
 	/// String filtering tree file's
-	@State
-	private var filterFiles: String = ""
+	@ObservedObject
+	var treeElementViewModel: TreeElementViewModel
 	
 	/// show popup for create files and folders
 	@State
@@ -39,7 +39,7 @@ struct FilterFilesView: View {
 			
 			// Filtring files
 			HStack {
-				TextField("Filter", text: $filterFiles)
+				TextField("Filter", text: self.$treeElementViewModel.filterText)
 					.textFieldStyle(.plain)
 					.frame(maxWidth: .infinity)
 			}

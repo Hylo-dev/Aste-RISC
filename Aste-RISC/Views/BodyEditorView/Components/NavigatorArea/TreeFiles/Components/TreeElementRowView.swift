@@ -18,6 +18,7 @@ struct TreeElementRowView: View {
 	@ObservedObject
 	var node: FileNode
 	
+	/// View model for manage single row on folder
 	@ObservedObject
 	var viewModel: TreeElementViewModel
 	
@@ -76,8 +77,11 @@ struct TreeElementRowView: View {
 			if self.node.isDirectory {
 				
 				VStack(spacing: 0) {
+					
 					if self.node.isExpanded {
-						ForEach(node.children) { child in
+						ForEach(
+							self.node.children.filter { $0.matchesFilter(self.viewModel.filterText) }
+						) { child in
 							// Recursively create a new row for each child
 							TreeElementRowView(
 								node	  : child,
@@ -131,10 +135,7 @@ struct TreeElementRowView: View {
 			Button {
 				
 				
-			} label: {
-				Label("Show in Finder", systemImage: "finder")
-				
-			}
+			} label: { Label("Show in Finder", systemImage: "finder") }
 			
 			Divider()
 			
@@ -143,10 +144,7 @@ struct TreeElementRowView: View {
 			Button {
 				
 				
-			} label: {
-				Label("New Empty File", systemImage: "document.badge.plus")
-				
-			}
+			} label: { Label("New Empty File", systemImage: "document.badge.plus") }
 			
 			Divider()
 			
@@ -155,16 +153,14 @@ struct TreeElementRowView: View {
 			Button {
 				
 				
-			} label: {
-				Label("Delete", systemImage: "trash")
-			}
+			} label: { Label("Delete", systemImage: "trash") }
 			
 			Button {
+				self.viewModel.isChangeName	   	  = true
+				self.viewModel.currentFileName 	  = node.name
+				self.focusTextField?.wrappedValue = true
 				
-				
-			} label: {
-				Label("Rename", systemImage: "pencil")
-			}
+			} label: { Label("Rename", systemImage: "pencil") }
 			
 			Divider()
 			
@@ -237,18 +233,25 @@ struct TreeElementRowView: View {
 			} else {
 				
 				// --- Name ---
-				Text(node.name.isEmpty ? node.url.path : node.name)
-					.font(.body)
-					.lineLimit(1)
-					.onTapGesture {
-						if self.viewModel.rowSelected == level {
-							self.viewModel.isChangeName	   = true
-							self.viewModel.currentFileName = node.name
-							
-							self.focusTextField?.wrappedValue = true
-							
-						} else { handleOnSelectRow()}
-					}
+				Text(
+					node.name.isEmpty ?
+						 AttributedString(node.url.path) :
+						 node.name.highlightingMatches(of: viewModel.filterText)
+				)
+				.font(.body)
+				.if(self.viewModel.filterText != "", transform: { view in
+					view.foregroundStyle(.secondary)
+				})
+				.lineLimit(1)
+				.onTapGesture {
+					if self.viewModel.rowSelected == level {
+						self.viewModel.isChangeName	   = true
+						self.viewModel.currentFileName = node.name
+						
+						self.focusTextField?.wrappedValue = true
+						
+					} else { handleOnSelectRow() }
+				}
 			}
 			
 			Spacer(minLength: 0)

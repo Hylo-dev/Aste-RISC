@@ -22,12 +22,17 @@ class TreeElementViewModel: ObservableObject {
 	@Published
 	var currentFileName: String
 	
+	/// Use for filtering file with name
+	@Published
+	var filterText: String
+	
 	init() {
 		
 		// Default values
 		self.rowSelected 	 = 0
 		self.isChangeName    = false
 		self.currentFileName = ""
+		self.filterText 	 = ""
 	}
 	
 	/// Rename the file or directory
@@ -53,6 +58,7 @@ class TreeElementViewModel: ObservableObject {
 									
 		} catch {
 			print("Error rename: \(error.localizedDescription)")
+			
 		}
 	}
 }

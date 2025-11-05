@@ -20,6 +20,10 @@ struct NavigatiorAreaView: View {
 	@Binding
 	private var fileSelected: URL?
 	
+	/// ViewModel for manage the status row's
+	@StateObject
+	private var treeElementViewModel = TreeElementViewModel()
+	
 	/// The absolute file path to the root directory of the project.
 	/// This path is passed to `TreeFilesView` to populate the file tree.
 	private let projectPath: String
@@ -46,8 +50,9 @@ struct NavigatiorAreaView: View {
 			// The primary view that renders the actual file tree.
 			// It is initialized with the project path and the file selection binding.
 			TreeFilesView(
-				projectPath : self.projectPath,
-				selectedFile: self.$fileSelected
+				treeElementViewModel: self.treeElementViewModel,
+				projectPath		    : self.projectPath,
+				selectedFile		: self.$fileSelected
 				
 			) { newURL in
 				// This closure is called by TreeFilesView when a user
@@ -61,7 +66,7 @@ struct NavigatiorAreaView: View {
 			
 			Divider()
 			
-			FilterFilesView()
+			FilterFilesView(treeElementViewModel: self.treeElementViewModel)
 		}
 	}
 }
