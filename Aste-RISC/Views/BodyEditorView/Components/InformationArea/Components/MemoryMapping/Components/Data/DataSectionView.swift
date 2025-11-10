@@ -16,6 +16,7 @@ struct DataSectionView: View {
 			HStack {
 				Text(".data (Globals)")
 					.font(.title2)
+					.foregroundStyle(.cyan)
 					.fontWeight(.bold)
 				
 				Spacer()
@@ -28,6 +29,7 @@ struct DataSectionView: View {
 				} else {
 					Text("Empty")
 						.font(.caption)
+						.foregroundStyle(.secondary)
 						.monospacedDigit()
 					
 				}
