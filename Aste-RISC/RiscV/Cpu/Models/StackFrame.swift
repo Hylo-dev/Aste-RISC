@@ -16,9 +16,9 @@ struct StackFrame: Identifiable, Equatable {
 	let label  : String
 
 	// Metadata
-	let isPointer: Bool        // pointing into .text
-	let isNonZero: Bool        // != 0 e != -1
-	let isError: Bool          // read error (-1)
-	let isFrameBoundary: Bool  // return addr
-	let offsetFromSP: Int      // word index (0 = top)
+	let isPointer	   : Bool // pointing into .text
+	let isNonZero	   : Bool // != 0 e != -1
+	let isError  	   : Bool // read error (-1)
+	let isFrameBoundary: Bool // return addr
+	let offsetFromSP   : Int  // word index (0 = top)
 }

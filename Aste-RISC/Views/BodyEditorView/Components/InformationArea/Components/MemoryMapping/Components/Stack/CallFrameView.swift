@@ -15,23 +15,27 @@ struct CallFrameView: View {
 	private let stackStores: [UInt32: Int]
 	private let frameIndex : Int
 	
+	private let frameName: String
+	
 	init(
 		frame	   : CallFrame,
 		stackStores: [UInt32: Int],
 		frameIndex : Int,
+		frameName  : String,
 		isExpanded : Binding<Bool>
 	) {
 		self.frame 		 = frame
 		self.stackStores = stackStores
 		self.frameIndex  = frameIndex
+		self.frameName	 = frameName
 		self._isExpanded = isExpanded
-		
 	}
 	
 	var body: some View {
 		VStack(alignment: .leading, spacing: 0) {
 			// Frame header
 			headerCell
+				//.onAppear { print(nameFrame) }
 			
 			VStack(spacing: 0) {
 				// Frame content
@@ -56,8 +60,8 @@ struct CallFrameView: View {
 			
 		}
 		.background(
-			RoundedRectangle(cornerRadius: 10)
-				.stroke(Color.purple.opacity(0.3), lineWidth: 2)
+			RoundedRectangle(cornerRadius: 13)
+				.stroke(Color.purple.opacity(0.18), lineWidth: 2)
 		)
 	}
 	
@@ -73,7 +77,7 @@ struct CallFrameView: View {
 				
 				VStack(alignment: .leading, spacing: 2) {
 					HStack {
-						Text("Frame #\(frameIndex)")
+						Text("Frame: \(frameName)") // frameIndex
 							.font(.headline)
 						
 						if let ra = frame.returnAddress {
@@ -100,8 +104,8 @@ struct CallFrameView: View {
 					.foregroundColor(.secondary)
 			}
 			.padding(12)
-			.background(Color.purple.opacity(0.1))
-			.cornerRadius(8)
+			.background(Color.purple.opacity(0.08))
+			.cornerRadius(10)
 			
 		}
 		.buttonStyle(.plain)

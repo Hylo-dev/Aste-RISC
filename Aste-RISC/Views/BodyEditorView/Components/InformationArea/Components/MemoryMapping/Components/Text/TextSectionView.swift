@@ -23,19 +23,26 @@ struct TextSectionView: View {
 				
 				Spacer()
 				
-				Text("0x\(String(format: "%08x", section.startAddress)) - 0x\(String(format: "%08x", section.endAddress))")
-					.font(.caption)
-					.monospacedDigit()
+				VStack(alignment: .trailing) {
+					Text("Address range")
+						.font(.subheadline)
+						.foregroundStyle(.secondary)
+
+					Text("0x\(String(format: "%08x", section.startAddress)) - 0x\(String(format: "%08x", section.endAddress))")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+						.monospacedDigit()
+				}
 				
 			}
 			.padding()
 			
 			Divider()
 			
-			VStack(alignment: .leading, spacing: 8) {
+			VStack(alignment: .leading, spacing: 10) {
 				HStack {
 					Text("Program instructions")
-						.font(.subheadline)
+						.font(.headline)
 						.foregroundColor(.secondary)
 					
 					Spacer()
@@ -49,7 +56,11 @@ struct TextSectionView: View {
 					Text("0x\(String(format: "%08x", programCounter))")
 						.font(.caption)
 						.monospacedDigit()
-						.foregroundColor(programCounter >= section.startAddress && programCounter < section.endAddress ? .green : .red)
+						.foregroundColor(
+							programCounter >= section.startAddress &&
+							programCounter < section.endAddress ?
+								.green : .red
+						)
 					
 					Spacer()
 					
@@ -60,12 +71,12 @@ struct TextSectionView: View {
 					}
 					
 				}
-				.padding(8)
+				.padding(.horizontal, 8)
 				.background(.background)
-				.cornerRadius(6)
 
 			}
-			.padding()
+			.padding(.horizontal)
+			.padding(.vertical, 5)
 		}
 	}
 }

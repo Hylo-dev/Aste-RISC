@@ -9,11 +9,21 @@ import SwiftUI
 import SegmentedFlowPicker
 
 struct InformationAreaView: View {
-	@StateObject private var informationAreaViewModel = InformationAreaViewModel()
+	@StateObject
+	private var informationAreaViewModel = InformationAreaViewModel()
 	
+	@Binding
+	var fileSelected: URL?
+	
+	@Binding
+	var optionsWrapper: OptionsAssemblerWrapper
+		
 	var body: some View {
 		VStack(spacing: 16) {
-			SegmentedFlowPicker(selectedSection: self.$informationAreaViewModel.selectedSection) { section in
+			SegmentedFlowPicker(
+				selectedSection: self.$informationAreaViewModel.selectedSection
+				
+			) { section in
 				Image(systemName: section.rawValue)
 			}
 			.buttonFocusedColor(.accentColor)
@@ -26,10 +36,7 @@ struct InformationAreaView: View {
 				scrollHeader()
 							
 				ScrollView {
-					
-					LazyVStack {
-						currentView()
-					}
+					LazyVStack { currentView() }
 				}
 			}
 		}
@@ -41,7 +48,10 @@ struct InformationAreaView: View {
 		
 		switch self.informationAreaViewModel.selectedSection {
 			case .tableRegisters:
-				SegmentedFlowPicker(selectedSection: self.$informationAreaViewModel.numberBaseUsed) { section in
+				SegmentedFlowPicker(
+					selectedSection: self.$informationAreaViewModel.numberBaseUsed
+					
+				) { section in
 					Text(section.rawValue).tag(section.base)
 						.font(.body)
 				}
@@ -65,13 +75,18 @@ struct InformationAreaView: View {
 	
 	@ViewBuilder /// Show selected view
 	private func currentView() -> some View {
+		let contentFile = (try? String(contentsOf: self.fileSelected!, encoding: .utf8)) ?? "nil"
+		
 		switch self.informationAreaViewModel.selectedSection {
 			case .tableRegisters:
 				TableRegistersView()
 					.environmentObject(self.informationAreaViewModel)
 						 
 			case .stack:
-				MemoryMapView()
+				MemoryMapView(
+					contentFile		  : contentFile,
+					textVirtualAddress: self.optionsWrapper.opts?.pointee.text_vaddr ?? 0 // TEMP
+				)
 					.environmentObject(self.informationAreaViewModel)
 		}
 	}

@@ -11,10 +11,15 @@ struct MemoryMapView: View {
 	@EnvironmentObject var cpu: CPU
 	@EnvironmentObject var informationAreaViewModel: InformationAreaViewModel
 	
+	let contentFile  	  : String
+	let textVirtualAddress: UInt32
+		
 	var body: some View {
 		DetailView(
-			selectedSection: self.informationAreaViewModel.memoryMapSelected,
-			sections	   : self.memorySections
+			selectedSection	  : self.informationAreaViewModel.memoryMapSelected,
+			sections	   	  : self.memorySections,
+			contentFile	  	  : self.contentFile,
+			textVirtualAddress: self.textVirtualAddress
 		)
 	}
 	

@@ -425,20 +425,4 @@ class CPU: ObservableObject {
 		return true
 	}
 	
-	func getSavedRegistersInFrame(at frameStart: UInt32, size: Int) -> [(register: Int, value: Int32)] {
-		guard let ram = ram else { return [] }
-		var saved: [(Int, Int32)] = []
-		
-		let registerMap = [1, 8, 9, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27] // ra, s0-s11
-		
-		for (index, regNum) in registerMap.enumerated() {
-			let addr = frameStart &+ UInt32(index * 4)
-			let value = read_ram32bit(ram, addr)
-			if value != -1 && value != 0 {
-				saved.append((regNum, value))
-			}
-		}
-		
-		return saved
-	}
 }

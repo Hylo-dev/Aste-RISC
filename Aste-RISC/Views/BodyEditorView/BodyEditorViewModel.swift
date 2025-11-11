@@ -7,6 +7,7 @@
 
 import Foundation
 internal import Combine
+import SwiftUI
 
 /// Manages the state and business logic for the `BodyEditorView`.
 ///
@@ -16,6 +17,10 @@ internal import Combine
 /// and the currently selected file.
 class BodyEditorViewModel: ObservableObject {
 	
+	/// The URL of the currently open file, persisted across app launches.
+	@AppStorage("lastFileOpen")
+	var fileSelected: URL?
+	
 	/// Tracks whether the file search (Spotlight) overlay is active.
 	@Published
 	var isSearchingFile: Bool
@@ -23,11 +28,6 @@ class BodyEditorViewModel: ObservableObject {
 	/// Represents the current state of the editor and build process (e.g., `.readyToBuild`, `.running`).
 	@Published
 	var editorState: EditorState
-	
-	/// Holds the mapping between assembly instructions and their source lines,
-	/// primarily to track the currently executing instruction.
-	@Published
-	var mapInstruction: MapInstructions
 	
 	/// Controls the visibility of the terminal/output panel.
 	@Published
@@ -42,31 +42,11 @@ class BodyEditorViewModel: ObservableObject {
 	init() {
 		self.isSearchingFile = false
 		self.editorState     = .readyToBuild
-		self.mapInstruction  = MapInstructions()
 		self.isOutputVisible = false
 		self.optionsWrapper  = OptionsAssemblerWrapper()
 	}
 		   
 	// MARK: - Handles
-	
-	/// Responds to changes in the CPU's program counter.
-	///
-	/// Calculates the new instruction index based on the virtual text address
-	/// (from `optionsWrapper`) and updates the `mapInstruction` to highlight
-	/// the currently executing line in the editor.
-	///
-	/// - Parameters:
-	///   - oldValue: The previous program counter value (unused).
-	///   - newValue: The new program counter value.
-	func handleProgramCounterChange(
-		oldValue: UInt32,
-		newValue: UInt32
-	) {
-		guard let opts = optionsWrapper.opts, newValue != 0 else { return }
-		
-		// Calculate the zero-based instruction index
-		self.mapInstruction.indexInstruction = UInt32((newValue - (opts.pointee.text_vaddr)) / 4)
-	}
 	
 	/// Responds to changes in the currently selected file.
 	///

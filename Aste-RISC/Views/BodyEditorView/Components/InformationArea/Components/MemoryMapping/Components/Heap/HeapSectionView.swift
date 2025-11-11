@@ -29,7 +29,7 @@ struct HeapSectionView: View {
 				Spacer()
 				
 				Text("Dynamic allocation area")
-					.font(.body)
+					.font(.headline)
 					.foregroundColor(.secondary)
 				
 			}

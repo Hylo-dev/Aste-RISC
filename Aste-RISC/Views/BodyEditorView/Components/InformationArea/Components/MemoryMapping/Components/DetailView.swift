@@ -14,8 +14,10 @@ struct DetailView: View {
 	@EnvironmentObject
 	private var stackViewModel: StackViewModel
 	
-	let selectedSection: MemorySection.SectionType?
-	let sections	   : [MemorySection]
+	let selectedSection	  : MemorySection.SectionType?
+	let sections	   	  : [MemorySection]
+	let contentFile	  	  : String
+	let textVirtualAddress: UInt32
 	
 	var body: some View {
 		Group {
@@ -29,7 +31,9 @@ struct DetailView: View {
 							callFrames  : self.$stackViewModel.callFrames,
 							stackStores : self.$cpu.stackStores,
 							stackPointer: self.cpu.registers[2],
-							framePointer: self.cpu.registers[8]
+							framePointer: self.cpu.registers[8],
+							contentFile : self.contentFile,
+							textVirtualAddress: self.textVirtualAddress
 						)
 							
 					case .text:

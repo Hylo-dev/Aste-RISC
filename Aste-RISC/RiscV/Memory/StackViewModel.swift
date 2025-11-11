@@ -36,6 +36,11 @@ class StackViewModel: ObservableObject {
 	@Published
 	var callFrames: [CallFrame] = []
 	
+	/// Holds the mapping between assembly instructions and their source lines,
+	/// primarily to track the currently executing instruction.
+	@Published
+	var mapInstruction: MapInstructions
+	
 	/// A reference to the core CPU simulation model.
 	private var cpu: CPU
 	
@@ -57,7 +62,9 @@ class StackViewModel: ObservableObject {
 	///
 	/// - Parameter cpu: The `CPU` instance to observe.
 	init(cpu: CPU) {
-		self.cpu = cpu
+		
+		self.mapInstruction = MapInstructions()
+		self.cpu 			= cpu
 	
 		// Set up a Combine pipeline to observe the CPU.
 		// We merge changes from registers (for SP/FP) and the PC.
@@ -112,8 +119,8 @@ class StackViewModel: ObservableObject {
 		lastFP = fp
 				
 		var frames: [StackFrame] = []
-		let wordsToShow = 128
-		var consecutiveErrors = 0
+		let wordsToShow 		 = 128
+		var consecutiveErrors 	 = 0
 		let maxConsecutiveErrors = 8 // Stop if we read too much invalid memory
 		
 		let ramStart = ram.pointee.base_vaddr
@@ -121,7 +128,7 @@ class StackViewModel: ObservableObject {
 
 		// --- Stack Walk ---
 		// Iterate N words down from the stack pointer (sp)
-		for i in 0..<wordsToShow {
+		for i in 0 ..< wordsToShow {
 			let addr = sp &+ UInt32(i * 4)
 			
 			// Check memory bounds
@@ -144,41 +151,50 @@ class StackViewModel: ObservableObject {
 			)
 			
 			let isFrameBoundary = isPointerToText && isNonZero
-			let isFramePointer = (addr == fp)
+			let isFramePointer  = (addr == fp)
 			let isSavedRegister = isNonZero && !isPointerToText && i < 32
 
 			if isError {
 				consecutiveErrors += 1
 				if consecutiveErrors >= maxConsecutiveErrors { break }
-			} else {
-				consecutiveErrors = 0
-			}
+				
+			} else { consecutiveErrors = 0 }
 
 			// --- UI-Data Assignment ---
 			// Assign colors based on analysis. This is why this is a ViewModel.
 			let color: Color
 			if isError {
 				color = Color(.systemGray)
+				
 			} else if isFramePointer {
 				color = Color(.systemPurple).opacity(0.85)
+				
 			} else if isFrameBoundary {
 				color = Color(.systemRed).opacity(0.85)
+				
 			} else if isSavedRegister {
 				color = Color(.systemOrange).opacity(0.6)
+				
 			} else if isNonZero {
 				color = Color(.systemBlue).opacity(0.6)
+				
 			} else {
 				color = Color(.systemMint)
 			}
 
 			// Create the "raw" frame object
 			let frame = StackFrame(
-				address: addr, value: rawInstruction, color: color,
-				label: String(format: "0x%08x", addr),
-				isPointer: isPointerToText, isNonZero: isNonZero,
-				isError: isError, isFrameBoundary: isFrameBoundary,
-				offsetFromSP: i
+				address		   : addr,
+				value		   : rawInstruction,
+				color		   : color,
+				label		   : String(format: "0x%08x", addr),
+				isPointer	   : isPointerToText,
+				isNonZero	   : isNonZero,
+				isError		   : isError,
+				isFrameBoundary: isFrameBoundary,
+				offsetFromSP   : i
 			)
+			
 			frames.append(frame)
 		}
 
@@ -208,67 +224,110 @@ class StackViewModel: ObservableObject {
 	/// - Parameter stackFrames: The raw list of `StackFrame`s to parse.
 	/// - Returns: An array of logical `CallFrame`s.
 	private func parseCallFrames(from stackFrames: [StackFrame]) -> [CallFrame] {
-		guard !stackFrames.isEmpty else { return [] }
-			
-		var frames           : [CallFrame]  = []
-		var currentFrameWords: [StackFrame] = []
-		var frameStart       : UInt32?
-		var returnAddr       : UInt32?
-		var savedFP          : UInt32?
-			
-		for word in stackFrames {
-			
-			// A word pointing to the text section marks the start of a new frame
-			// (it's the return address).
-			if word.isFrameBoundary && word.isPointer {
-				// If we were in a previous frame, save it first.
-				if !currentFrameWords.isEmpty, let start = frameStart {
-					let size = UInt32(currentFrameWords.count * 4)
-					frames.append(
-						CallFrame(
-							startAddress : start,
-							size         : size,
-							returnAddress: returnAddr,
-							savedFP      : savedFP,
-							words        : currentFrameWords
-						)
-					)
-				}
-					
-				// Start the new frame
-				frameStart        = word.address
-				returnAddr        = UInt32(bitPattern: word.value)
-				savedFP           = nil // Reset saved FP search
-				currentFrameWords = [word] // Start new word list
-					
-			} else {
-				// Not a boundary, so just add to the current frame.
-				currentFrameWords.append(word)
+			guard !stackFrames.isEmpty else { return [] }
 				
-				// Try to find the saved Frame Pointer (s0)
-				if savedFP == nil && !word.isError && word.isNonZero && !word.isPointer {
+			var frames 			 : [CallFrame] = []
+			var currentFrameWords: [StackFrame] = []
+			var frameStart 		 : UInt32?
+			var savedFP			 : UInt32?
+				
+			// --- 1. Crea tutti i frame con PC placeholder ---
+			
+			for word in stackFrames {
+				currentFrameWords.append(word)
+				if frameStart == nil { frameStart = word.address }
+				
+				// Cerca di trovare il saved FP
+				if savedFP == nil && !word.isError && !word.isNonZero && !word.isPointer {
 					savedFP = UInt32(bitPattern: word.value)
 				}
 				
-				// Ensure the very first frame has a start address
-				if frameStart == nil { frameStart = word.address }
+				// Un RA segna la *fine* del frame corrente
+				if word.isFrameBoundary && word.isPointer {
+					if let start = frameStart {
+						let size = UInt32(currentFrameWords.count * 4)
+						let returnAddr = UInt32(bitPattern: word.value)
+						
+						frames.append(
+							CallFrame(
+								programCounter: 0, // Placeholder
+								startAddress  : start,
+								size          : size,
+								returnAddress : returnAddr, // Questo è l'RA per il *prossimo* frame
+								savedFP       : savedFP,
+								words         : currentFrameWords
+							)
+						)
+					}
+					
+					// Resetta per il prossimo frame
+					frameStart = nil
+					savedFP = nil
+					currentFrameWords = []
+				}
 			}
-		}
-			
-		// After the loop, save the last frame being processed.
-		if !currentFrameWords.isEmpty, let start = frameStart {
-			let size = UInt32(currentFrameWords.count * 4)
-			frames.append(
-				CallFrame(
-					startAddress : start,
-					size         : size,
-					returnAddress: returnAddr,
-					savedFP      : savedFP,
-					words        : currentFrameWords
+				
+			// Salva l'ultimo frame (il più vecchio, _start)
+			if !currentFrameWords.isEmpty, let start = frameStart {
+				let size = UInt32(currentFrameWords.count * 4)
+				frames.append(
+					CallFrame(
+						programCounter: 0, // Placeholder (questo finirà per essere 0)
+						startAddress  : start,
+						size          : size,
+						returnAddress : nil, // _start non ha un RA
+						savedFP       : savedFP,
+						words         : currentFrameWords
+					)
 				)
-			)
+			}
+			
+			// --- 2. Assegna i PC corretti ---
+			// Ora 'frames' è [frame_C, frame_B, frame_A, frame_start]
+			// (dal più nuovo al più vecchio)
+			
+			if frames.count > 0 {
+				// Il primo frame (C, il corrente) ottiene il PC della CPU
+				frames[0].programCounter = frames[0].returnAddress != nil ?
+										   frames[0].returnAddress! - 4 : 0
+				
+				// Itera dal secondo frame (B) in poi
+				for i in 1 ..< frames.count {
+					// Il PC di questo frame (es. B) è basato sull'RA
+					// salvato nel frame *precedente* (es. C).
+					if let previousFrameRA = frames[i].returnAddress {
+						frames[i].programCounter = previousFrameRA - 4
+						
+					} else {
+						// Se il frame precedente non ha RA (come _start),
+						// il PC di questo frame rimane 0 (placeholder).
+						// Questo copre il caso di _start.
+						frames[i].programCounter = 0
+					}
+				}
+			}
+
+			return frames
 		}
+	
+	// MARK: - Handles
+	
+	/// Responds to changes in the CPU's program counter.
+	///
+	/// Calculates the new instruction index based on the virtual text address
+	/// (from `optionsWrapper`) and updates the `mapInstruction` to highlight
+	/// the currently executing line in the editor.
+	///
+	/// - Parameters:
+	///   - oldValue: The previous program counter value (unused).
+	///   - newValue: The new program counter value.
+	func handleProgramCounterChange(
+		newValue	  : UInt32,
+		optionsWrapper: OptionsAssemblerWrapper
+	) {
+		guard let opts = optionsWrapper.opts, newValue != 0 else { return }
 		
-		return frames
+		// Calculate the zero-based instruction index
+		self.mapInstruction.indexInstruction = UInt32((newValue - (opts.pointee.text_vaddr)) / 4)
 	}
 }

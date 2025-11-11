@@ -27,8 +27,8 @@ struct DataSectionView: View {
 						.monospacedDigit()
 					
 				} else {
-					Text("Empty")
-						.font(.caption)
+					Text("Initialised global data")
+						.font(.headline)
 						.foregroundStyle(.secondary)
 						.monospacedDigit()
 					

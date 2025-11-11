@@ -7,12 +7,13 @@
 
 import Foundation
 struct CallFrame: Identifiable {
-	let id 				  : UUID = UUID()
-	let startAddress 	  : UInt32
-	let size			  : UInt32
-	let returnAddress	  : UInt32?
-	let savedFP			  : UInt32?
-	let words			  : [StackFrame]
+	let id 			  : UUID = UUID()
+	var programCounter: UInt32
+	let startAddress  : UInt32
+	let size		  : UInt32
+	let returnAddress : UInt32?
+	let savedFP		  : UInt32?
+	let words		  : [StackFrame]
 	
 	var functionName: String {
 		if let ra = returnAddress { return "Frame @ 0x\(String(format: "%x", ra))" }
