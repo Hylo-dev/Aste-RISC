@@ -87,12 +87,10 @@ struct BodyEditorView: View {
 				
 			} detail : {
 				// More information, for example Stack, table registers
-				InformationAreaView(
-					fileSelected  : self.$bodyEditorViewModel.fileSelected,
-					optionsWrapper: self.$bodyEditorViewModel.optionsWrapper
-				)
+				InformationAreaView(fileSelected: self.$bodyEditorViewModel.fileSelected)
 				.environmentObject(self.cpu)
 				.environmentObject(self.stackViewModel)
+				.environmentObject(self.bodyEditorViewModel.optionsWrapper)
 				.frame(minWidth: 350, idealWidth: 400, maxWidth: .infinity)
 			}
 			.onAppear(perform: handleOnAppear)

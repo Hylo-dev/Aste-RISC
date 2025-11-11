@@ -15,9 +15,6 @@ struct InformationAreaView: View {
 	@Binding
 	var fileSelected: URL?
 	
-	@Binding
-	var optionsWrapper: OptionsAssemblerWrapper
-		
 	var body: some View {
 		VStack(spacing: 16) {
 			SegmentedFlowPicker(
@@ -83,10 +80,7 @@ struct InformationAreaView: View {
 					.environmentObject(self.informationAreaViewModel)
 						 
 			case .stack:
-				MemoryMapView(
-					contentFile		  : contentFile,
-					textVirtualAddress: self.optionsWrapper.opts?.pointee.text_vaddr ?? 0 // TEMP
-				)
+				MemoryMapView(contentFile: contentFile)
 					.environmentObject(self.informationAreaViewModel)
 		}
 	}

@@ -13,7 +13,9 @@ struct MapInstructions: Equatable {
 		return indexesInstructions[Int(indexInstruction ?? 0)]
 	}
 	
-	func getIndex(_ index: Int) -> Int {
+	func getIndex(_ index: Int) -> Int? {
+		guard index >= 0 && index < indexesInstructions.count else { return nil }
+		
 		return indexesInstructions[index]
 	}
 }

@@ -14,10 +14,12 @@ struct DetailView: View {
 	@EnvironmentObject
 	private var stackViewModel: StackViewModel
 	
-	let selectedSection	  : MemorySection.SectionType?
-	let sections	   	  : [MemorySection]
-	let contentFile	  	  : String
-	let textVirtualAddress: UInt32
+	@EnvironmentObject
+	var optionsWrapper: OptionsAssemblerWrapper
+	
+	let selectedSection: MemorySection.SectionType?
+	let sections	   : [MemorySection]
+	let contentFile	   : String
 	
 	var body: some View {
 		Group {
@@ -27,13 +29,13 @@ struct DetailView: View {
 				switch sectionType {
 					case .stack:
 						StackDetailView(
-							section		: section,
-							callFrames  : self.$stackViewModel.callFrames,
-							stackStores : self.$cpu.stackStores,
-							stackPointer: self.cpu.registers[2],
-							framePointer: self.cpu.registers[8],
-							contentFile : self.contentFile,
-							textVirtualAddress: self.textVirtualAddress
+							section			  : section,
+							callFrames  	  : self.$stackViewModel.callFrames,
+							stackStores 	  : self.$cpu.stackStores,
+							stackPointer	  : self.cpu.registers[2],
+							framePointer	  : self.cpu.registers[8],
+							contentFile 	  : self.contentFile,
+							textVirtualAddress: self.optionsWrapper.opts?.pointee.text_vaddr ?? 0
 						)
 							
 					case .text:

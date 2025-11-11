@@ -15,7 +15,7 @@ struct StackFrame: Identifiable, Equatable {
 	let color  : Color
 	let label  : String
 
-	// Metadata
+	// Frame metadata
 	let isPointer	   : Bool // pointing into .text
 	let isNonZero	   : Bool // != 0 e != -1
 	let isError  	   : Bool // read error (-1)

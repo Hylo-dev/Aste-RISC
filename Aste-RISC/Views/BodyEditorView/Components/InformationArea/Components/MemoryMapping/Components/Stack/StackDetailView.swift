@@ -134,25 +134,23 @@ private struct _CallFramesListView: View {
 		ForEach(callFrames.enumerated(), id: \.element.id) { index, frame in
 			
 			// Get name for single frame
-			let name = if frame.returnAddress == nil {
+			let name = if frame.returnAddress == nil || frame.programCounter == 0 {
 				self.contentSplited
 					.first(where: { row in row.contains(".globl") })
 					.flatMap { completeRow in completeRow.split(separator: " ").last }
 					.map { lastElement in String(lastElement) }
 				?? "_start"
 				
-			} else {
-				self.contentSplited[
-					self.mapInstructions.getIndex(
-						Int((frame.programCounter - textVirtualAddress) / 4)
-					)
-				]
-				.trimmingCharacters(in: .whitespacesAndNewlines)
-				.split(separator: " ")
-				.last
-				.map(String.init)
-				?? "unknown_func"
-			}
+			} else if let sourceLineIndex = self.mapInstructions.getIndex(Int((frame.programCounter - textVirtualAddress) / 4)) {
+				
+				self.contentSplited[sourceLineIndex]
+					.trimmingCharacters(in: .whitespacesAndNewlines)
+					.split(separator: " ")
+					.last
+					.map(String.init)
+					?? "unknown_func"
+				
+			} else { "function" }
 			
 			CallFrameView(
 				frame      : frame,
