@@ -36,6 +36,9 @@ struct TreeFilesView: View {
 		
 	/// A closure executed when the user attempts to open a file (e.g., by double-clicking).
 	private var onOpenFile: ((URL) -> Void)
+	
+	/// The editor state, this control if the navigation is focused.
+	private let isFocused: Bool
 	 
 	/// Creates the file tree view.
 	///
@@ -47,6 +50,7 @@ struct TreeFilesView: View {
 		treeElementViewModel: TreeElementViewModel,
 		projectPath  	    : String,
 		selectedFile  		: Binding<URL?>,
+		isFocused			: Bool,
 		onOpenFile    		: @escaping ((URL) -> Void)
 	) {
 		// Viewmodels variables
@@ -55,6 +59,7 @@ struct TreeFilesView: View {
 		
 		// Simple variables
 		self._selectedFile  = selectedFile
+		self.isFocused		= isFocused
 		self.onOpenFile     = onOpenFile
 	}
 
@@ -66,6 +71,7 @@ struct TreeFilesView: View {
 					viewModel : self.treeElementViewModel,
 					fileOpen  : self.selectedFile,
 					level     : 0,
+					isFocused : self.isFocused,
 					onOpenFile: self.onOpenFile
 				)
 				.focused(self.$focusTextField)

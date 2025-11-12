@@ -37,11 +37,15 @@ struct TreeElementRowView: View {
 	/// (not a directory) to open it.
 	var onOpenFile: ((URL) -> Void)
 	
+	/// The editor state, this control if the navigation is focused.
+	private let isFocused: Bool
+	
 	init(
 		node	  : FileNode,
 		viewModel : TreeElementViewModel,
 		fileOpen  : URL?,
 		level	  : Int,
+		isFocused : Bool,
 		onOpenFile: @escaping (URL) -> Void
 		
 	) {
@@ -49,25 +53,19 @@ struct TreeElementRowView: View {
 		self.viewModel  = viewModel
 		self.fileOpen   = fileOpen
 		self.level		= level
+		self.isFocused  = isFocused
 		self.onOpenFile = onOpenFile
 	}
 
 	var body: some View {
 		
 		VStack(alignment: .leading, spacing: 0) {
+			
+			
 			// The main clickable button for the entire row.
 			Button(action: handleOnSelectRow) { bodyButtonElement }  // The visual content of the row
 				.buttonStyle(.plain)
-				.background(
-					// Apply a background highlight if this row's level
-					// matches the currently selected level.
-					RoundedRectangle(cornerRadius: 8)
-						.fill(
-							self.viewModel.rowSelected == self.node.id.uuidString ?
-															Color.accentColor :
-															.clear
-						)
-				)
+				.background(backgroundButton)
 				.onChange(of: self.fileOpen) { _, newValue in
 					// If the globally open file changes to this node's URL,
 					// update the selection state to match.
@@ -98,6 +96,7 @@ struct TreeElementRowView: View {
 								viewModel : self.viewModel,
 								fileOpen  : self.fileOpen,
 								level	  : self.level + 1, // Increment the indentation level
+								isFocused : self.isFocused,
 								onOpenFile: self.onOpenFile
 							)
 							.transition(.move(edge: .top).combined(with: .opacity))
@@ -113,6 +112,17 @@ struct TreeElementRowView: View {
 	}
 
 	// MARK: - Views
+	
+	private var backgroundButton: some View {
+		let colorButton = self.viewModel.rowSelected == self.node.id.uuidString ?
+		self.isFocused ? Color.accentColor : .gray.opacity(0.18) :
+		.clear
+		
+		// Apply a background highlight if this row's level
+		// matches the currently selected level.
+		return RoundedRectangle(cornerRadius: 8).fill(colorButton)
+		
+	}
 	
 	/// Content of right menu for single row on files tree
 	private var contextMenu: some View {

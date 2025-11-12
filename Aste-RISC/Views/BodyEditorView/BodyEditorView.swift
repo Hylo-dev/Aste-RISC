@@ -21,9 +21,9 @@ struct BodyEditorView: View {
 	@Environment(\.openWindow)
 	private var openWindow
 	 
-	/// Controls the focus state for the file search (Spotlight) overlay.
+	/// Controls the focus state overlay.
 	@FocusState
-	private var spotlightFocused: Bool
+	private var spotlightFocused: ComponentFocusState?
 	 
 	/// The primary ViewModel managing UI state, editor content, and compilation logic.
 	@StateObject
@@ -68,9 +68,13 @@ struct BodyEditorView: View {
 		self.selectedProjectPath = selectedProjectPath
 		self.selectedProjectName = selectedProjectName
 		
-		let cpuInstance = CPU()
-		self._cpu = StateObject(wrappedValue: cpuInstance)
+		// Temp cpu object instance
+		// Use it for init stack view model and cpu state object
+		let cpuInstance 	 = CPU()
+		self._cpu 		     = StateObject(wrappedValue: cpuInstance)
 		self._stackViewModel = StateObject(wrappedValue: StackViewModel(cpu: cpuInstance))
+		
+		self.spotlightFocused = .editor
 	}
 		
 	var body: some View {
@@ -79,8 +83,12 @@ struct BodyEditorView: View {
 			NavigationSplitView {
 				NavigatiorAreaView(
 					fileSelected: self.$bodyEditorViewModel.fileSelected,
-					projectPath : self.selectedProjectPath
+					projectPath : self.selectedProjectPath,
+					isFocused   : self.spotlightFocused == .navigation
 				)
+				.focusable()
+				.focused(self.$spotlightFocused, equals: .navigation)
+				.focusEffectDisabled(true)
 				
 			} content: {
 				editorArea
@@ -88,10 +96,14 @@ struct BodyEditorView: View {
 			} detail : {
 				// More information, for example Stack, table registers
 				InformationAreaView(fileSelected: self.$bodyEditorViewModel.fileSelected)
-				.environmentObject(self.cpu)
-				.environmentObject(self.stackViewModel)
-				.environmentObject(self.bodyEditorViewModel.optionsWrapper)
-				.frame(minWidth: 350, idealWidth: 400, maxWidth: .infinity)
+					.environmentObject(self.cpu)
+					.environmentObject(self.stackViewModel)
+					.environmentObject(self.bodyEditorViewModel.optionsWrapper)
+					.frame(
+						minWidth  : 350,
+						idealWidth: 400,
+						maxWidth  : .infinity
+					)
 			}
 			.onAppear(perform: handleOnAppear)
 			.onChange(of: self.cpu.programCounter) { _, newValue in
@@ -139,11 +151,8 @@ struct BodyEditorView: View {
 	/// The navigation toolbar item containing execution controls (run, step, etc.).
 	private var toolbarExecute: some View {
 		ToolbarExecuteView(
-			isOutputVisible    : self.$bodyEditorViewModel.isOutputVisible,
-			editorState        : self.$bodyEditorViewModel.editorState,
-			mapInstruction     : self.$stackViewModel.mapInstruction,
-			optionsWrapper     : self.$bodyEditorViewModel.optionsWrapper,
-			currentFileSelected: self.bodyEditorViewModel.fileSelected
+			viewModel	  : self.bodyEditorViewModel,
+			mapInstruction: self.$stackViewModel.mapInstruction
 		)
 		.environmentObject(self.cpu)
 	}
@@ -185,11 +194,12 @@ struct BodyEditorView: View {
 			// Show Spotlight search if no file is open or if search is active
 			if isEmptyPath || self.bodyEditorViewModel.isSearchingFile {
 				VStack(alignment: .center) {
+					
 					// Note: Assumes spotlightViewModel is non-nil
 					// when this view is shown.
 					MultiSectionSpotlightView(viewModel: self.spotlightViewModel!, width: 600)
-						.focused($spotlightFocused)
-						.onAppear { self.spotlightFocused = true }
+						.focused($spotlightFocused, equals: .spotlight)
+						.onAppear { self.spotlightFocused = .spotlight }
 						.zIndex(2)
 						.padding(.top, 170)
 					
@@ -267,7 +277,7 @@ struct BodyEditorView: View {
 				onSelect: { file in
 					// When a file is selected from Spotlight,
 					// update the app state and close the search.
-					self.bodyEditorViewModel.fileSelected = file.url
+					self.bodyEditorViewModel.fileSelected    = file.url
 					self.bodyEditorViewModel.isSearchingFile = false
 				}
 			)

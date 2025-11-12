@@ -28,6 +28,9 @@ struct NavigatiorAreaView: View {
 	/// This path is passed to `TreeFilesView` to populate the file tree.
 	private let projectPath: String
 	
+	/// The editor state, this control if the navigation is focused.
+	private let isFocused: Bool
+	
 	/// Initializes a new navigator area view.
 	///
 	/// - Parameters:
@@ -37,10 +40,12 @@ struct NavigatiorAreaView: View {
 	///     to the project's root directory.
 	init(
 		fileSelected: Binding<URL?>,
-		projectPath : String
+		projectPath : String,
+		isFocused	: Bool
 	) {
 		self._fileSelected = fileSelected
 		self.projectPath   = projectPath
+		self.isFocused	   = isFocused
 	}
 	
 	/// The body of the view, which constructs the layout.
@@ -52,7 +57,8 @@ struct NavigatiorAreaView: View {
 			TreeFilesView(
 				treeElementViewModel: self.treeElementViewModel,
 				projectPath		    : self.projectPath,
-				selectedFile		: self.$fileSelected
+				selectedFile		: self.$fileSelected,
+				isFocused			: self.isFocused
 				
 			) { newURL in
 				// This closure is called by TreeFilesView when a user
@@ -68,5 +74,6 @@ struct NavigatiorAreaView: View {
 			
 			FilterFilesView(treeElementViewModel: self.treeElementViewModel)
 		}
+		
 	}
 }
