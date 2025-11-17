@@ -121,11 +121,11 @@ struct HomeView: View {
             
             // Tittle
             VStack(alignment: .leading) {
-                Text("RISKit")
+                Text("Aste-RISC")
                     .font(.largeTitle.bold())
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                 
-                Text("Open Source RISC-V Simulator")
+                Text("Open Source RISC-V IDE")
                     .font(.headline)
                     .foregroundStyle(.secondary)
             }
@@ -136,7 +136,8 @@ struct HomeView: View {
         return VStack(spacing: 15) {
             
             ForEach(defaultsMode) { mode in
-                MenuButtonView(currentMode: mode).frame(maxWidth: 400)
+                MenuButtonView(currentMode: mode)
+					.frame(maxWidth: 400)
             }
         }
     }

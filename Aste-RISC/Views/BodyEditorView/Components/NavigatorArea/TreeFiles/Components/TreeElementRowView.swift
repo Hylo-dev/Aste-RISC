@@ -7,14 +7,16 @@
 
 import SwiftUI
 
-/// A view that represents a single row (a file or directory) in a recursive file tree.
+/// A view that represents a single row (a file or directory) in a recursive
+/// file tree.
 ///
-/// This view handles its own indentation, selection state, expansion (if it's a
-/// directory), and recursion for its children.
+/// This view handles its own indentation, selection state, expansion
+/// (if it's a directory), and recursion for its children.
 struct TreeElementRowView: View {
 	
 	/// The data model for this row, representing a file or directory.
-	/// This is an `ObservedObject` so the view redraws when `isExpanded` changes.
+	/// This is an `ObservedObject` so the view redraws when `isExpanded`
+	/// changes.
 	@ObservedObject
 	var node: FileNode
 	
@@ -63,7 +65,8 @@ struct TreeElementRowView: View {
 			
 			
 			// The main clickable button for the entire row.
-			Button(action: handleOnSelectRow) { bodyButtonElement }  // The visual content of the row
+			// The visual content of the row
+			Button(action: handleOnSelectRow) { bodyButtonElement }
 				.buttonStyle(.plain)
 				.background(backgroundButton)
 				.onChange(of: self.fileOpen) { _, newValue in
@@ -88,24 +91,33 @@ struct TreeElementRowView: View {
 					
 					if self.node.isExpanded {
 						ForEach(
-							self.node.children.filter { $0.matchesFilter(self.viewModel.filterText) }
+							self.node.children.filter { $0.matchesFilter(self.viewModel.filterText)
+							}
 						) { child in
 							// Recursively create a new row for each child
 							TreeElementRowView(
 								node	  : child,
 								viewModel : self.viewModel,
 								fileOpen  : self.fileOpen,
-								level	  : self.level + 1, // Increment the indentation level
+								level	  : self.level + 1, // Indentation level
 								isFocused : self.isFocused,
 								onOpenFile: self.onOpenFile
 							)
-							.transition(.move(edge: .top).combined(with: .opacity))
+							.transition(
+								.move(edge: .top).combined(with: .opacity)
+							)
 						}
 					}
 				}
 				.frame(maxWidth: .infinity)
 				.clipped()
-				.animation(.spring(response: 0.1, dampingFraction: 0.7), value: self.node.isExpanded)
+				.animation(
+					.spring(
+						response	   : 0.1,
+						dampingFraction: 0.7
+					),
+					value: self.node.isExpanded
+				)
 			}
 		}
 		.clipped()
@@ -114,9 +126,11 @@ struct TreeElementRowView: View {
 	// MARK: - Views
 	
 	private var backgroundButton: some View {
-		let colorButton = self.viewModel.rowSelected == self.node.id.uuidString ?
-		self.isFocused ? Color.accentColor : .gray.opacity(0.18) :
-		.clear
+		let colorButton = self.viewModel.rowSelected ==
+						  self.node.id.uuidString ?
+									   self.isFocused ?
+									   Color.accentColor :
+									      .gray.opacity(0.18) : .clear
 		
 		// Apply a background highlight if this row's level
 		// matches the currently selected level.
@@ -142,7 +156,9 @@ struct TreeElementRowView: View {
 			Button {
 				self.viewModel.createFile()
 				
-			} label: { Label("New Empty File", systemImage: "document.badge.plus") }
+			} label: {
+				Label("New Empty File", systemImage: "document.badge.plus")
+			}
 			
 			Divider()
 			
@@ -173,17 +189,23 @@ struct TreeElementRowView: View {
 		}
 	}
 
-	/// The visual content of the clickable row, including indentation, icons, and text.
+	/// The visual content of the clickable row, including indentation, icons,
+	/// and text.
 	private var bodyButtonElement: some View {
 		return HStack(spacing: 7) {
 			// --- Indentation ---
 			// Create horizontal spacing based on the current level.
 			// Directories get slightly more indentation per level.
-			Color.clear.frame(width: CGFloat(level) * CGFloat(self.node.isDirectory ? 20 : 12), height: 1)
+			Color.clear.frame(
+				width: CGFloat(level) *
+					   CGFloat(self.node.isDirectory ? 20 : 12),
+				height: 1
+			)
 			
 			// --- Icons ---
 			HStack(spacing: 7) {
-				// Renders the chevron (for directories) or a spacer (for files)
+				// Renders the chevron (for directories)
+				// or a spacer (for files)
 				isDirectoryIcon
 				
 				// Renders the file/folder icon from a shared cache
@@ -218,9 +240,9 @@ struct TreeElementRowView: View {
 					.focused($isTextFieldFocused)
 					.onSubmit {
 						self.viewModel.renameFile(self.node) { newURL, newName in
-							self.node.url 					  = newURL
-							self.node.name 					  = newName
-							self.viewModel.focusedNodeID 	  = nil
+							self.node.url 				 = newURL
+							self.node.name 				 = newName
+							self.viewModel.focusedNodeID = nil
 							
 							onOpenFile(self.node.url)
 						}
@@ -257,7 +279,8 @@ struct TreeElementRowView: View {
 		.contentShape(Rectangle()) // Ensures the whole row is tappable
 	}
 
-	/// Renders the disclosure chevron (`>`) for directories or an alignment spacer for files.
+	/// Renders the disclosure chevron (`>`) for directories or an alignment
+	/// spacer for files.
 	private var isDirectoryIcon: some View {
 		return Group {
 			if node.isDirectory {
@@ -269,7 +292,11 @@ struct TreeElementRowView: View {
 						withAnimation(.spring()) {
 							node.isExpanded.toggle()
 							// Load children if expanding for the first time
-							if node.isExpanded { node.loadChildrenPreservingState(forceReload: false) }
+							if node.isExpanded {
+								node.loadChildrenPreservingState(
+									forceReload: false
+								)
+							}
 						}
 					}
 					
@@ -283,7 +310,13 @@ struct TreeElementRowView: View {
 					
 					// Rotate the chevron when the node is expanded
 						.rotationEffect(.degrees(self.node.isExpanded ? 90 : 0))
-						.animation(.spring(response: 0.1, dampingFraction: 0.7), value: self.node.isExpanded)
+						.animation(
+							.spring(
+								response: 0.1,
+								dampingFraction: 0.7
+							),
+							value: self.node.isExpanded
+						)
 				}
 				.buttonStyle(.plain)
 				
@@ -314,7 +347,8 @@ struct TreeElementRowView: View {
 		}
 	}
 	
-	/// Handles task on row is selected for first time, set focus row and set variables
+	/// Handles task on row is selected for first time, set focus row and
+	/// set variables
 	/// for modified the file title
 	private func handleOnSelectRow() {
 		// If this node is a file, trigger the open file callback.

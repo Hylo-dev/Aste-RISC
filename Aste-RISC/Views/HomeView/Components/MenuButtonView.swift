@@ -33,12 +33,22 @@ struct MenuButtonView: View {
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .topLeading)
+			.contentShape(RoundedRectangle(cornerRadius: 26))
             
         }
         .background(interactiveBackground)
         .clipShape(RoundedRectangle(cornerRadius: 26))
         .scaleEffect(isHovering ? 1.02 : 1.0)
-        .onHover { hovering in isHovering = hovering }
+		.onHover { hovering in
+			withAnimation(.easeInOut(duration: 0.05)) {
+				isHovering = hovering
+			}
+			
+			NSHapticFeedbackManager.defaultPerformer.perform(
+				.alignment,
+				performanceTime: .now
+			)
+		}
     }
 
     /// Icon button
@@ -46,12 +56,12 @@ struct MenuButtonView: View {
         
         ZStack {
             RoundedRectangle(cornerRadius: 26)
-                .fill(.primary.opacity(0.10))
+                .fill(.primary.opacity(0.18))
                 .frame(width: 45, height: 45)
 
             Image(systemName: currentMode.icon)
                 .font(.title2)
-                .foregroundStyle(.white)
+                .foregroundStyle(.tint)
                 .frame(width: 36, height: 36)
         }
         
@@ -76,24 +86,13 @@ struct MenuButtonView: View {
     private var interactiveBackground: some View {
         RoundedRectangle(cornerRadius: 26)
             .fill(backgroundFill)
-            .overlay(
-                RoundedRectangle(cornerRadius: 26)
-                    .strokeBorder(borderColor, lineWidth: 1)
-            )
+            
     }
 
     /// Background color, this is condition and depends if the button is hovering or not
     private var backgroundFill: Color {
         if isHovering {
-            return .accentColor.opacity(0.08)
-            
-        } else { return .clear }
-    }
-    
-    /// Border color, this is condition and depends if the button is hovering or not
-    private var borderColor: Color {
-        if isHovering {
-            return .accentColor.opacity(0.2)
+            return .accentColor.opacity(0.18)
             
         } else { return .clear }
     }

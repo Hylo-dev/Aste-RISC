@@ -8,18 +8,28 @@
 import SwiftUI
 
 struct ProjectRowView: View {
-    let project : RecentProject
+	
+	@State private var isHovering = false
+	
+	/// Project information item
+    let project: RecentProject
+	
+	/// Func when select row
     var onSelect: () -> Void
+	
+	// Func when delete row
     var onDelete: () -> Void
-
-    @State private var isHovering = false
 
     var body: some View {
         
         Button(action: onSelect) {
             HStack(spacing: 10) {
                 
-                Image(nsImage: IconCache.shared.icon(for: nil))
+				Image(
+					nsImage: IconCache.shared.icon(
+						for: URL(fileURLWithPath: project.path)
+					)
+				)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 32, height: 32)
@@ -41,49 +51,46 @@ struct ProjectRowView: View {
                 
                 // Delete button
                 Button(action: onDelete) {
-                    Image(systemName: "trash")
-                        .foregroundStyle(.red)
+                    Image(systemName: "trash.fill")
+						.foregroundStyle(.red)
                 }
                 .buttonStyle(.plain)
                 .opacity(isHovering ? 1 : 0)
+				
             }
+			.padding()
+			.frame(maxWidth: .infinity)
+			.contentShape(RoundedRectangle(cornerRadius: 15))
+			
         }
-        .padding()
+		.background(interactiveBackground)
         .buttonStyle(.plain)
-        .background(interactiveBackground)
         .clipShape(RoundedRectangle(cornerRadius: 15))
         .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.15)) {
+            withAnimation(.easeInOut(duration: 0.05)) {
                 isHovering = hovering
             }
+			
+			NSHapticFeedbackManager.defaultPerformer.perform(
+				.alignment,
+				performanceTime: .now
+			)
         }
         
     }
-    
+	    
     private var interactiveBackground: some View {
         RoundedRectangle(cornerRadius: 15)
             .fill(backgroundFill)
-            .overlay(
-                RoundedRectangle(cornerRadius: 15)
-                    .strokeBorder(borderColor, lineWidth: 1)
-            )
     }
 
     private var backgroundFill: Color {
         if isHovering {
-            return .accentColor.opacity(0.10)
+            return .accentColor.opacity(0.18)
             
         } else {
-            return .secondary.opacity(0.12)
-        }
-    }
-
-    private var borderColor: Color {
-        if isHovering {
-            return .accentColor.opacity(0.2)
-            
-        } else {
-            return .clear
+            return .secondary.opacity(0.18)
+			
         }
     }
 }
