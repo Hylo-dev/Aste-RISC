@@ -9,91 +9,33 @@ import SwiftUI
 
 /// The view show the button for each IDE modality
 struct MenuButtonView: View {
-    
-    /// Rapresenting hoveing mouse on the button
-    @State private var isHovering: Bool
-    
-    /// This is the modality rapresenting
-    private let currentMode: ModalityItem
-    
-    init(currentMode: ModalityItem) {
-        self.isHovering  = false
-        self.currentMode = currentMode
-    }
+	let currentMode: ModalityItem
 
-    var body: some View {
-        
-        // Button Body
-        Button(action: currentMode.function) {
-            
-            // Row contains information button
-            HStack(alignment: .center, spacing: 12) {
-                iconContainer
-                textContainer
-            }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .topLeading)
-			.contentShape(RoundedRectangle(cornerRadius: 26))
-            
-        }
-        .background(interactiveBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 26))
-        .scaleEffect(isHovering ? 1.02 : 1.0)
-		.onHover { hovering in
-			withAnimation(.easeInOut(duration: 0.05)) {
-				isHovering = hovering
-			}
+	var body: some View {
+		Button(action: currentMode.function) {
 			
-			NSHapticFeedbackManager.defaultPerformer.perform(
-				.alignment,
-				performanceTime: .now
-			)
+			HStack(spacing: 12) {
+				
+				Image(systemName: currentMode.icon)
+					.font(.title2)
+					.foregroundStyle(.tint)
+					.frame(width: 45, height: 45)
+					.background(
+						.primary.opacity(0.18),
+						in: RoundedRectangle(cornerRadius: 26)
+					)
+				
+				VStack(alignment: .leading, spacing: 2) {
+					Text(currentMode.name)
+						.font(.headline)
+						.foregroundStyle(.primary)
+					
+					Text(currentMode.description)
+						.font(.subheadline)
+						.foregroundStyle(.secondary)
+				}
+			}
 		}
-    }
-
-    /// Icon button
-    private var iconContainer: some View {
-        
-        ZStack {
-            RoundedRectangle(cornerRadius: 26)
-                .fill(.primary.opacity(0.18))
-                .frame(width: 45, height: 45)
-
-            Image(systemName: currentMode.icon)
-                .font(.title2)
-                .foregroundStyle(.tint)
-                .frame(width: 36, height: 36)
-        }
-        
-    }
-
-    /// Column whit name and description text
-    private var textContainer: some View {
-        
-        VStack(alignment: .leading, spacing: 2) {
-            Text(currentMode.name)
-                .font(.headline)
-                .foregroundStyle(.primary)
-
-            Text(currentMode.description)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        
-    }
-
-    /// Background button
-    private var interactiveBackground: some View {
-        RoundedRectangle(cornerRadius: 26)
-            .fill(backgroundFill)
-            
-    }
-
-    /// Background color, this is condition and depends if the button is hovering or not
-    private var backgroundFill: Color {
-        if isHovering {
-            return .accentColor.opacity(0.18)
-            
-        } else { return .clear }
-    }
+		.buttonStyle(RowButtonStyle())
+	}
 }

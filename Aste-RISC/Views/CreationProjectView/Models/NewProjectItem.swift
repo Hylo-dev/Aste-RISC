@@ -6,9 +6,17 @@
 //
 
 import Foundation
+internal import Combine
 
-struct NewProjectItem {
-    var nameProject    : String = ""
-    var locationProject: String = FileManager.default.homeDirectoryForCurrentUser
-        .appendingPathComponent("AsteRiscProjects", isDirectory: true).path
+class NewProjectItem: ObservableObject {
+	
+	@Published
+    var name: String = ""
+	
+	@Published
+    var path: String = FileManager.default.homeDirectoryForCurrentUser
+        .appendingPathComponent(
+			"\(Bundle.main.appName)Projects",
+			isDirectory: true
+		).path
 }

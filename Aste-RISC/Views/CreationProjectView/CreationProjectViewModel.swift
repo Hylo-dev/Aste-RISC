@@ -8,34 +8,39 @@
 import Foundation
 internal import Combine
 
-@MainActor
-/// View model for manage read data on terminal
+@MainActor /// View model for manage read data on terminal
 class CreationProjectViewModel: ObservableObject {
     /// Info new project
-    @Published var defaultProject = NewProjectItem()
-
-    var nameProject: String {
-        get { defaultProject.nameProject }
-        set { defaultProject.nameProject = newValue; defaultProject = defaultProject }
-        
-    }
-    
-    var locationProject: String {
-        get { defaultProject.locationProject }
-        set { defaultProject.locationProject = newValue; defaultProject = defaultProject }
-        
-    }
+    @Published
+	var project = NewProjectItem()
+	
+	/// State creation project
+	@Published
+	var creating: Bool = false
     
     var baseDirectoryURL: URL {
-        let expanded = (defaultProject.locationProject as NSString).expandingTildeInPath
+        let expanded = (
+			self.project.path as NSString
+		).expandingTildeInPath
+		
         return URL(fileURLWithPath: expanded, isDirectory: true)
     }
-    
-    /// Create a project
-    func createProject() async throws -> URL {
-        return try await ProjectCreator.shared.createProject(
-            at: baseDirectoryURL,
-            name: defaultProject.nameProject
-        )
-    }
+	
+	func createProjectHandle() async -> (
+		projectUrl  : URL?,
+		errorMessage: String?
+	) {
+		var returnValue: (URL?, String?)
+		
+		creating = true
+		
+		returnValue = await ProjectCreator.shared.createProject(
+			at  : baseDirectoryURL,
+			name: self.project.name
+		)
+					
+		creating = false
+		
+		return returnValue
+	}
 }

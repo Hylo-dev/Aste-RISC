@@ -95,7 +95,11 @@ struct BodyEditorView: View {
 				
 			} detail : {
 				// More information, for example Stack, table registers
-				InformationAreaView(fileSelected: self.$bodyEditorViewModel.fileSelected)
+				
+				if self.bodyEditorViewModel.fileSelected != nil {
+					InformationAreaView(
+						fileSelected: self.$bodyEditorViewModel.fileSelected
+					)
 					.environmentObject(self.cpu)
 					.environmentObject(self.stackViewModel)
 					.environmentObject(self.bodyEditorViewModel.optionsWrapper)
@@ -104,6 +108,8 @@ struct BodyEditorView: View {
 						idealWidth: 400,
 						maxWidth  : .infinity
 					)
+				}
+				
 			}
 			.onAppear(perform: handleOnAppear)
 			.onChange(of: self.cpu.programCounter) { _, newValue in
@@ -192,16 +198,22 @@ struct BodyEditorView: View {
 			}
 			
 			// Show Spotlight search if no file is open or if search is active
-			if isEmptyPath || self.bodyEditorViewModel.isSearchingFile {
+			if let viewModel = spotlightViewModel,
+				isEmptyPath || self.bodyEditorViewModel.isSearchingFile {
 				VStack(alignment: .center) {
 					
 					// Note: Assumes spotlightViewModel is non-nil
 					// when this view is shown.
-					MultiSectionSpotlightView(viewModel: self.spotlightViewModel!, width: 600)
-						.focused($spotlightFocused, equals: .spotlight)
-						.onAppear { self.spotlightFocused = .spotlight }
-						.zIndex(2)
-						.padding(.top, 170)
+					
+					// TODO: When project is new, crashed
+					MultiSectionSpotlightView(
+						viewModel: viewModel,
+						width    : 600
+					)
+					.focused($spotlightFocused, equals: .spotlight)
+					.onAppear { self.spotlightFocused = .spotlight }
+					.zIndex(2)
+					.padding(.top, 170)
 					
 					Spacer()
 				}

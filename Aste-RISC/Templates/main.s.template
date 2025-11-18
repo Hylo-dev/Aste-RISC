@@ -1,9 +1,11 @@
-# template
+# Template created by AsteRISC IDE.
+# This template show the section data, jump
+# instructions and more.
 
 .globl _start
 
+# Data variable, loaded on start execution in RAM.
 .data
-	# variables here
 	x: .word 10, 60, 43, 39, 214, 73, 812
 	y: .word 12
 

@@ -8,16 +8,13 @@
 import SwiftUI
 
 struct ProjectRowView: View {
-	
-	@State private var isHovering = false
-	
 	/// Project information item
     let project: RecentProject
 	
 	/// Func when select row
     var onSelect: () -> Void
 	
-	// Func when delete row
+	// Func when click delete row
     var onDelete: () -> Void
 
     var body: some View {
@@ -30,9 +27,9 @@ struct ProjectRowView: View {
 						for: URL(fileURLWithPath: project.path)
 					)
 				)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 32, height: 32)
+				.resizable()
+				.aspectRatio(contentMode: .fit)
+				.frame(width: 32, height: 32)
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(project.name)
@@ -55,43 +52,10 @@ struct ProjectRowView: View {
 						.foregroundStyle(.red)
                 }
                 .buttonStyle(.plain)
-                .opacity(isHovering ? 1 : 0)
 				
-            }
-			.padding()
-			.frame(maxWidth: .infinity)
-			.contentShape(RoundedRectangle(cornerRadius: 15))
-			
+            }			
         }
-		.background(interactiveBackground)
-        .buttonStyle(.plain)
-        .clipShape(RoundedRectangle(cornerRadius: 15))
-        .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.05)) {
-                isHovering = hovering
-            }
-			
-			NSHapticFeedbackManager.defaultPerformer.perform(
-				.alignment,
-				performanceTime: .now
-			)
-        }
-        
-    }
-	    
-    private var interactiveBackground: some View {
-        RoundedRectangle(cornerRadius: 15)
-            .fill(backgroundFill)
-    }
-
-    private var backgroundFill: Color {
-        if isHovering {
-            return .accentColor.opacity(0.18)
-            
-        } else {
-            return .secondary.opacity(0.18)
-			
-        }
+		.buttonStyle(RowButtonStyle(scaling: false))
     }
 }
 

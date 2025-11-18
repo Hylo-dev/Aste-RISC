@@ -11,41 +11,88 @@ actor ProjectCreator {
     static let shared = ProjectCreator()
 
     func createProject(
-        at baseDirectory: URL,
-        name projectName: String
-    ) async throws -> URL {
+        at   baseDirectory: URL,
+        name projectName  : String
+		
+    ) async -> (
+		projectUrl: URL?,
+		error: 		String?
+	) {
 
-        let trimmedName = projectName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedName.isEmpty else { throw ProjectCreationError.invalidProjectName }
+        let trimmedName = projectName.trimmingCharacters(
+			in: .whitespacesAndNewlines
+		)
+				
+		guard !trimmedName.isEmpty else {
+			return (
+				nil,
+				ProjectCreationError.invalidProjectName.localizedDescription
+			)
+		}
 
-        let projectDir = baseDirectory.appendingPathComponent(trimmedName, isDirectory: true)
-        let srcDir = projectDir.appendingPathComponent("src", isDirectory: true)
+		// Get the main project path
+        let projectDir = baseDirectory.appendingPathComponent(
+			trimmedName,
+			isDirectory: true
+		)
+		
+		// Append to project dir the source folder
+        let srcDir = projectDir.appendingPathComponent(
+			"src",
+			isDirectory: true
+		)
 
         if FileManager.default.fileExists(atPath: projectDir.path) {
-            throw ProjectCreationError.projectAlreadyExists(projectDir)
+            return (
+				nil,
+				ProjectCreationError.projectAlreadyExists(
+					projectDir
+				).localizedDescription
+			)
         }
 
-        try FileManager.default.createDirectory(at: srcDir, withIntermediateDirectories: true)
+		do {
+			try FileManager.default.createDirectory(
+				at: srcDir,
+				withIntermediateDirectories: true
+			)
 
-        let mainFileName = "main.s"
+			let mainFileName = "main.s"
 
-        let mainTemplate = try loadTemplateText(resourceName: mainFileName, extension: "template")
-        
-        let mainURL = srcDir.appendingPathComponent(mainFileName)
-        try writeText(mainTemplate, to: mainURL)
+			let mainTemplate = try loadTemplateText(
+				resource : mainFileName,
+				extension: "template"
+			)
+			
+			let mainURL = srcDir.appendingPathComponent(mainFileName)
+			try write(mainTemplate, to: mainURL)
+			
+		} catch { return (nil, error.localizedDescription) }
 
-        return projectDir
+        return (projectDir, nil)
     }
 
-    // MARK: - Helpers
+    // MARK: - Handlers
 
-    private func loadTemplateText(resourceName: String, extension ext: String) throws -> String {
-        guard let url = Bundle.main.url(forResource: resourceName, withExtension: ext) else {
-            throw ProjectCreationError.templateNotFound("\(resourceName).\(ext)")
+	/// Load template for assembly main, this permitted create a not empty file
+    private func loadTemplateText(
+		resource  resourceName: String,
+		extension ext	      : String
+		
+	) throws -> String {
+        guard let url = Bundle.main.url(
+			forResource  : resourceName,
+			withExtension: ext
+			
+		) else {
+            throw ProjectCreationError.templateNotFound(
+				"\(resourceName).\(ext)"
+			)
         }
 		
         do {
             let data = try Data(contentsOf: url)
+			
             guard let text = String(data: data, encoding: .utf8) else {
                 throw ProjectCreationError.bundleReadFailed(url)
             }
@@ -57,7 +104,11 @@ actor ProjectCreator {
         }
     }
 
-    private func writeText(_ text: String, to url: URL) throws {
+	/// Write text to file
+    private func write(
+		_ text: String,
+		to url: URL
+	) throws {
         do {
             try text.data(using: .utf8)?.write(to: url, options: [.atomic])
 			

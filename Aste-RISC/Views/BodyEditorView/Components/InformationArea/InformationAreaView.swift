@@ -72,7 +72,11 @@ struct InformationAreaView: View {
 	
 	@ViewBuilder /// Show selected view
 	private func currentView() -> some View {
-		let contentFile = (try? String(contentsOf: self.fileSelected!, encoding: .utf8)) ?? "nil"
+		
+		// TODO: - Information is crashed when create project and open.
+		let contentFile = (
+			try? String(contentsOf: self.fileSelected!, encoding: .utf8)
+		) ?? "nil"
 		
 		switch self.informationAreaViewModel.selectedSection {
 			case .tableRegisters:
