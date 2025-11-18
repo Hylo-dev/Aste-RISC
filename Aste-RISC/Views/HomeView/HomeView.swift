@@ -103,6 +103,8 @@ struct HomeView: View {
 			}
 		}
     }
+	
+	// MARK: - Views
     
     private var titleEditor: some View {
         return HStack {
@@ -120,7 +122,8 @@ struct HomeView: View {
 				})
                 .onAppear {
 					
-					// 
+					// Get color shadow for icon,
+					// if is in cache then load, else calc shadow
                     if let cached = Self.cachedColor {
                         self.glowColor = Color(cached)
                         
@@ -132,12 +135,14 @@ struct HomeView: View {
                             let nsColor = await computeAverageColor(
 								of: Self.icon
 							)
+							
                             self.glowColor = Color(nsColor ?? .white)
                             Self.cachedColor = nsColor
                         }
                     }
                 }
                 .onDisappear {
+					// Cancel calc shadow
                     colorTask?.cancel()
                     colorTask = nil
                 }
@@ -147,13 +152,15 @@ struct HomeView: View {
 				alignment: .leading,
 				spacing  : 3
 			) {
-                Text("Aste-RISC")
-                    .font(.largeTitle.bold())
+				Text(Bundle.main.appName)
+                    .font(.largeTitle)
+					.fontWeight(.bold)
+					.fontDesign(.rounded)
                     .foregroundStyle(.primary)
                 
                 Text("Open Source RISC-V IDE")
 					.font(.headline)
-					.fontWeight(.light)
+					.fontWeight(.medium)
                     .foregroundStyle(.secondary)
             }
         }

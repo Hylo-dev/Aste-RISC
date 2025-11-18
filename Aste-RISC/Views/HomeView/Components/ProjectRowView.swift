@@ -45,15 +45,16 @@ struct ProjectRowView: View {
                 }
                 
                 Spacer()
-                
-                // Delete button
-                Button(action: onDelete) {
-                    Image(systemName: "trash.fill")
-						.foregroundStyle(.red)
-                }
-                .buttonStyle(.plain)
 				
-            }			
+            }
+			.contextMenu {
+				// Opzione 1
+				Button {
+					onDelete()
+				} label: {
+					Label("Delete", systemImage: "trash.fill")
+				}
+			}
         }
 		.buttonStyle(RowButtonStyle(scaling: false))
     }

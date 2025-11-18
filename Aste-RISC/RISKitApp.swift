@@ -9,18 +9,24 @@ import SwiftUI
 
 @main
 struct RISKitApp: App {
-    @Environment(\.openWindow) private var openWindow
-	@Environment(\.dismiss)    private var dismiss
+    @Environment(\.openWindow)
+	private var openWindow
 	
-	@StateObject private var navigationViewModel = NavigationViewModel()
+	@Environment(\.dismiss)
+	private var dismiss
+	
+	@StateObject
+	private var navigationViewModel = NavigationViewModel()
     
     var body: some Scene {
         // Home screen
         WindowGroup(id: "home") {
             ContentHomeView()
+				.frame(width: 735, height: 400)
 				.environmentObject(self.navigationViewModel)
         }
         .windowStyle(.hiddenTitleBar)
+		.windowResizability(.contentSize)
         
         // Editor screen
         WindowGroup(id: "editor") {
