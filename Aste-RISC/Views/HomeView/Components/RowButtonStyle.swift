@@ -12,9 +12,14 @@ struct RowButtonStyle: ButtonStyle {
 	private var isHovering: Bool = false
 	
 	let scaling: Bool
+	let cornerRadius: CGFloat
 	
-	init(scaling: Bool = true) {
-		self.scaling = scaling
+	init(
+		scaling		: Bool 	  = true,
+		cornerRadius: CGFloat = 26
+	) {
+		self.scaling 	  = scaling
+		self.cornerRadius = cornerRadius
 	}
 	
 	func makeBody(configuration: Configuration) -> some View {
@@ -22,16 +27,14 @@ struct RowButtonStyle: ButtonStyle {
 			.padding()
 			.frame(maxWidth: .infinity, alignment: .leading)
 			.background(
-				RoundedRectangle(cornerRadius: 26)
+				RoundedRectangle(cornerRadius: cornerRadius)
 					.fill(backgroundColor(isPressed: configuration.isPressed))
 			)
-			.clipShape(RoundedRectangle(cornerRadius: 26))
 			.if(self.scaling, transform: { view in
 				view.scaleEffect(
 					scaleValue(isPressed: configuration.isPressed)
 				)
 			})
-			.contentShape(RoundedRectangle(cornerRadius: 26))
 			.onHover { hovering in
 				withAnimation(.easeInOut(duration: 0.15)) {
 					isHovering = hovering

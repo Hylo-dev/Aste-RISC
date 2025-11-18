@@ -12,14 +12,14 @@ struct ProjectRowView: View {
     let project: RecentProject
 	
 	/// Func when select row
-    var onSelect: () -> Void
+	var onSelect: (_ isDirectly: Bool) -> Void
 	
 	// Func when click delete row
     var onDelete: () -> Void
 
     var body: some View {
         
-        Button(action: onSelect) {
+        Button(action: { onSelect(false) }) {
             HStack(spacing: 10) {
                 
 				Image(
@@ -47,16 +47,23 @@ struct ProjectRowView: View {
                 Spacer()
 				
             }
+			.frame(maxWidth: .infinity, alignment: .leading)
+			.contentShape(Rectangle())
+			.onTapGesture(count: 2) { onSelect(true) }
 			.contextMenu {
-				// Opzione 1
 				Button {
 					onDelete()
+					
 				} label: {
 					Label("Delete", systemImage: "trash.fill")
 				}
 			}
+			
         }
-		.buttonStyle(RowButtonStyle(scaling: false))
+		.buttonStyle(RowButtonStyle(
+			scaling		: false,
+			cornerRadius: 17
+		))
     }
 }
 

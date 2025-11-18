@@ -27,7 +27,12 @@ struct ProjectListView: View {
 				ForEach(globalSetting?.recentsProjects ?? []) { project in
                     ProjectRowView(
                         project : project,
-                        onSelect: { handleProjectSelection(project) },
+						onSelect: { isDirectly in
+							handleProjectSelection(
+								project,
+								isDirectly: isDirectly
+							)
+						},
                         onDelete: { handleProjectDeletion(project)  }
                     )
                     .id(project)
@@ -46,9 +51,19 @@ struct ProjectListView: View {
 	// MARK: - Handlers
 	
 	/// Handle for open project and change view
-	private func handleProjectSelection(_ project: RecentProject) {
-		self.navigationViewModel.setProjectInformation(url: project.path, name: project.name)
-		self.navigationViewModel.setSecondaryNavigation(secondaryNavigation: .openProject)
+	private func handleProjectSelection(
+		_ project : RecentProject,
+		isDirectly: Bool = false
+	) {
+		
+		self.navigationViewModel.setProjectInformation(
+			url : project.path,
+			name: project.name
+		)
+		
+		self.navigationViewModel.setSecondaryNavigation(
+			secondaryNavigation: isDirectly ? .openDirectlyProject : .openProject
+		)
 	}
 	
 	/// Handle for remove recent project

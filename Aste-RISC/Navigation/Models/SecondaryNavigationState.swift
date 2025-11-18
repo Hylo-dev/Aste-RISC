@@ -7,5 +7,6 @@
 
 enum SecondaryNavigationState {
 	case openProject
+	case openDirectlyProject
 	case createProject
 }

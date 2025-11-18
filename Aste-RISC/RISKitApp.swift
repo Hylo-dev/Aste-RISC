@@ -20,10 +20,26 @@ struct RISKitApp: App {
     
     var body: some Scene {
         // Home screen
-        WindowGroup(id: "home") {
-            ContentHomeView()
+        Window("Home Aste-RISC", id: "home") {
+			
+			ContentHomeView()
 				.frame(width: 735, height: 400)
 				.environmentObject(self.navigationViewModel)
+				.task {
+					if let window = NSApp.findWindow("home") {
+						window.styleMask.insert(.fullSizeContentView)
+						window.standardWindowButton(
+							.miniaturizeButton
+						)?.isHidden = true
+						
+						window.standardWindowButton(
+							.zoomButton
+						)?.isHidden = true
+						window.isMovableByWindowBackground = true
+					}
+				}
+			
+            
         }
         .windowStyle(.hiddenTitleBar)
 		.windowResizability(.contentSize)
@@ -36,7 +52,11 @@ struct RISKitApp: App {
 			)
 			.onDisappear {
 				withTransaction(Transaction(animation: nil)) {
-					self.navigationViewModel.saveCurrentProjectState(path: "")
+					self.navigationViewModel.saveCurrentProjectState(
+						path: ""
+					)
+					
+					self.navigationViewModel.cleanSecondaryNavigation()
 				}
 					
 				Task { openWindow(id: "home") }
@@ -65,10 +85,15 @@ struct RISKitApp: App {
 }
 
 private struct EditorWindowWrapper: View {
-	@Environment(\.openWindow) private var openWindow
-	@Environment(\.dismiss)    private var dismiss
+	@Environment(\.openWindow)
+	private var openWindow
 	
-	@State private var hasHandledInvalidPath = false
+	@Environment(\.dismiss)
+	private var dismiss
+	
+	@State
+	private var hasHandledInvalidPath = false
+	
 	let selectedProjectPath: String
 	let selectedProjectName: String
 	

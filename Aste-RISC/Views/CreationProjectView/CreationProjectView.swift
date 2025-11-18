@@ -159,8 +159,8 @@ struct CreationProjectView: View {
 	/// and main template
 	private func handleCreationProject() {
 		Task {
-			let result = await
-							self.creationProjectViewModel.createProjectHandle()
+			let result = await self.creationProjectViewModel
+											.createProjectHandle()
 			
 			if let path = result.projectUrl?.path,
 				  !path.isEmpty {
@@ -171,7 +171,7 @@ struct CreationProjectView: View {
 				)
 				
 				self.navigationViewModel.setSecondaryNavigation(
-					secondaryNavigation: .openProject
+					secondaryNavigation: .openDirectlyProject
 				)
 				
 			} else if let message = result.errorMessage {

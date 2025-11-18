@@ -95,8 +95,13 @@ class NavigationViewModel: ObservableObject {
     }
 	
 	func isSettingsFolderExist() -> Bool {
-		let path = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-		let settingsFolder = path.appendingPathComponent("RISKit").appendingPathComponent("Settings")
+		let path = FileManager.default.urls(
+			for: .applicationSupportDirectory,
+			in : .userDomainMask
+		).first!
+		
+		let settingsFolder = path.appendingPathComponent("RISKit")
+								 .appendingPathComponent("Settings")
 		
 		return FileManager.default.fileExists(atPath: settingsFolder.path)
 	}
