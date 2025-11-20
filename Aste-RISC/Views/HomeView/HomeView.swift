@@ -116,28 +116,9 @@ struct HomeView: View {
 		}
 		.onDrop(
 			of		  : [UTType.fileURL],
-			isTargeted: self.$isDropping
-		) { providers in
-			
-			guard let provider = providers.first else { return false }
-			
-			_ = provider.loadObject(ofClass: URL.self) { url, error in
-				guard let url = url else { return }
-				
-				Task { @MainActor in
-					onDrop(url)
-					
-					NSHapticFeedbackManager.defaultPerformer.perform(
-						.generic,
-						performanceTime: .now
-					)
-					
-					NSApp.activate(ignoringOtherApps: true)
-				}
-			}
-			
-			return true
-		}
+			isTargeted: self.$isDropping,
+			perform	  : onDroppingItem
+		)
 		.onChange(of: self.isDropping, { _, newValue in
 			if newValue {
 				NSHapticFeedbackManager.defaultPerformer.perform(
@@ -158,10 +139,10 @@ struct HomeView: View {
 				.frame(width: 80, height: 80)
 				.if(self.glowColor != nil, transform: { view in
 					view.shadow(
-						color  : glowColor!.opacity(0.6),
+						color : glowColor!.opacity(0.6),
 						radius: 12,
-						x	   : 0,
-						y	   : 0
+						x	  : 0,
+						y	  : 0
 					)
 				})
 				.onAppear {
@@ -222,14 +203,34 @@ struct HomeView: View {
 	
 	// MARK: - Handlers
 	
-	private func onDrop(_ url: URL) {
-		self.navigationViewModel.setProjectInformation(
-			url: url.path,
-			name: url.lastPathComponent
-		)
+	/// When dropping folder on IDE 
+	private func onDroppingItem(_ providers: [NSItemProvider]) -> Bool {
 		
-		self.navigationViewModel.setSecondaryNavigation(
-			secondaryNavigation: .openProject
-		)
+		guard let provider = providers.first else { return false }
+		
+		_ = provider.loadObject(ofClass: URL.self) { url, error in
+			guard let url = url else { return }
+			
+			Task { @MainActor in
+				self.navigationViewModel.setProjectInformation(
+					url: url.path,
+					name: url.lastPathComponent
+				)
+				
+				self.navigationViewModel.setSecondaryNavigation(
+					secondaryNavigation: .openProject
+				)
+				
+				NSHapticFeedbackManager.defaultPerformer.perform(
+					.generic,
+					performanceTime: .now
+				)
+				
+				NSApp.activate(ignoringOtherApps: true)
+			}
+		}
+		
+		return true
+		
 	}
 }

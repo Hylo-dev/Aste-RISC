@@ -1,6 +1,6 @@
 //
 //  ProjectListView.swift
-//  NeonC
+//  Aste-RISC
 //
 //  Created by Eliomar Alejandro Rodriguez Ferrer on 12/08/25.
 //
@@ -14,21 +14,32 @@ struct ProjectListView: View {
 	@EnvironmentObject
 	private var navigationViewModel: NavigationViewModel
 	
+	/// Manage the focus state on home screen
 	@FocusState
 	private var isFocused: Bool
 	
+	/// This variable is used for set the focus when
+	/// the windows is rendered
 	@State
 	private var isReady: Bool = false
 	
+	/// Get the IDE global settings
 	@State
 	var globalSetting: GlobalSettings?
 	
+	/// Contains index of the row focused on list
 	@State
 	private var selectedRow: UInt32 = 0
 	
+	/// Settings manager, this save or load file settings
 	private let settingsManager: SettingsManager = SettingsManager()
+	
+	/// Set the settings loaded, used for not read the memory
+	/// all time
+	private static var cachedValue: GlobalSettings?
    
     var body: some View {
+		// Get the array recent projects
 		let arrayRecentProject = globalSetting?.recentsProjects ?? []
         
         ScrollView {
@@ -60,7 +71,12 @@ struct ProjectListView: View {
 		.focusEffectDisabled()
 		.focused($isFocused)
 		.onAppear(perform: handlerOnAppear)
-		.onKeyPress(action: handlerArrowPressed)
+		.onKeyPress { pressed in
+			handlerArrowPressed(
+				pressed,
+				size: arrayRecentProject.count
+			)
+		}
     }
 	
 	// MARK: - Handlers Project
@@ -77,7 +93,8 @@ struct ProjectListView: View {
 		)
 		
 		self.navigationViewModel.setSecondaryNavigation(
-			secondaryNavigation: isDirectly ? .openDirectlyProject : .openProject
+			secondaryNavigation: isDirectly ?
+									.openDirectlyProject : .openProject
 		)
 	}
 	
@@ -86,9 +103,7 @@ struct ProjectListView: View {
 		guard let index = self.globalSetting!.recentsProjects.firstIndex(
 			where: { $0.id == project.id }
 			
-		) else {
-			return
-		}
+		) else { return }
 		
 		withAnimation(.easeInOut(duration: 0.3)) {
 			self.globalSetting!.removeProject(at: IndexSet(integer: index))
@@ -125,8 +140,11 @@ struct ProjectListView: View {
 	
 	// MARK: - Handler View
 	
-	private func handlerArrowPressed(_ pressed: KeyPress) -> KeyPress.Result {
-		let arrayRecentProject = globalSetting?.recentsProjects ?? []
+	/// Change focus row on bassed in click up or down row
+	private func handlerArrowPressed(
+		_ 	 pressed  : KeyPress,
+		size arraySize: Int
+	) -> KeyPress.Result {
 		
 		switch pressed.key {
 			case .upArrow:
@@ -137,7 +155,7 @@ struct ProjectListView: View {
 				return .handled
 				
 			case .downArrow:
-				if self.selectedRow < arrayRecentProject.count - 1 {
+				if self.selectedRow < arraySize - 1 {
 					self.selectedRow += 1
 				}
 									
@@ -148,15 +166,25 @@ struct ProjectListView: View {
 		}
 	}
 	
+	/// When appear load the settings and set the
+	/// focus on window
 	private func handlerOnAppear() {
-		self.globalSetting = self.settingsManager.load(
-			file: "global_settings.json",
-			GlobalSettings.self
-		)
 		
-		Task { @MainActor in
-			self.isReady   = true
-			self.isFocused = true
+		if Self.cachedValue == nil {
+			self.globalSetting = self.settingsManager.load(
+				file: "global_settings.json",
+				GlobalSettings.self
+			)
+			
+			Self.cachedValue = self.globalSetting
+			
+		} else { self.globalSetting = Self.cachedValue }
+		
+		if !self.isFocused {
+			Task { @MainActor in
+				self.isReady   = true
+				self.isFocused = true
+			}
 		}
 	}
 }

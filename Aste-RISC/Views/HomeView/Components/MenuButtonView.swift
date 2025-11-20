@@ -1,6 +1,6 @@
 //
 //  ModeButton.swift
-//  NeonC
+//  Aste-RISC
 //
 //  Created by Eliomar Alejandro Rodriguez Ferrer on 11/08/25.
 //
