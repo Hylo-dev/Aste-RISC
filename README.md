@@ -36,12 +36,12 @@ It aims to:
 - [x] **Stack Visualization:** A visual representation of the stack, including stack frames.
 - [x] **SwiftUI Native UI:** A modern interface built using the latest macOS Tahoe (26.0) design principles.
 - [x] **C-Based Emulation Core:** The performance-critical emulation logic is handled in C.
+- [x] **Some Project Management features:** Project templates and drag-and-drop file support.
 
 ### Roadmap
 - [ ] **Multi-Editor Support:** Integrate support for using Helix, Vim, and Neovim as the backend editor.
 - [ ] **LSP Integration:** Implement the [asm-lsp (Rust)](https://github.com/bergercookie/asm-lsp) for features like auto-completion, diagnostics, and go-to-definition.
 - [ ] **Keyboard Shortcuts:** Full keyboard-driven navigation and operation.
-- [ ] **Some Project Management features:** Project templates and drag-and-drop file support.
 
 ## Getting Started
 
