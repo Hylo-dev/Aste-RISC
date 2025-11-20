@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContentHomeView: View {
 	@EnvironmentObject
-	private var navigationViewModel: NavigationViewModel
+	private var viewModel: NavigationViewModel
 	
 	/// Enviroment call for open new window
     @Environment(\.openWindow)
@@ -18,62 +18,36 @@ struct ContentHomeView: View {
 	/// Enviroment call for close the current window
     @Environment(\.dismiss)
 	private var dismiss
-	
-    /// Binding state, this show the creation project
-    private var isCreateProjectPresented: Binding<Bool> {
-        Binding(
-			get: {
-				self.navigationViewModel.secondaryNavigation == .createProject
-			},
-			set: { newValue in
-				if !newValue {
-					self.navigationViewModel.cleanSecondaryNavigation()
-				}
-			}
-        )
-    }
-    
-    /// Binding state, this show alert to change view
-    private var isOpenProjectAlertPresented: Binding<Bool> {
-        Binding(
-			get: {
-				self.navigationViewModel.secondaryNavigation == .openProject
-			},
-			set: { newValue in
-				if !newValue {
-					self.navigationViewModel.cleanSecondaryNavigation()
-				}
-			}
-        )
-    }
     
     private let settingsManager: SettingsManager = SettingsManager()
     
     var body: some View {
         
-        switch self.navigationViewModel.principalNavigation {
+        switch self.viewModel.principalNavigation {
 			case .home:
 				HomeView()
 					.onAppear {
-						if !self.navigationViewModel.isSettingsFolderExist() {
-							self.navigationViewModel.setPrincipalNavigation(
+						if !self.viewModel.isSettingsFolderExist() {
+							self.viewModel.setPrincipalNavigation(
 								principalNavigation: .welcome
 							)
 						}
 					}
 					.onChange(
-						of: self.navigationViewModel.secondaryNavigation,
+						of: self.viewModel.secondaryNavigation,
 						handlerOnSecondaryNavigationChange
 					)
-					.sheet(isPresented: isCreateProjectPresented) {
+					.sheet(
+						isPresented: self.viewModel.isCreateProjectPresented
+					) {
 						CreationProjectView()
 							.frame(width: 600, height: 400)
 						
 					}
 					.alert(
-						"Open Project '\(self.navigationViewModel.selectedProjectName)'",
-						isPresented: isOpenProjectAlertPresented,
-						actions: alertContent
+						"Open Project '\(self.viewModel.selectedProjectName)'",
+						isPresented: self.viewModel.isOpenProjectAlertPresented,
+						actions	   : alertContent
 					)
 				
 			case .welcome:
@@ -86,8 +60,8 @@ struct ContentHomeView: View {
     @ViewBuilder
     private func alertContent() -> some View {
         Button("No", role: .cancel) {
-			self.navigationViewModel.cleanProjectInformation()
-			self.navigationViewModel.cleanSecondaryNavigation()
+			self.viewModel.cleanProjectInformation()
+			self.viewModel.cleanSecondaryNavigation()
         }
         .buttonStyle(.glass)
         
@@ -99,6 +73,8 @@ struct ContentHomeView: View {
 	
 	// MARK: - Handlers
 	
+	/// If secondary navigation is changed then
+	/// open directly project
 	private func handlerOnSecondaryNavigationChange(
 		_ oldValue: SecondaryNavigationState?,
 		_ newValue: SecondaryNavigationState?
@@ -108,9 +84,10 @@ struct ContentHomeView: View {
 		}
 	}
 	
+	/// Function for open project
 	private func handlerOpenProject() {
-		let path = self.navigationViewModel.selectedProjectPath
-		let name = self.navigationViewModel.selectedProjectName
+		let path = self.viewModel.selectedProjectPath
+		let name = self.viewModel.selectedProjectName
 
 		withTransaction(Transaction(animation: nil)) {
 			var oldSettings = settingsManager.load(file: "global_settings.json", GlobalSettings.self)

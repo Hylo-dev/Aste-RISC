@@ -20,6 +20,34 @@ class NavigationViewModel: ObservableObject {
 	@Published private(set) var selectedProjectPath: String
 	
     private var settingsManager: SettingsManager = SettingsManager()
+	
+	/// Binding state, this show the creation project
+	var isCreateProjectPresented: Binding<Bool> {
+		Binding(
+			get: {
+				self.secondaryNavigation == .createProject
+			},
+			set: { newValue in
+				if !newValue {
+					self.cleanSecondaryNavigation()
+				}
+			}
+		)
+	}
+	
+	/// Binding state, this show alert to change view
+	var isOpenProjectAlertPresented: Binding<Bool> {
+		Binding(
+			get: {
+				self.secondaryNavigation == .openProject
+			},
+			set: { newValue in
+				if !newValue {
+					self.cleanSecondaryNavigation()
+				}
+			}
+		)
+	}
 
     init() {
 		self.principalNavigation = .home

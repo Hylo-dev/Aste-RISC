@@ -84,8 +84,12 @@ struct HomeView: View {
 			if defaultsMode.isEmpty {
 				defaultsMode = [
 					ModalityItem(
-						name: "Create A New Project",
-						description: "Create a new Assembly project",
+						name: String(
+							localized: "Create A New Project"
+						),
+						description: String(
+							localized: "Create a new Assembly project"
+						),
 						icon: "plus.app",
 						function: { [weak navigationViewModel] in
 							navigationViewModel?.setSecondaryNavigation(
@@ -95,8 +99,12 @@ struct HomeView: View {
 					),
 					
 					ModalityItem(
-						name: "Open A Existing Project",
-						description: "Browse your existing projects",
+						name: String(
+							localized: "Open A Existing Project"
+						),
+						description: String(
+							localized: "Browse your existing projects"
+						),
 						icon: "folder",
 						function: { [weak navigationViewModel] in
 							guard let vm = navigationViewModel else { return }

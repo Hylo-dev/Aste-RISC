@@ -8,25 +8,34 @@
 import AppKit
 import Foundation
 
-func showFinderPanel(navigationViewModel: NavigationViewModel) {
+func showFinderPanel(
+	navigationViewModel: NavigationViewModel
+) {
     let panel = NSOpenPanel()
     
-    panel.canChooseDirectories = true
-    panel.canChooseFiles = false
+    panel.canChooseDirectories 	  = true
+    panel.canChooseFiles 		  = false
     panel.allowsMultipleSelection = false
+	panel.directoryURL 			  = URL(
+		fileURLWithPath: "~/\(Bundle.main.appName)Projects"
+	)
+	
     panel.prompt = "Open"
-    panel.title = "Select Project Directory"
+    panel.title  = "Select Project Directory"
 
     panel.begin { response in
         if response == .OK, let url = panel.url {
 
             Task {
-				if navigationViewModel.selectedProjectPath != url.path ||
+				if navigationViewModel.selectedProjectPath  != url.path ||
 					navigationViewModel.selectedProjectName != url.lastPathComponent {
                     
                     navigationViewModel.setProjectPath(url: url.path())
                     navigationViewModel.setProjectName(name: url.lastPathComponent)
-                    navigationViewModel.setSecondaryNavigation(secondaryNavigation: .openProject)
+					
+					navigationViewModel.setSecondaryNavigation(
+						secondaryNavigation: .openProject
+					)
                 }
             }
         }
