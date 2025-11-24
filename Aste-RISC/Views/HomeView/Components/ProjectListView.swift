@@ -36,7 +36,7 @@ struct ProjectListView: View {
 	
 	/// Set the settings loaded, used for not read the memory
 	/// all time
-	private static var cachedValue: GlobalSettings?
+	//private static var cachedValue: GlobalSettings?
    
     var body: some View {
 		// Get the array recent projects
@@ -170,15 +170,17 @@ struct ProjectListView: View {
 	/// focus on window
 	private func handlerOnAppear() {
 		
-		if Self.cachedValue == nil {
-			self.globalSetting = self.settingsManager.load(
-				file: "global_settings.json",
-				GlobalSettings.self
-			)
-			
-			Self.cachedValue = self.globalSetting
-			
-		} else { self.globalSetting = Self.cachedValue }
+		self.globalSetting = self.settingsManager.load(
+			file: "global_settings.json",
+			GlobalSettings.self
+		)
+		
+//		if Self.cachedValue == nil {
+//
+//			
+//			Self.cachedValue = self.globalSetting
+//			
+//		} else { self.globalSetting = Self.cachedValue }
 		
 		if !self.isFocused {
 			Task { @MainActor in

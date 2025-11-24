@@ -17,9 +17,9 @@ struct GlobalSettings: SettingsInterface {
     var recentsProjects  : [RecentProject]
     
     init(
-        lastProjectOpened: String = "",
-        editorUse        : Editors = .native,
-        themeUse         : String = "gruvbox_material.json",
+        lastProjectOpened: String 		   = "",
+        editorUse        : Editors 		   = .native,
+        themeUse         : String 		   = "gruvbox_material.json",
         recentsProjects  : [RecentProject] = []
         
     ) {
@@ -35,10 +35,15 @@ struct GlobalSettings: SettingsInterface {
     var fileName = "global_settings.json"
     var id = UUID()
 
-    mutating func addRecentProject(name: String, path: String) {
+    mutating func addRecentProject(
+		name: String,
+		path: String
+	) {
         let project = RecentProject(name: name, path: path)
         
-        if let existingIndex = self.recentsProjects.firstIndex(where: { $0.path == path }) {
+        if let existingIndex = self.recentsProjects.firstIndex(
+			where: { $0.path == path }
+		) {
             self.recentsProjects.remove(at: existingIndex)
         }
 
@@ -46,9 +51,10 @@ struct GlobalSettings: SettingsInterface {
 
         // Limit array to max quantity
         if self.recentsProjects.count > Self.maxProjects {
-            self.recentsProjects = Array(self.recentsProjects.prefix(Self.maxProjects))
+            self.recentsProjects = Array(
+				self.recentsProjects.prefix(Self.maxProjects)
+			)
         }
-        
     }
     
     mutating func removeProject(at offsets: IndexSet) {
