@@ -46,7 +46,7 @@ struct ProjectListView: View {
             
             LazyVStack(spacing: 10) {
 				ForEach(
-					arrayRecentProject.enumerated(),
+					(globalSetting?.recentsProjects ?? []).enumerated(),
 					id: \.element.id
 					
 				) { index, project in

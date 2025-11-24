@@ -9,12 +9,16 @@ import SwiftUI
 
 /// Principal screen for creation projects, select type project
 struct CreationProjectView: View {
+	
+	// MARK: - Enviroments var
     
-    /// Nvigation and current state app
+    /// View model for management the principal navigation
     @EnvironmentObject
 	private var navigationViewModel: NavigationViewModel
     
-    /// View model for manage creation project
+	// MARK: - State's objects
+	
+    /// View model for management creation project
     @StateObject
 	private var creationProjectViewModel = CreationProjectViewModel()
 	
@@ -133,9 +137,7 @@ struct CreationProjectView: View {
 		
 		// Row for back and continue buttons.
 		HStack {
-			let isDisable = self.creationProjectViewModel.creating ||
-				self.creationProjectViewModel.project.name.isEmpty ||
-				self.creationProjectViewModel.project.path.isEmpty
+			let isDisable = self.creationProjectViewModel.isCreateReady()
 			
 			Button("Back") {
 				self.navigationViewModel.cleanSecondaryNavigation()
@@ -145,7 +147,10 @@ struct CreationProjectView: View {
 			
 			Button("Create") { handleCreationProject() }
 			.if(!isDisable, transform: { view in
-				view.keyboardShortcut(.return, modifiers: [])
+				view.keyboardShortcut(
+					.return,
+					modifiers: []
+				)
 			})
 			.buttonStyle(.glassProminent)
 			.disabled(isDisable)
@@ -162,8 +167,7 @@ struct CreationProjectView: View {
 			let result = await self.creationProjectViewModel
 											.createProjectHandle()
 			
-			if let path = result.projectUrl?.path,
-				  !path.isEmpty {
+			if let path = result.projectUrl?.path, !path.isEmpty {
 				
 				self.navigationViewModel.setProjectInformation(
 					url: path,
