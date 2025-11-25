@@ -177,7 +177,7 @@ struct ToolbarExecuteView: View {
 		let resultAssembling = AssemblerBridge.shared.assemble(
 			optionsAsembler: self.viewModel.optionsWrapper.opts!
 		)
-					
+							
 		// Execute code when the assembling is correct
 		if resultAssembling == 0 {
 			

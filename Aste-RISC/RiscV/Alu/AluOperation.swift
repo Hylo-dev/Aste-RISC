@@ -16,7 +16,7 @@ enum AluOperation: UInt8 {
     case srl = 5
     case sra = 6
     case xor = 7
-    
-    case skip = 14
+	
+    case skip 	 = 14
     case unknown = 15
 }

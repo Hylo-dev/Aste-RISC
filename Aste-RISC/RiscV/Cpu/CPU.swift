@@ -78,6 +78,7 @@ class CPU: ObservableObject {
 	private func executeSingleInstruction(
 		optionsSource: options_t
 	) -> ExecutionStatus {
+		
 		// Save current program counter
 		let oldPC = self.programCounter
 		
@@ -107,24 +108,46 @@ class CPU: ObservableObject {
 		var secondOperand = 0
 		var resultAlu 	  = ResultAlu32Bit()
 		
+		// MARK: - Calc operation
 		if aluOperation != .skip {
 			
-			firstOperand = controlUnitState.operation == 0x17 ? Int(programCounter) : getValueRegister(register: Int(decodedInstruction.registerSource1))
+			firstOperand = if controlUnitState.operation == 0x17 {
+				Int(programCounter)
+				
+			} else {
+				getValueRegister(Int(decodedInstruction.registerSource1))
+			}
 			
-			secondOperand = controlUnitState.alu_src ? decodedInstruction.immediate : getValueRegister(register: Int(decodedInstruction.registerSource2))
-						
-			resultAlu = alu.execute(a: firstOperand, b: secondOperand, less: false, operation: aluOperation)
+			secondOperand = if controlUnitState.alu_src {
+				decodedInstruction.immediate
+				
+			} else {
+				getValueRegister(Int(decodedInstruction.registerSource2))
+			}
+			
+			resultAlu = alu.execute(
+				a	     : firstOperand,
+				b		 : secondOperand,
+				less	 : false,
+				operation: aluOperation
+			)
 		}
 		
-		if (decodedInstruction.operationCode == 0x67 && decodedInstruction.funz3 == 0) ||
-			decodedInstruction.operationCode == 0x6F
-		{
+		// 1100 1110 -> 0x67, f3 -> = jalr && 6F -> jal
+				
+//		if (decodedInstruction.operationCode == 0x67 &&
+//			decodedInstruction.funz3 == 0) 			 ||
+//			decodedInstruction.operationCode == 0x6F
+		if decodedInstruction.type == .upperJump {
 			
 			let change = StateChange(
 				oldProgramCounter: oldPC,
-				target: .register(index: Int(decodedInstruction.registerDestination)),
+				target: .register(
+					index: Int(decodedInstruction.registerDestination)
+				),
 				oldValue: registers[Int(decodedInstruction.registerDestination)]
 			)
+			
 			historyStack.append(change)
 			
 			if controlUnitState.reg_write {
@@ -139,17 +162,28 @@ class CPU: ObservableObject {
 					firstOperand + secondOperand & ~1
 			)
 			
-		} else if controlUnitState.reg_write && aluOperation == .skip {
+			programCounter = nextProgramCounter
+			
+			return .success
+		}
+		
+		// ecall instruction
+		if controlUnitState.reg_write && aluOperation == .skip {
 			let change = StateChange(
 				oldProgramCounter: oldPC,
-				target: .register(index: Int(decodedInstruction.registerDestination)),
+				target: .register(
+					index: Int(decodedInstruction.registerDestination)
+				),
 				oldValue: registers[Int(decodedInstruction.registerDestination)]
 			)
+			
 			historyStack.append(change)
 			
-			if !writeRegister(value: decodedInstruction.immediate, destination: Int(decodedInstruction.registerDestination)) {
-				return .registerWriteFailed
-			}
+			if !writeRegister(
+				value: decodedInstruction.immediate,
+				destination: Int(decodedInstruction.registerDestination)
+				
+			) { return .registerWriteFailed }
 			
 		} else if controlUnitState.mem_read && controlUnitState.alu_src {
 			let valueRamRead = read_ram32bit(ram, UInt32(resultAlu.result))
@@ -175,7 +209,9 @@ class CPU: ObservableObject {
 			let registerSource2 = Int(decodedInstruction.registerSource2)
 		   
 		    // Get value to store from rs2
-		    let valueToStore = getValueRegister(register: Int(decodedInstruction.registerSource2))
+		    let valueToStore = getValueRegister(
+				Int(decodedInstruction.registerSource2)
+			)
 			
 			let sp = UInt32(registers[2])
 			if memoryAddress >= sp && memoryAddress < sp + 512 {
@@ -252,6 +288,7 @@ class CPU: ObservableObject {
 	
 	/// Decode language code instruction
 	func decode(_ instruction: Int) -> DecodedInstruction {
+		
 		var decoded = DecodedInstruction(
 			operationCode: UInt8(extractBits(instruction, start: 0, end: 6)),
 			registerSource1: UInt8(extractBits(instruction, start: 15, end: 19)),
@@ -259,14 +296,19 @@ class CPU: ObservableObject {
 			registerDestination: UInt8(extractBits(instruction, start: 7, end: 11)),
 			immediate: 0,
 			funz3: UInt8(extractBits(instruction, start: 12, end: 14)),
-			funz7: UInt8(extractBits(instruction, start: 30, end: 30))
+			funz7: UInt8(extractBits(instruction, start: 30, end: 30)),
+			type: .notDefined
 		)
 		
 		switch decoded.operationCode {
+				
+			// Immediate instruction
 			case 0x67, 0x13, 0x03:
 				let extractedBits = extractBits(instruction, start: 20, end: 31)
 				decoded.immediate = signExtend(value: extractedBits, bits: 12)
 							
+				decoded.type = .immediate
+				
 			// Store instruction
 			case 0x23:
 				let immediateAt11To5   = extractBits(instruction, start: 25, end: 31)
@@ -275,8 +317,16 @@ class CPU: ObservableObject {
 				
 				decoded.immediate = signExtend(value: calculateImmediate, bits: 12)
 				
+				// FIXME: - Added recently
+				decoded.type = .store
+				
+			// Upper jump instruction
 			case 0x6F:
-				let immediateAt20 = extractBits(instruction, start: 31, end: 31)
+				let immediateAt20 = extractBits(
+					instruction,
+					start: 31,
+					end  : 31
+				)
 				let immediateAt19To12 = extractBits(instruction, start: 12, end: 19)
 				let immediateAt11 = extractBits(instruction, start: 20, end: 20)
 				let immediateAt10To1 = extractBits(instruction, start: 21, end: 30)
@@ -284,8 +334,14 @@ class CPU: ObservableObject {
 				
 				decoded.immediate = signExtend(value: calculateImmediate, bits: 21)
 				
+				// FIXME: - Added recently
+				decoded.type = .upperJump
+				
+			// Upper?
 			case 0x37, 0x17:
 				decoded.immediate = Int(extractBits(instruction, start: 12, end: 31) << 12)
+				
+				decoded.type = .upper
 				
 			default:
 				decoded.immediate = 0
@@ -311,7 +367,7 @@ class CPU: ObservableObject {
 	}
 	
 	/// Get register value
-	private func getValueRegister(register indexRegister: Int) -> Int {
+	private func getValueRegister(_ indexRegister: Int) -> Int {
 		if indexRegister < 0 || indexRegister >= 32 { return -1 }
 		
 		return registers[indexRegister]

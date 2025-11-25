@@ -13,4 +13,5 @@ struct DecodedInstruction {
     var immediate          : Int!
     let funz3              : UInt8
     let funz7              : UInt8
+	var type			   : TypeInstruction
 }

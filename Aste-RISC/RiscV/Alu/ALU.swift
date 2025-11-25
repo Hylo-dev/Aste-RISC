@@ -54,55 +54,55 @@ struct ALU {
         
         // Special cases
         switch operation {
-        case 0x03, 0x17, 0x6F, 0x23: // Load, AUIPC, JAL, S-Type
-            return .add
-            
-        case 0x37, 0x73: // LUI, ECALL
-            return .skip
-            
-        case 0x33, 0x13, 0x67: // R-type, I-type ALU, JALR
-            break
+			case 0x03, 0x17, 0x6F, 0x23: // Load, AUIPC, JAL, S-Type
+				return .add
+				
+			case 0x37, 0x73: // LUI, ECALL
+				return .skip
+				
+			case 0x33, 0x13, 0x67: // R-type, I-type ALU, JALR
+				break
         
-        default:
-            return .unknown
+			default:
+				return .unknown
         }
         
         // Funct3-based decoding
         switch funz3 {
             
-        case 0x0: // ADD/SUB/ADDI/JALR
-            if operation == 0x33 && (funz7 & 0x20) != 0 {
-                return .sub
-            } else {
-                return .add
-            }
-            
-        case 0x1: // SLL/SLLI
-            return .sll
-            
-        case 0x2: // SLT/SLTI
-            return .slt
-            
-        case 0x4: // XOR/XORI
-            return .xor
-            
-        case 0x5: // SRL/SRA/SRLI/SRAI
-            if (funz7 & 0x20) != 0 {
-                return .sra
-                
-            } else {
-                return .srl
-                
-            }
-            
-        case 0x6: // OR/ORI
-            return .or
-            
-        case 0x7: // AND/ANDI
-            return .and
-            
-        default:
-            return .unknown
+			case 0x0: // ADD/SUB/ADDI/JALR
+				if operation == 0x33 && (funz7 & 0x20) != 0 {
+					return .sub
+				} else {
+					return .add
+				}
+				
+			case 0x1: // SLL/SLLI
+				return .sll
+				
+			case 0x2: // SLT/SLTI
+				return .slt
+				
+			case 0x4: // XOR/XORI
+				return .xor
+				
+			case 0x5: // SRL/SRA/SRLI/SRAI
+				if (funz7 & 0x20) != 0 {
+					return .sra
+					
+				} else {
+					return .srl
+					
+				}
+				
+			case 0x6: // OR/ORI
+				return .or
+				
+			case 0x7: // AND/ANDI
+				return .and
+				
+			default:
+				return .unknown
         }
     }
 
@@ -119,15 +119,27 @@ struct ALU {
         switch operation {
         case .sll:
             let result = Int(a << (b & 0x1F))
-            return ResultAlu32Bit(result: result, zero: result == 0, overflow: false)
+            return ResultAlu32Bit(
+				result	: result,
+				zero	: result == 0,
+				overflow: false
+			)
             
         case .srl:
             let result = Int(a >> (b & 0x1F))
-            return ResultAlu32Bit(result: result, zero: result == 0, overflow: false)
+            return ResultAlu32Bit(
+				result	: result,
+				zero	: result == 0,
+				overflow: false
+			)
             
         case .sra:
             let result = Int(UInt32(bitPattern: Int32(a)) >> UInt32(b & 0b11111))
-            return ResultAlu32Bit(result: result, zero: result == 0, overflow: false)
+            return ResultAlu32Bit(
+				result	: result,
+				zero	: result == 0,
+				overflow: false
+			)
             
         default:
             var result : Int  = 0
