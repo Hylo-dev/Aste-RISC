@@ -127,7 +127,19 @@ int32_t read_ram32bit(
 
 }
 
-void load_binary_to_ram(RAM ram, const uint8_t *binary, size_t size, uint32_t start_addr) {
+/**
+ * @brief Load instructions into RAM from a binary data array,
+ * starting from address 0x0.
+ * @param ram Pointer to the RAM instance where instructions will be loaded.
+ *
+ */
+void load_binary_to_ram(
+		  RAM ram,
+	const uint8_t *binary,
+		  size_t size,
+		  uint32_t start_addr
+) {
+	
 	if (!ram || !binary) return;
 
 	if (start_addr < ram->base_vaddr) {
@@ -148,4 +160,40 @@ void load_binary_to_ram(RAM ram, const uint8_t *binary, size_t size, uint32_t st
 	}
 
 	memcpy(ram->data + offset, binary, size);
+}
+
+/**
+ * @brief Load text section information into RAM.
+ * @param ram Pointer to RAM struct where instructions will be loaded.
+ * @param text_base Small address in text section.
+ * @param text_size Size for text section into RAM.
+ *
+ */
+void load_text_information(
+	RAM      ram,
+	uint32_t text_base,
+	uint32_t text_size
+) {
+	if (!ram) return;
+	
+	ram->text_base = text_base;
+	ram->text_size = text_size;
+}
+
+/**
+ * @brief Load data section information into RAM.
+ * @param ram Pointer to RAM struct where instructions will be loaded.
+ * @param data_base Small address in data section.
+ * @param data_size Size for data section into RAM.
+ *
+ */
+void load_data_information(
+	RAM      ram,
+	uint32_t data_base,
+	uint32_t data_size
+) {
+	if (!ram) return;
+	
+	ram->data_base = data_base;
+	ram->data_size = data_size;
 }

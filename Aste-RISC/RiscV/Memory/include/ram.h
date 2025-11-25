@@ -24,6 +24,11 @@ typedef struct ram {
     uint8_t *data;
     size_t   size;
 	uint32_t base_vaddr;
+	
+	uint32_t text_base;
+	uint32_t text_size;
+	uint32_t data_base;
+	uint32_t data_size;
 
 } *RAM;
 
@@ -41,7 +46,10 @@ bool destroy_ram(RAM ram);
  *
  * @return Pointer to the newly created RAM instance, or NULL if allocation fails.
  */
-RAM new_ram(size_t size, uint32_t base_vaddr);
+RAM new_ram(
+	size_t size,
+	uint32_t base_vaddr
+);
 
 /**
  * @brief Write a 32-bit value to the specified address in RAM.
@@ -49,7 +57,11 @@ RAM new_ram(size_t size, uint32_t base_vaddr);
  * @param address Address in RAM where the value will be written.
  * @param value 32-bit value to write to RAM.
  */
-void write_ram32bit(RAM ram, uint32_t address, uint32_t value);
+void write_ram32bit(
+	RAM ram,
+	uint32_t address,
+	uint32_t value
+);
 
 /**
  * @brief Read a 32-bit value from the specified address in RAM.
@@ -58,17 +70,55 @@ void write_ram32bit(RAM ram, uint32_t address, uint32_t value);
  *
  * @return The 32-bit value read from RAM.
  */
-int32_t read_ram32bit(RAM ram, uint32_t address);
+int32_t read_ram32bit(
+	RAM ram,
+	uint32_t address
+);
 
 /**
- * @brief Load instructions into RAM from a binary data array.
+ * @brief Load instructions into RAM from a binary data array,
+ * starting from address 0x0.
  * @param ram Pointer to the RAM instance where instructions will be loaded.
  *
- * This function loads instructions into RAM, starting from address 0x0.
  */
-void load_binary_to_ram(RAM ram, const uint8_t *binary, size_t size, uint32_t start_addr);
+void load_binary_to_ram(
+		  RAM ram,
+	const uint8_t *binary,
+		  size_t size,
+		  uint32_t start_addr
+);
 
-void print_ram_state(RAM ram, uint32_t start_addr, uint32_t end_addr, size_t max_lines);
+/**
+ * @brief Load text section information into RAM.
+ * @param ram Pointer to RAM struct where instructions will be loaded.
+ * @param text_base Small address in text section.
+ * @param text_size Size for text section into RAM.
+ *
+ */
+void load_text_information(
+	RAM      ram,
+	uint32_t text_base,
+	uint32_t text_size
+);
 
+/**
+ * @brief Load data section information into RAM.
+ * @param ram Pointer to RAM struct where instructions will be loaded.
+ * @param data_base Small address in data section.
+ * @param data_size Size for data section into RAM.
+ *
+ */
+void load_data_information(
+	RAM      ram,
+	uint32_t data_base,
+	uint32_t data_size
+);
+
+void print_ram_state(
+	RAM ram,
+	uint32_t start_addr,
+	uint32_t end_addr,
+	size_t max_lines
+);
 
 #endif //RAM_H

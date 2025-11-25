@@ -12,24 +12,34 @@ struct ToolbarExecuteView: View {
 	/// Use CPU enviroment instance, for manage and use
 	/// global state CPU for not overriding the data when
 	/// cpu is running.
-	@EnvironmentObject
+	@ObservedObject
 	private var cpu: CPU
 		
 	/// Use body view model and globals data.
 	@ObservedObject
-	var viewModel: BodyEditorViewModel
+	private var viewModel: BodyEditorViewModel
 	
 	/// Mapping in dictionary the source line inde
 	/// to index calculed using the program counter
 	/// and ram virtual base address
 	@Binding
-	var mapInstruction: MapInstructions
+	private var mapInstruction: MapInstructions
 	    
 	/// Static regex, create when use the instance
 	/// to principal view (body view)
     static private let instructionRegex = try! NSRegularExpression(
 		pattern: #"^\s*(?!\.)(?:[A-Za-z_]\w*:)?([A-Za-z]{2,7})\b"#
 	)
+	
+	init(
+		cpu			  : CPU,
+		viewModel	  : BodyEditorViewModel,
+		mapInstruction: Binding<MapInstructions>
+	) {
+		self.cpu 			 = cpu
+		self.viewModel		 = viewModel
+		self._mapInstruction = mapInstruction
+	}
     
     var body: some View {
 		
@@ -38,87 +48,16 @@ struct ToolbarExecuteView: View {
 		GlassEffectContainer(spacing: 13) {
 			
 			HStack(spacing: 10) {
+				let stateEditor = self.viewModel.handleisReady()
 				
-				// MARK: - Run | Stop Button
-				Button {
-								
-					// Control if the editor is stoped and run select file code
-					if isEditorStopped() {
-						runCode()
-						
-					} else { // If editor is runnig code then stop it
-						withAnimation {
-							self.viewModel.editorState 		     = .stopped
-							self.mapInstruction.indexInstruction = nil
-							
-							// Set reset state to true
-							// This clear all value registers
-							// And set the CPU redy for new runing
-							self.cpu.resetCpu()
-						}
-					}
-					
-				} label: {
-					Image(systemName: isEditorStopped() ? "play" : "stop.fill")
-						.font(.caption)
-					
-				}
-				// When editor is stopped add run shortcut
-				.if(isEditorStopped(), transform: { view in
-					view.keyboardShortcut("r", modifiers: .command)
-				})
-				// When editor is stopped add stop shortcut
-				.if(!isEditorStopped(), transform: { view in
-					view.keyboardShortcut(".", modifiers: .command)
-				})
-				.glassEffect(in: .circle)
-				.disabled(self.viewModel.optionsWrapper.opts == nil)
+				// Run | Stop Button
+				executionButton(stateEditor)
+				
 
-				// MARK: FW & BW Button
+				// FW & BW Button
 				// They appear when editor is running code
 				if self.viewModel.editorState == .running {
-					
-					HStack(spacing: 2) {
-						
-						// Backward button
-						Button {
-							
-							// If cronology is empty, appear message on terminal
-							if !self.cpu.backwardExecute() {
-								print(
-									"Cronology is empty. Not possible execute backward instruction."
-								)
-							}
-							
-						} label: {
-							Image(systemName: "backward.fill")
-								.font(.caption)
-							
-						}
-						.keyboardShortcut("p", modifiers: .command)
-						.glassEffect(in: .circle)
-						.disabled(self.cpu.historyStack.isEmpty || self.cpu.resetFlag)
-
-						// Forward button
-						Button {
-							// Run step by step all instruction on source file
-							let result = self.cpu.runStep(
-								optionsSource: self.viewModel.optionsWrapper.opts!.pointee
-							)
-							
-							// Print run result
-							if result != .success { print(result.rawValue) }
-							
-						} label: {
-							Image(systemName: "forward.fill")
-								.font(.caption)
-						}
-						.keyboardShortcut("n", modifiers: .command)
-						.glassEffect(in: .circle)
-						.disabled(self.cpu.resetFlag)
-						
-					}
-					.transition(.move(edge: .leading).combined(with: .opacity))
+					stepsExecutionBody()
 					
 				} else {
 					Color.clear
@@ -128,15 +67,103 @@ struct ToolbarExecuteView: View {
 				
 			}
 			.animation(.spring(), value: self.viewModel.editorState)
-			
 		}
     }
 	
-	/// Control if editor state is stopped or running
-	private func isEditorStopped() -> Bool {
-		return self.viewModel.editorState == .readyToBuild ||
-			   self.viewModel.editorState == .stopped
+	// MARK: - Views
+	
+	@ViewBuilder
+	private func executionButton(_ stateEditor: Bool) -> some View {
+		Button {
+			handleExecution(stateEditor)
+			
+		} label: {
+			Image(systemName: stateEditor ? "play" : "stop.fill")
+				.font(.caption)
+			
+		}
+		// When editor is stopped add run shortcut
+		.if(stateEditor, transform: { view in
+			view.keyboardShortcut("r", modifiers: .command)
+		})
+		// When editor is stopped add stop shortcut
+		.if(!stateEditor, transform: { view in
+			view.keyboardShortcut(".", modifiers: .command)
+		})
+		.glassEffect(in: .circle)
+		.disabled(self.viewModel.optionsWrapper.opts == nil)
+
 	}
+	
+	@ViewBuilder
+	private func stepsExecutionBody() -> some View {
+		HStack(spacing: 2) {
+			backwardButton
+
+			forwardButton
+		}
+		.transition(.move(edge: .leading).combined(with: .opacity))
+	}
+	
+	/// Manage the backward button execution
+	private var backwardButton: some View {
+		Button {
+			
+			// If cronology is empty,
+			// appear message on terminal
+			self.cpu.backwardExecute()
+			
+		} label: {
+			Image(systemName: "backward.fill")
+				.font(.caption)
+			
+		}
+		.keyboardShortcut("p", modifiers: .command)
+		.glassEffect(in: .circle)
+		.disabled(self.cpu.historyStack.isEmpty || self.cpu.resetFlag)
+	}
+	
+	/// Manage the forward button execution
+	private var forwardButton: some View {
+		Button {
+			// Run step by step all instruction on source file
+			let result = self.cpu.runStep(
+				optionsSource: self.viewModel.optionsWrapper.opts!.pointee
+			)
+			
+			// Print run result
+			if result != .success { print(result.rawValue) }
+			
+		} label: {
+			Image(systemName: "forward.fill")
+				.font(.caption)
+		}
+		.keyboardShortcut("n", modifiers: .command)
+		.glassEffect(in: .circle)
+		.disabled(self.cpu.resetFlag)
+	}
+
+	// MARK: - Handlers
+	
+	@inline(__always)
+	private func handleExecution(_ stateEditor: Bool) {
+		// Control if the editor is stoped and run select file code
+		if stateEditor {
+			runCode()
+			
+		} else { // If editor is runnig code then stop it
+			withAnimation {
+				self.viewModel.editorState 		     = .stopped
+				self.mapInstruction.indexInstruction = nil
+				
+				// Set reset state to true
+				// This clear all value registers
+				// And set the CPU redy for new runing
+				self.cpu.resetCpu()
+			}
+		}
+	}
+	
 	
 	/// Set attribute for cpu, if is all set,
 	/// running each instruction
@@ -182,15 +209,32 @@ struct ToolbarExecuteView: View {
 			
 			// Load binary on ram, this is REQUIRED, because the program
 			// counter is a pointer to ram
-			load_binary_to_ram(cpu.ram, opt.data_data, opt.data_size, opt.data_vaddr)
-			load_binary_to_ram(cpu.ram, opt.text_data, opt.text_size, opt.text_vaddr)
+			load_binary_to_ram(
+				cpu.ram,
+				opt.data_data,
+				opt.data_size,
+				opt.data_vaddr
+			)
 			
-			// Set offset's ram to CPU
-			self.cpu.textBase = opt.text_vaddr
-			self.cpu.textSize = UInt32(opt.text_size)
-			self.cpu.dataBase = opt.data_vaddr
-			self.cpu.dataSize = UInt32(opt.data_size)
-
+			load_binary_to_ram(
+				cpu.ram,
+				opt.text_data,
+				opt.text_size,
+				opt.text_vaddr
+			)
+			
+			load_text_information(
+				cpu.ram,
+				opt.text_vaddr,
+				UInt32(opt.text_size)
+			)
+			
+			load_data_information(
+				cpu.ram,
+				opt.data_vaddr,
+				UInt32(opt.data_size)
+			)
+		
 			// Get program entry point
 			self.cpu.loadEntryPoint(value: opt.entry_point)
 

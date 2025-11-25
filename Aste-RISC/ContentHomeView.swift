@@ -24,6 +24,8 @@ struct ContentHomeView: View {
     var body: some View {
         
         switch self.viewModel.principalNavigation {
+				
+			// MARK: - Home
 			case .home:
 				HomeView()
 					.onAppear {
@@ -40,6 +42,8 @@ struct ContentHomeView: View {
 					.sheet(
 						isPresented: self.viewModel.isCreateProjectPresented
 					) {
+						
+						// MARK: - Creation
 						CreationProjectView()
 							.frame(width: 600, height: 400)
 						
@@ -50,6 +54,7 @@ struct ContentHomeView: View {
 						actions	   : alertContent
 					)
 				
+			// MARK: - Welcome
 			case .welcome:
 				WelcomeView()
         }
@@ -90,10 +95,16 @@ struct ContentHomeView: View {
 		let name = self.viewModel.selectedProjectName
 
 		withTransaction(Transaction(animation: nil)) {
-			var oldSettings = settingsManager.load(file: "global_settings.json", GlobalSettings.self)
+			var oldSettings = settingsManager.load(
+				file: "global_settings.json",
+				GlobalSettings.self
+			)
 			
 			if oldSettings != nil {
-				oldSettings?.addRecentProject(name: name, path: path)
+				oldSettings?.addRecentProject(
+					name: name,
+					path: path
+				)
 				oldSettings?.lastProjectOpened = path
 				
 				settingsManager.save(oldSettings!)

@@ -1,6 +1,6 @@
 //
 //  Returns.swift
-//  RISKit
+//  Aste-RISC
 //
 //  Created by Eliomar Alejandro Rodriguez Ferrer on 14/10/25.
 //
@@ -11,7 +11,7 @@ struct ResultAlu1Bit {
 }
 
 struct ResultAlu32Bit {
-    let result  : Int
-    let zero    : Bool
-    let overflow: Bool
+    let result  : Int  = 0
+    let zero    : Bool = false
+    let overflow: Bool = false
 }

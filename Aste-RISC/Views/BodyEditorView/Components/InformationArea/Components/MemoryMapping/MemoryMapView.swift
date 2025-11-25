@@ -31,11 +31,11 @@ struct MemoryMapView: View {
 		var sections: [MemorySection] = []
 		
 		// Sezione .text
-		if cpu.textSize > 0 {
+		if cpu.ram!.pointee.text_size > 0 {
 			sections.append(MemorySection(
 				name: "text",
-				startAddress: cpu.textBase,
-				size: cpu.textSize,
+				startAddress: cpu.ram!.pointee.text_base,
+				size: cpu.ram!.pointee.text_size,
 				color: .blue,
 				type: .text
 			))
@@ -44,14 +44,14 @@ struct MemoryMapView: View {
 		// Sezione .data
 		sections.append(MemorySection(
 			name: "data",
-			startAddress: cpu.dataBase,
-			size: cpu.dataSize,
+			startAddress: cpu.ram!.pointee.data_base,
+			size: cpu.ram!.pointee.data_size,
 			color: .green,
 			type: .data
 		))
 		
 		// Heap (area tra .data e stack)
-		let heapStart = cpu.dataBase + cpu.dataSize
+		let heapStart = cpu.ram!.pointee.data_base + cpu.ram!.pointee.data_size
 		if sp > heapStart {
 			let heapSize = sp - heapStart
 			sections.append(MemorySection(

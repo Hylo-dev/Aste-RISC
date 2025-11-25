@@ -74,4 +74,9 @@ class BodyEditorViewModel: ObservableObject {
 			self.optionsWrapper.opts = start_options(UnsafeMutablePointer(mutating: pathAsCString))
 		}
 	}
+	
+	func handleisReady() -> Bool {
+		return self.editorState == .readyToBuild ||
+			   self.editorState == .stopped
+	}
 }

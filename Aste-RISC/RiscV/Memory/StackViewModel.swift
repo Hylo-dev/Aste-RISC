@@ -165,8 +165,9 @@ class StackViewModel: ObservableObject {
 			let rawInstructionUnsigned = UInt32(bitPattern: rawInstruction)
 			
 			let isPointerToText = (
-				rawInstructionUnsigned >= self.cpu.textBase &&
-				rawInstructionUnsigned < self.cpu.textBase &+ self.cpu.textSize
+				rawInstructionUnsigned >= self.cpu.ram!.pointee.text_base &&
+				rawInstructionUnsigned <  self.cpu.ram!.pointee.text_base &+
+										  self.cpu.ram!.pointee.text_size
 			)
 			
 			let isFrameBoundary = isPointerToText && isNonZero
@@ -361,6 +362,8 @@ class StackViewModel: ObservableObject {
 		guard let opts = optionsWrapper.opts, newValue != 0 else { return }
 		
 		// Calculate the zero-based instruction index
-		self.mapInstruction.indexInstruction = UInt32((newValue - (opts.pointee.text_vaddr)) / 4)
+		self.mapInstruction.indexInstruction = UInt32(
+			(newValue - (opts.pointee.text_vaddr)) / 4
+		)
 	}
 }

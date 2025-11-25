@@ -1,6 +1,6 @@
 //
 //  GlobalSettings.swift
-//  RISKit
+//  Aste-RISC
 //
 //  Created by Eliomar Alejandro Rodriguez Ferrer on 21/10/25.
 //

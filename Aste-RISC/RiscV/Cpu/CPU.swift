@@ -10,27 +10,36 @@ import Foundation
 internal import Combine
 
 class CPU: ObservableObject {
+	
+	/// Program counter, this contain adrress for current
+	/// instruction
 	@Published
 	var programCounter: UInt32
 	
+	/// Contains all register CPU, default value is zero
 	@Published
 	var registers: [Int]
 	
+	/// Manage the stack frame stores in memory
 	@Published
 	var stackStores: [UInt32: Int] = [:]
 		
-	private let alu			 : ALU
+	/// Struct for manage the aritmethic operations bit a bit
+	private let alu: ALU
+	
+	/// All frame pointer address
 	private var framePointers: [UInt32] = []
 	
-	var resetFlag: Bool
+	/// Cronology for old stacks frames
 	var historyStack: [StateChange] = []
+	
+	/// Flag for reset all values on CPU
+	var resetFlag: Bool
+	
+	/// Main Memory structure,
+	/// this is nil because this is init late.
 	var ram: RAM? = nil
 	
-	var textBase: UInt32 = 0
-	var textSize: UInt32 = 0
-	var dataBase: UInt32 = 0
-	var dataSize: UInt32 = 0
-		
 	init() {
 		self.programCounter = 0
 		self.resetFlag 		= false
@@ -38,37 +47,41 @@ class CPU: ObservableObject {
 		self.alu 			= ALU()
 	}
 	
+	/// Destroy struct, free RAM structure and set self nil
 	deinit {
 		if destroy_ram(self.ram) { self.ram = nil }
 	}
 	
-	/// Reset CPU status
+	/// Reset all CPU status
 	func resetCpu() {
 		self.stackStores 	= [:]
 		self.registers 		= [Int](repeating: 0, count: 32)
 		self.programCounter = 0
 		self.framePointers  = []
 		self.historyStack   = []
-		
 		self.resetFlag	    = true
 	}
 		
-	/// Run code step by step
+	/// Run single instruction on assembly progrma,
+	/// the run ekecution is step by step
 	func runStep(optionsSource: options_t) -> ExecutionStatus {
 		if programCounter >= optionsSource.text_vaddr &&
 			programCounter < optionsSource.text_vaddr + UInt32(optionsSource.text_size) {
 			
-			return execute(optionsSource: optionsSource)
+			return executeSingleInstruction(optionsSource: optionsSource)
 		}
 		
 		return .success
 	}
 	
-	/// Execute single istruction
-	private func execute(optionsSource: options_t) -> ExecutionStatus {
+	/// Execute single instruction
+	private func executeSingleInstruction(
+		optionsSource: options_t
+	) -> ExecutionStatus {
+		// Save current program counter
 		let oldPC = self.programCounter
 		
-		var nextProgramCounter = programCounter + 4
+		var nextProgramCounter = self.programCounter + 4
 		
 		let rawInstruction = fetch(optionsSource: optionsSource)
 				
@@ -90,9 +103,9 @@ class CPU: ObservableObject {
 			return .invalidOperation
 		}
 		
-		var firstOperand = 0
+		var firstOperand  = 0
 		var secondOperand = 0
-		var resultAlu: ResultAlu32Bit = ResultAlu32Bit(result: 0, zero: false, overflow: false)
+		var resultAlu 	  = ResultAlu32Bit()
 		
 		if aluOperation != .skip {
 			
@@ -200,10 +213,11 @@ class CPU: ObservableObject {
 		return .success
 	}
 	
-	func backwardExecute() -> Bool {
+	func backwardExecute() {
 		
 		guard let lastChange = historyStack.popLast() else {
-			return false
+			print("Cronology is empty. Not possible execute backward instruction.")
+			return
 		}
 		
 		self.programCounter = lastChange.oldProgramCounter
@@ -217,9 +231,7 @@ class CPU: ObservableObject {
 			
 			case .none:
 				break
-		}
-		
-		return true
+		}		
 	}
 	
 	/// Fetch instruction in ram
