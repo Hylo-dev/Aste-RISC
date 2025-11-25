@@ -151,7 +151,10 @@ class CPU: ObservableObject {
 			historyStack.append(change)
 			
 			if controlUnitState.reg_write {
-				if !writeRegister(value: Int(nextProgramCounter), destination: Int(decodedInstruction.registerDestination)) {
+				if !writeRegister(
+					value: Int(nextProgramCounter),
+					destination: Int(decodedInstruction.registerDestination)
+				) {
 					return .registerWriteFailed
 				}
 			}
@@ -163,7 +166,6 @@ class CPU: ObservableObject {
 			)
 			
 			programCounter = nextProgramCounter
-			
 			return .success
 		}
 		
@@ -185,7 +187,12 @@ class CPU: ObservableObject {
 				
 			) { return .registerWriteFailed }
 			
-		} else if controlUnitState.mem_read && controlUnitState.alu_src {
+			programCounter = nextProgramCounter
+			return .success
+		}
+		
+		// if controlUnitState.mem_read && controlUnitState.alu_src
+		if controlUnitState.mem_read && controlUnitState.alu_src {
 			let valueRamRead = read_ram32bit(ram, UInt32(resultAlu.result))
 			
 			if valueRamRead == -1 {
