@@ -13,6 +13,16 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+typedef enum {
+	R_TYPE,
+	I_TYPE,
+	I_SAVE_TYPE,
+	UJ_TYPE,
+	S_TYPE,
+	ECALL
+	
+} TypeInstruction;
+
 /**
  * @struct ControlSignals
  * @brief Struct to hold control signals for the CPU
@@ -27,13 +37,14 @@
  *
  */
 typedef struct {
-    bool    branch;
-    bool    mem_read;
-    bool    mem_to_reg;
-    uint8_t operation;
-    bool    mem_write;
-    bool    alu_src;
-    bool    reg_write;
+    bool   		    branch;
+    bool    		mem_read;
+    bool    		mem_to_reg;
+    uint8_t 		operation;
+    bool    		mem_write;
+    bool   		    alu_src;
+    bool    		reg_write;
+	TypeInstruction type;
 
 } ControlSignals;
 
@@ -44,5 +55,6 @@ typedef struct {
  * @return ControlSignals structure with the control signals set
  */
 ControlSignals getControlSignals(uint8_t opcode);
+//ControlSignals getControlSignals(uint8_t opcode);
 
 #endif //CONTROLUNIT_H

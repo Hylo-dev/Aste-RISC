@@ -12,8 +12,8 @@
  *
  * @return ControlSignals structure with the control signals set
  */
-ControlSignals getControlSignals(const uint8_t opcode) {
-
+//ControlSignals getControlSignals(const uint8_t opcode) {
+ControlSignals getControlSignals(uint8_t opcode) {
     // Initialize control signals to default values
     ControlSignals signals = { 0 };
 
@@ -29,6 +29,8 @@ ControlSignals getControlSignals(const uint8_t opcode) {
             signals.mem_write  = false; // non-memory write instruction
             signals.alu_src    = false; // non immediate value, uses rs2
             signals.reg_write  = true;  // writes result in rd register
+			signals.type 	   = R_TYPE;
+			
             break;
 
         // I-Type Arithmetic: ADDI, ANDI, ORI, etc. (opcode = 0x13)
@@ -41,6 +43,8 @@ ControlSignals getControlSignals(const uint8_t opcode) {
             signals.mem_write  = false; // non-memory write instruction
             signals.alu_src    = true;  // uses immediate value for offset
             signals.reg_write  = true;  // writes result in rd register
+			signals.type 	   = I_TYPE;
+			
             break;
 
         // I-Type Load: LW, LH, LB, etc. (opcode = 0x03)
@@ -52,6 +56,8 @@ ControlSignals getControlSignals(const uint8_t opcode) {
             signals.mem_write  = false; // non-memory write instruction
             signals.alu_src    = true;  // uses immediate value for offset
             signals.reg_write  = false; // writes result in rd register
+			signals.type 	   = I_SAVE_TYPE;
+			
             break;
 
         // UJ-Type: jal. (opcode = 0x6F)
@@ -63,6 +69,8 @@ ControlSignals getControlSignals(const uint8_t opcode) {
             signals.mem_write  = false; // non-memory write instruction
             signals.alu_src    = true;  // uses immediate value for offset
             signals.reg_write  = true;  // writes result in rd register
+			signals.type 	   = UJ_TYPE;
+			
             break;
 
         // Store: SW, SH, SB, etc. (opcode = 0x23)
@@ -74,6 +82,8 @@ ControlSignals getControlSignals(const uint8_t opcode) {
             signals.mem_write  = true;  // writes data to memory
             signals.alu_src    = true;  // uses immediate value for offset
             signals.reg_write  = false; // does not write to registers
+			signals.type 	   = S_TYPE;
+			
             break;
 
         case 0x73:
@@ -84,6 +94,8 @@ ControlSignals getControlSignals(const uint8_t opcode) {
             signals.mem_write  = false; // non-memory write instruction
             signals.alu_src    = false; // does not use immediate value
             signals.reg_write  = false; // does not write to registers
+			signals.type 	   = ECALL;
+			
             break;
 
         case 0x37:
@@ -92,8 +104,9 @@ ControlSignals getControlSignals(const uint8_t opcode) {
             signals.mem_to_reg = false; // non-memory to register instruction
             signals.operation  = 0x37;  // Operation code for ecall
             signals.mem_write  = false; // non-memory write instruction
-            signals.alu_src    = false;  // use immediate value
+            signals.alu_src    = false; // use immediate value
             signals.reg_write  = true;  // write to registers
+			signals.type 	   = ECALL;
 
             break;
 
@@ -105,6 +118,7 @@ ControlSignals getControlSignals(const uint8_t opcode) {
             signals.mem_write  = false; // non-memory write instruction
             signals.alu_src    = true;  // use immediate value
             signals.reg_write  = true;  // write to registers
+			signals.type 	   = ECALL;
 
             break;
 
