@@ -80,6 +80,21 @@ int compile_assembly_with_log(
 		"%s.elf",
 		filepath
 	);
+    
+    assembler_message_t message = { MESSAGE_INFO, "Assembling program..." };
+    
+    char* assembler_path = "/opt/homebrew/bin/riscv64-unknown-elf-as";
+    if (access(assembler_path, X_OK) != 0) {
+        fprintf(stderr, "Errore: Il binario '%s' non è stato trovato o non è eseguibile.\n", assembler_path);
+        
+        message.type = MESSAGE_ERROR;
+        message.text = "ERROR: Assembler binary not found";
+        callback(message);
+        
+        unlink(temp_obj);
+        
+        return -1;
+    }
 
 	// Compile (stdout + stderr)
 	sprintf(
@@ -88,9 +103,8 @@ int compile_assembly_with_log(
 		filepath,
 		temp_obj
 	);
-	
-	assembler_message_t message = { MESSAGE_INFO, "Assembling program..." };
-	callback(message);
+    
+    callback(message);
 	
 	if (run_command_with_log(cmd, callback) != 0) {
 		message.type = MESSAGE_ERROR;
@@ -105,7 +119,7 @@ int compile_assembly_with_log(
 	// Link program
 	sprintf(
 		cmd,
-		"/opt/homebrew/bin/riscv64-unknown-elf-ld -m elf32lriscv \"%s\" -o \"%s\" 2>&1",
+		"/opt/homebrew/bin/riscv64-unknown-elf-ld -G 0 -m elf32lriscv \"%s\" -o \"%s\" 2>&1",
 		temp_obj,
 		output_elf_path
 	);

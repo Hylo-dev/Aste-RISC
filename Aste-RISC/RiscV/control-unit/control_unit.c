@@ -55,7 +55,7 @@ ControlSignals getControlSignals(uint8_t opcode) {
             signals.operation  = 0x03;  // Operation code
             signals.mem_write  = false; // non-memory write instruction
             signals.alu_src    = true;  // uses immediate value for offset
-            signals.reg_write  = false; // writes result in rd register
+            signals.reg_write  = true; // writes result in rd register
 			signals.type 	   = I_SAVE_TYPE;
 			
             break;
@@ -118,7 +118,7 @@ ControlSignals getControlSignals(uint8_t opcode) {
             signals.mem_write  = false; // non-memory write instruction
             signals.alu_src    = true;  // use immediate value
             signals.reg_write  = true;  // write to registers
-			signals.type 	   = ECALL;
+			signals.type 	   = I_TYPE;
 
             break;
 

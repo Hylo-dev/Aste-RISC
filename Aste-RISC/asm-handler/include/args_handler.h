@@ -28,6 +28,11 @@ typedef struct {
     uint8_t* data_data;      // binary buffer .data
     size_t   data_size;         // byte
     uint32_t data_vaddr;      // virtual address .data
+    
+    // Rodata (.rodata)
+    uint8_t* rodata_data;
+    size_t   rodata_size;
+    uint32_t rodata_vaddr;
 
     // Entry point
     uint32_t entry_point;

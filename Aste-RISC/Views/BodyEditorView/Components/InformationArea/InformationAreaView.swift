@@ -9,6 +9,7 @@ import SwiftUI
 import SegmentedFlowPicker
 
 struct InformationAreaView: View {
+    
 	@StateObject
 	private var informationAreaViewModel = InformationAreaViewModel()
 	
@@ -47,9 +48,9 @@ struct InformationAreaView: View {
 			case .tableRegisters:
 				SegmentedFlowPicker(
 					selectedSection: self.$informationAreaViewModel.numberBaseUsed
-					
 				) { section in
-					Text(section.rawValue).tag(section.base)
+					Text(section.rawValue)
+                        .tag(section.base)
 						.font(.body)
 				}
 				.glassEffect()
@@ -58,13 +59,13 @@ struct InformationAreaView: View {
 			case .stack:
 				SegmentedFlowPicker(
 					selectedSection: self.$informationAreaViewModel.memoryMapSelected
-					
 				) { section in
 					Text(section.rawValue).tag(section.rawValue)
 						.font(.body)
 				}
 				.glassEffect()
 				.frame(height: 27)
+                
 		}
 		
 		Divider()

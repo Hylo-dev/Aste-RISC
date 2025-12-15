@@ -201,11 +201,15 @@ struct ToolbarExecuteView: View {
 			let stackTop = max(textEnd, dataEnd) + stackSize
 
 			// Set ram size
-			let ramBase = min(textStart, dataStart)
-			let ramSize = stackTop - ramBase
+			let ramBase = 0
+			let ramSize = stackTop
 
 			// Instance ram for program
 			self.cpu.ram = new_ram(ramSize, UInt32(ramBase))
+            
+            print("Text Range: 0x\(String(opt.text_vaddr, radix: 16)) - 0x\(String(opt.text_vaddr + UInt32(opt.text_size), radix: 16))")
+            print("Data Range: 0x\(String(opt.data_vaddr, radix: 16)) - 0x\(String(opt.data_vaddr + UInt32(opt.data_size), radix: 16))")
+            print("Il codice sta accedendo a: 0x4220")
 			
 			// Load binary on ram, this is REQUIRED, because the program
 			// counter is a pointer to ram
@@ -238,9 +242,9 @@ struct ToolbarExecuteView: View {
 			// Get program entry point
 			self.cpu.loadEntryPoint(value: opt.entry_point)
 
-			// Set the 'stack pointer' into top stack
-			// bocause in RV the stack it grows upwards
 			self.cpu.registers[2] = Int(stackTop - 4)
+            let globalPointer = Int(opt.data_vaddr) + 0x800
+            self.cpu.registers[3] = globalPointer
 		}
 		
 		// Init map program counter to line index source code
@@ -261,6 +265,7 @@ struct ToolbarExecuteView: View {
         for (index, line) in fileContent.split(
 			separator: "\n",
 			omittingEmptySubsequences: false
+            
 		).enumerated() {
             if line.contains(".text") { controlTextSection = true; continue }
             if !controlTextSection { continue }

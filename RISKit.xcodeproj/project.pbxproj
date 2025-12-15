@@ -8,8 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		1F041C732EA2A74500ED403A /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 1F041C722EA2A74500ED403A /* SwiftTerm */; };
+		1F0DD7612EDB700F00FD8D85 /* CodeEditSourceEditor in Frameworks */ = {isa = PBXBuildFile; productRef = 1F0DD7602EDB700F00FD8D85 /* CodeEditSourceEditor */; };
 		1FDCB3BE2EB1745A002866F1 /* SpotlightView in Frameworks */ = {isa = PBXBuildFile; productRef = 1FDCB3BD2EB1745A002866F1 /* SpotlightView */; };
-		1FE758302EACBC79007E1897 /* CodeEditSourceEditor in Frameworks */ = {isa = PBXBuildFile; productRef = 1FE7582F2EACBC79007E1897 /* CodeEditSourceEditor */; };
 		EA29A30D2EB169AB007EB92F /* SegmentedFlowPicker in Frameworks */ = {isa = PBXBuildFile; productRef = EA29A30C2EB169AB007EB92F /* SegmentedFlowPicker */; };
 		EA9BB1EF2EBA0DDF00EC182D /* LanguageServer in Frameworks */ = {isa = PBXBuildFile; productRef = EA9BB1EE2EBA0DDF00EC182D /* LanguageServer */; };
 		EA9BB1F22EBA0DEB00EC182D /* LanguageClient in Frameworks */ = {isa = PBXBuildFile; productRef = EA9BB1F12EBA0DEB00EC182D /* LanguageClient */; };
@@ -36,10 +36,10 @@
 			files = (
 				1FDCB3BE2EB1745A002866F1 /* SpotlightView in Frameworks */,
 				EA9BB1EF2EBA0DDF00EC182D /* LanguageServer in Frameworks */,
-				1FE758302EACBC79007E1897 /* CodeEditSourceEditor in Frameworks */,
 				EA9BB1F82EBA0DFA00EC182D /* LanguageServerProtocol in Frameworks */,
 				EA9BB1F52EBA0DF300EC182D /* JSONRPC in Frameworks */,
 				EA29A30D2EB169AB007EB92F /* SegmentedFlowPicker in Frameworks */,
+				1F0DD7612EDB700F00FD8D85 /* CodeEditSourceEditor in Frameworks */,
 				1F041C732EA2A74500ED403A /* SwiftTerm in Frameworks */,
 				EA9BB1F22EBA0DEB00EC182D /* LanguageClient in Frameworks */,
 			);
@@ -93,13 +93,13 @@
 			name = "Aste-RISC";
 			packageProductDependencies = (
 				1F041C722EA2A74500ED403A /* SwiftTerm */,
-				1FE7582F2EACBC79007E1897 /* CodeEditSourceEditor */,
 				EA29A30C2EB169AB007EB92F /* SegmentedFlowPicker */,
 				1FDCB3BD2EB1745A002866F1 /* SpotlightView */,
 				EA9BB1EE2EBA0DDF00EC182D /* LanguageServer */,
 				EA9BB1F12EBA0DEB00EC182D /* LanguageClient */,
 				EA9BB1F42EBA0DF300EC182D /* JSONRPC */,
 				EA9BB1F72EBA0DFA00EC182D /* LanguageServerProtocol */,
+				1F0DD7602EDB700F00FD8D85 /* CodeEditSourceEditor */,
 			);
 			productName = RISKit;
 			productReference = 1FD053182E9ED36F00D734FD /* Aste-RISC.app */;
@@ -140,13 +140,13 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				1F041C712EA2A74500ED403A /* XCRemoteSwiftPackageReference "SwiftTerm" */,
-				1FE7582E2EACBC79007E1897 /* XCRemoteSwiftPackageReference "CodeEditSourceEditor" */,
 				EA29A30B2EB169AB007EB92F /* XCRemoteSwiftPackageReference "SwiftFlowPicker" */,
 				1FDCB3BC2EB1745A002866F1 /* XCRemoteSwiftPackageReference "FileSpotlight" */,
 				EA9BB1ED2EBA0DDF00EC182D /* XCRemoteSwiftPackageReference "LanguageServer" */,
 				EA9BB1F02EBA0DEB00EC182D /* XCRemoteSwiftPackageReference "LanguageClient" */,
 				EA9BB1F32EBA0DF300EC182D /* XCRemoteSwiftPackageReference "JSONRPC" */,
 				EA9BB1F62EBA0DFA00EC182D /* XCRemoteSwiftPackageReference "LanguageServerProtocol" */,
+				1F0DD75F2EDB700F00FD8D85 /* XCRemoteSwiftPackageReference "CodeEditSourceEditor" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 1FD053192E9ED36F00D734FD /* Products */;
@@ -219,7 +219,7 @@
 				DEVELOPMENT_TEAM = 8KZQJ4JUGS;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -287,7 +287,7 @@
 				DEVELOPMENT_TEAM = 8KZQJ4JUGS;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -317,10 +317,11 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = 8KZQJ4JUGS;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Aste-RISC";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
@@ -359,10 +360,11 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = 8KZQJ4JUGS;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Aste-RISC";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
@@ -423,20 +425,20 @@
 				minimumVersion = 1.5.0;
 			};
 		};
+		1F0DD75F2EDB700F00FD8D85 /* XCRemoteSwiftPackageReference "CodeEditSourceEditor" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/CodeEditApp/CodeEditSourceEditor.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.15.2;
+			};
+		};
 		1FDCB3BC2EB1745A002866F1 /* XCRemoteSwiftPackageReference "FileSpotlight" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Hylo-dev/FileSpotlight.git";
 			requirement = {
 				branch = main;
 				kind = branch;
-			};
-		};
-		1FE7582E2EACBC79007E1897 /* XCRemoteSwiftPackageReference "CodeEditSourceEditor" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/CodeEditApp/CodeEditSourceEditor.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.15.2;
 			};
 		};
 		EA29A30B2EB169AB007EB92F /* XCRemoteSwiftPackageReference "SwiftFlowPicker" */ = {
@@ -487,15 +489,15 @@
 			package = 1F041C712EA2A74500ED403A /* XCRemoteSwiftPackageReference "SwiftTerm" */;
 			productName = SwiftTerm;
 		};
+		1F0DD7602EDB700F00FD8D85 /* CodeEditSourceEditor */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1F0DD75F2EDB700F00FD8D85 /* XCRemoteSwiftPackageReference "CodeEditSourceEditor" */;
+			productName = CodeEditSourceEditor;
+		};
 		1FDCB3BD2EB1745A002866F1 /* SpotlightView */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 1FDCB3BC2EB1745A002866F1 /* XCRemoteSwiftPackageReference "FileSpotlight" */;
 			productName = SpotlightView;
-		};
-		1FE7582F2EACBC79007E1897 /* CodeEditSourceEditor */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 1FE7582E2EACBC79007E1897 /* XCRemoteSwiftPackageReference "CodeEditSourceEditor" */;
-			productName = CodeEditSourceEditor;
 		};
 		EA29A30C2EB169AB007EB92F /* SegmentedFlowPicker */ = {
 			isa = XCSwiftPackageProductDependency;

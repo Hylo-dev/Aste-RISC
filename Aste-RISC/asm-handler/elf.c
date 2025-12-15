@@ -98,46 +98,59 @@ int load_elf_sections(const char* filepath, options_t* opts) {
     }
 
     for (int i = 0; i < ehdr.e_shnum; i++) {
-        
+            
         if (sections[i].sh_name >= strtab_hdr.sh_size) {
             continue;
         }
 
         const char* name = shstrtab + sections[i].sh_name;
-
-        if (strcmp(name, ".text") == 0 || strcmp(name, ".data") == 0) {
-
-            uint8_t* buf = malloc(sections[i].sh_size);
-            if (!buf) {
-                fprintf(stderr, "Errore allocazione memoria per sezione %s\n", name);
+      
+        if (strcmp(name, ".text") == 0) { // <--- AGGIUNTO == 0
                 
-				continue;
-            }
+            uint8_t* buf = malloc(sections[i].sh_size);
+            if (!buf) continue; // Gestione errore malloc
 
-            if (fseek(f, sections[i].sh_offset, SEEK_SET) != 0) {
-                fprintf(stderr, "Errore seek sezione %s\n", name);
-                free(buf);
-				
-                continue;
-            }
-
-            if (fread(buf, 1, sections[i].sh_size, f) != sections[i].sh_size) {
-                fprintf(stderr, "Errore lettura sezione %s\n", name);
-                free(buf);
-				
-                continue;
-            }
-
-            if (strcmp(name, ".text") == 0) {
+            if (fseek(f, sections[i].sh_offset, SEEK_SET) == 0 &&
+                fread(buf, 1, sections[i].sh_size, f) == sections[i].sh_size) {
+                
                 opts->text_data = buf;
                 opts->text_size = sections[i].sh_size;
                 opts->text_vaddr = sections[i].sh_addr;
-
+                
             } else {
-                opts->data_data = buf; 
+                free(buf);
+            }
+
+        } else if (strcmp(name, ".data") == 0 || strcmp(name, ".sdata") == 0) {
+                
+            uint8_t* buf = malloc(sections[i].sh_size);
+            if (!buf) continue;
+
+            if (fseek(f, sections[i].sh_offset, SEEK_SET) == 0 &&
+                fread(buf, 1, sections[i].sh_size, f) == sections[i].sh_size) {
+                
+                opts->data_data = buf;
                 opts->data_size = sections[i].sh_size;
                 opts->data_vaddr = sections[i].sh_addr;
+                
+            } else {
+                free(buf);
+            }
+                
+        } else if (strcmp(name, ".rodata") == 0) {
+                
+            uint8_t* buf = malloc(sections[i].sh_size);
+            if (!buf) continue;
 
+            if (fseek(f, sections[i].sh_offset, SEEK_SET) == 0 &&
+                fread(buf, 1, sections[i].sh_size, f) == sections[i].sh_size) {
+                
+                opts->rodata_data = buf;
+                opts->rodata_size = sections[i].sh_size;
+                opts->rodata_vaddr = sections[i].sh_addr;
+                
+            } else {
+                free(buf);
             }
         }
     }

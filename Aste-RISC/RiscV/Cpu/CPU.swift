@@ -113,18 +113,18 @@ class CPU: ObservableObject {
 		// MARK: - Get operands
 		if aluOperation != .skip {
 			
-			firstOperand = if controlUnitState.operation == 0x17 {
-				Int(programCounter)
+            firstOperand = if controlUnitState.operation == 0x17 {
+                Int(programCounter)
 				
 			} else {
-				getValueRegister(Int(decodedInstruction.registerSource1))
+                getValueRegister(Int(decodedInstruction.registerSource1))
 			}
 			
-			secondOperand = if controlUnitState.alu_src {
-				decodedInstruction.immediate
+            secondOperand = if controlUnitState.alu_src {
+                decodedInstruction.immediate
 				
 			} else {
-				getValueRegister(Int(decodedInstruction.registerSource2))
+                getValueRegister(Int(decodedInstruction.registerSource2))
 			}
 			
 		}
@@ -139,6 +139,15 @@ class CPU: ObservableObject {
 			)
 			
 		} else { ResultAlu32Bit() }
+        
+//        print("")
+//        print("First operand: 0x\(String(firstOperand, radix: 16))")
+//        print("Second operand: 0x\(String(secondOperand, radix: 16))")
+//        print("Operation: \(aluOperation)")
+//        print("")
+//        
+//        print("Result Alu: \(String(resultAlu.result, radix: 16))")
+//        print("")
 				
 		// MARK: - Exec instruction
 		var valueToWriteBack: Int? = nil
@@ -150,7 +159,12 @@ class CPU: ObservableObject {
 				break
 				
 			case I_SAVE_TYPE:
+                
+                print("Result address: 0x\(String(resultAlu.result, radix: 16))")
+            
 				let valueRamRead = read_ram32bit(ram, UInt32(resultAlu.result))
+            
+                print("Value ram read: \(valueRamRead)")
 				
 				if valueRamRead == -1 { return .ramReadFailed }
 				

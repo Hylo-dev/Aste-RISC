@@ -1153,6 +1153,7 @@
       }
     },
     "Run a file to see %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es-419" : {
           "stringUnit" : {
@@ -1167,6 +1168,9 @@
           }
         }
       }
+    },
+    "Run a file to see %@ section" : {
+
     },
     "Settings…" : {
       "localizations" : {
@@ -1343,6 +1347,9 @@
           }
         }
       }
+    },
+    "Warning" : {
+
     },
     "Welcome to RISKit" : {
       "localizations" : {

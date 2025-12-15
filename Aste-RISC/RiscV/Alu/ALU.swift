@@ -54,10 +54,10 @@ struct ALU {
         
         // Special cases
         switch operation {
-			case 0x03, 0x17, 0x6F, 0x23: // Load, AUIPC, JAL, S-Type
-				return .add
+			case 0x03, 0x17, 0x6F, 0x23, 0x37: // Load word, AUIPC, JAL, S-Type, LUI
+                return .add
 				
-			case 0x37, 0x73: // LUI, ECALL
+			case 0x73: // ECALL
 				return .skip
 				
 			case 0x33, 0x13, 0x67: // R-type, I-type ALU, JALR
@@ -118,7 +118,7 @@ struct ALU {
         
         switch operation {
         case .sll:
-            let result = Int(a << (b & 0x1F))
+            let result = Int((a) << (b & 0x1F))
             return ResultAlu32Bit(
 				result	: result,
 				zero	: result == 0,
@@ -126,7 +126,7 @@ struct ALU {
 			)
             
         case .srl:
-            let result = Int(a >> (b & 0x1F))
+            let result = Int(UInt(bitPattern: a) >> (b & 0x1F))
             return ResultAlu32Bit(
 				result	: result,
 				zero	: result == 0,
@@ -134,7 +134,7 @@ struct ALU {
 			)
             
         case .sra:
-            let result = Int(UInt32(bitPattern: Int32(a)) >> UInt32(b & 0b11111))
+            let result = a >> (b & 0x1F)
             return ResultAlu32Bit(
 				result	: result,
 				zero	: result == 0,
