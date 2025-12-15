@@ -159,13 +159,8 @@ class CPU: ObservableObject {
 				break
 				
 			case I_SAVE_TYPE:
-                
-                print("Result address: 0x\(String(resultAlu.result, radix: 16))")
-            
+                            
 				let valueRamRead = read_ram32bit(ram, UInt32(resultAlu.result))
-            
-                print("Value ram read: \(valueRamRead)")
-				
 				if valueRamRead == -1 { return .ramReadFailed }
 				
 				valueToWriteBack = Int(valueRamRead)

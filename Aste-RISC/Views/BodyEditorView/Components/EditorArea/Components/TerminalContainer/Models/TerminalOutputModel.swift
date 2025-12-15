@@ -10,7 +10,8 @@ import Foundation
 internal import Combine
 
 final class TerminalOutputModel: ObservableObject {
-	@Published var messages: [assembler_message_t] = []
+	@Published
+    var messages: [assembler_message_t] = []
 	
 	func append(_ message: assembler_message_t) {
 		Task { @MainActor in self.messages.append(message) }

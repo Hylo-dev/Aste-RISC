@@ -57,26 +57,23 @@ struct DetailView: View {
             
         } else {
                         
-            VStack(
-                alignment: .leading,
-                spacing: 7,
-            ) {
+            VStack(alignment: .leading) {
                 
-                HStack(spacing: 5) {
+                HStack(spacing: 3) {
                     Image(systemName: "exclamationmark.triangle")
-                        .font(.headline)
+                        .font(.title3)
                         .foregroundStyle(.primary)
                         .fontWeight(.bold)
                     
                     Text("Warning")
-                        .font(.headline)
+                        .font(.title3)
                         .foregroundStyle(.primary)
                         .fontDesign(.rounded)
                         .fontWeight(.bold)
                 }
                 
                 Text("Run a file to see \(selectedSection.rawValue) section")
-                    .font(.subheadline)
+                    .font(.headline)
                     .foregroundColor(.secondary)
                     .fontDesign(.rounded)
                     .fontWeight(.regular)

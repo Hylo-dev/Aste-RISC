@@ -81,7 +81,11 @@
         }
       }
     },
+    ".data" : {
+
+    },
     ".data (Globals)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es-419" : {
           "stringUnit" : {

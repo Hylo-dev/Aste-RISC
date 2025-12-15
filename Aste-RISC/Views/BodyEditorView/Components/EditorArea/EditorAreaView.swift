@@ -47,9 +47,8 @@ struct EditorAreaView: View {
 									alignment: .topLeading
 								)
 							
-						} else { // self.bodyEditorViewModel.currentFileSelected!.path
+						} else {
 							EditorTerminalView(openFilePath: self.fileSelected!.path)
-							
 						}
 				}
 				

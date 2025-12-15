@@ -137,38 +137,44 @@ struct TerminalContainerView: View {
 	
 	private var outputAssembler: some View {
 		return ScrollView {
-			VStack(alignment: .leading, spacing: 4) {
+			LazyVStack(alignment: .leading, spacing: 10) {
 				ForEach(terminal.messages.indices, id: \.self) { i in
 					let item = terminal.messages[i]
 					let text = String(cString: item.text).trimmingCharacters(in: .whitespacesAndNewlines)
 					
-					switch item.type {
-						case MESSAGE_INFO:
-							Text(text)
-								.font(.system(.body, design: .monospaced))
-								.foregroundColor(.primary)
-								.frame(maxWidth: .infinity, alignment: .leading)
-							
-						case MESSAGE_WARNING:
-							Text(text)
-								.font(.system(.body, design: .monospaced))
-								.foregroundColor(.yellow)
-								.frame(maxWidth: .infinity, alignment: .leading)
-							
-						case MESSAGE_ERROR:
-							Text(text)
-								.font(.system(.body, design: .monospaced))
-								.foregroundColor(.red)
-								.frame(maxWidth: .infinity, alignment: .leading)
-							
-						default:
-							Text(text)
-								.font(.system(.body, design: .monospaced))
-								.foregroundColor(.primary)
-								.frame(maxWidth: .infinity, alignment: .leading)
-					}
-					
-					Divider()
+                    Group {
+                        switch item.type {
+                            case MESSAGE_INFO:
+                                Text(text)
+                                    .font(.body)
+                                    .fontDesign(.rounded)
+                                    .foregroundColor(.primary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                
+                            case MESSAGE_WARNING:
+                                Text(text)
+                                    .font(.body)
+                                    .fontDesign(.rounded)
+                                    .foregroundColor(.yellow)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                
+                            case MESSAGE_ERROR:
+                                Text(text)
+                                    .font(.body)
+                                    .fontDesign(.rounded)
+                                    .foregroundColor(.red)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                
+                            default:
+                                Text(text)
+                                    .font(.body)
+                                    .fontDesign(.rounded)
+                                    .foregroundColor(.primary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        
+                        Divider()
+                    }
 				}
 
 			}

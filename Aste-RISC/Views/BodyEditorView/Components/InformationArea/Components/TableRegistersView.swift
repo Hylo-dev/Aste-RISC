@@ -22,17 +22,25 @@ struct TableRegistersView: View {
 		) {
 			
 			GridRow {
-				Text("Registers").bold()
+				Text("Registers")
+                    .font(.title3)
+                    .fontDesign(.rounded)
+                    .bold()
 				
 				Spacer()
 				
-				Text("Stack").bold()
+				Text("Stack")
+                    .font(.title3)
+                    .fontDesign(.rounded)
+                    .bold()
 			}
 		
 			ForEach(InformationAreaViewModel.registerName, id: \.label) { register in
 				
 				GridRow {
 					Text(register.label)
+                        .font(.headline)
+                        .fontDesign(.rounded)
 					
 					Spacer()
 					
@@ -41,7 +49,7 @@ struct TableRegistersView: View {
 					let value     = self.cpu.registers[regNumber]
 					Text(self.informationAreaViewModel.baseFormatted(value))
 						.foregroundStyle(isChanged ? Color.yellow : Color.primary)
-						.monospaced()
+                        .fontDesign(.monospaced)
 						.lineLimit(1)
 					
 					
@@ -51,7 +59,7 @@ struct TableRegistersView: View {
 			}
 		}
 		.padding()
-		.background(.ultraThinMaterial)
+		.background(.ultraThickMaterial)
 		.clipShape(RoundedRectangle(cornerRadius: 15))
 		.padding(.horizontal)
 		.padding(.bottom)

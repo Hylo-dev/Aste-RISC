@@ -155,6 +155,9 @@ struct ToolbarExecuteView: View {
 			withAnimation {
 				self.viewModel.editorState 		     = .stopped
 				self.mapInstruction.indexInstruction = nil
+                
+                // Clean terminal output
+                AssemblerBridge.shared.terminal.clear()
 				
 				// Set reset state to true
 				// This clear all value registers
@@ -207,9 +210,9 @@ struct ToolbarExecuteView: View {
 			// Instance ram for program
 			self.cpu.ram = new_ram(ramSize, UInt32(ramBase))
             
-            print("Text Range: 0x\(String(opt.text_vaddr, radix: 16)) - 0x\(String(opt.text_vaddr + UInt32(opt.text_size), radix: 16))")
-            print("Data Range: 0x\(String(opt.data_vaddr, radix: 16)) - 0x\(String(opt.data_vaddr + UInt32(opt.data_size), radix: 16))")
-            print("Il codice sta accedendo a: 0x4220")
+//            print("Text Range: 0x\(String(opt.text_vaddr, radix: 16)) - 0x\(String(opt.text_vaddr + UInt32(opt.text_size), radix: 16))")
+//            print("Data Range: 0x\(String(opt.data_vaddr, radix: 16)) - 0x\(String(opt.data_vaddr + UInt32(opt.data_size), radix: 16))")
+//            print("Il codice sta accedendo a: 0x4220")
 			
 			// Load binary on ram, this is REQUIRED, because the program
 			// counter is a pointer to ram

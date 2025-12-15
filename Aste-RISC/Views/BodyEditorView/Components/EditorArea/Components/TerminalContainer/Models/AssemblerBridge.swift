@@ -6,11 +6,13 @@
 //
 
 import Foundation
+import SwiftUI
 
 /// This class execute assembler, manage errors and warnings on terminal
 class AssemblerBridge {
 	static let shared = AssemblerBridge()
-	@MainActor var terminal = TerminalOutputModel()
+	@MainActor
+    var terminal = TerminalOutputModel()
 	
 	func assemble(optionsAsembler: UnsafeMutablePointer<options_t>) -> Int {
 		self.terminal.clear()
@@ -18,6 +20,8 @@ class AssemblerBridge {
 	}
 	
 	static let cCallback: @convention(c) (assembler_message_t) -> Void = { message in				
-		Task { @MainActor in AssemblerBridge.shared.terminal.append(message) }
+        Task { @MainActor in
+            AssemblerBridge.shared.terminal.append(message)            
+        }
 	}
 }

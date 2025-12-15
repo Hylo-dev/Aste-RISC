@@ -13,10 +13,12 @@ struct MemoryWordRow: View {
 	
 	var body: some View {
 		HStack {
-			Text("0x\(String(format: "%08x", address))")
-				.font(.caption)
-				.monospacedDigit()
-				.foregroundColor(.secondary)
+            
+            Text("0x\(String(format: "%08x", address))")
+                .font(.headline)
+                .fontDesign(.rounded)
+                .monospacedDigit()
+                .foregroundColor(.primary)
 			
 			Spacer()
 			
@@ -29,7 +31,9 @@ struct MemoryWordRow: View {
 				VStack(alignment: .trailing, spacing: 2) {
 					Text("0x\(String(format: "%08x", UInt32(bitPattern: value)))")
 						.font(.caption)
+                        .fontDesign(.rounded)
 						.monospacedDigit()
+                    
 					Text("\(value)")
 						.font(.caption2)
 						.foregroundColor(.secondary)
@@ -37,9 +41,8 @@ struct MemoryWordRow: View {
 				}
 			}
 		}
-		.padding(.horizontal, 8)
-		.padding(.vertical, 4)
-		.background(value != 0 && value != -1 ? Color.green.opacity(0.1) : Color.clear)
-		.cornerRadius(4)
+        .padding()
+		.background(value != 0 && value != -1 ? .cyan.opacity(0.1) : .clear)
+		.cornerRadius(12)
 	}
 }

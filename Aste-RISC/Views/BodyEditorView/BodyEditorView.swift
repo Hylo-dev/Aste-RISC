@@ -203,16 +203,21 @@ struct BodyEditorView: View {
 					
 					// Note: Assumes spotlightViewModel is non-nil
 					// when this view is shown.
-					
-					// TODO: When project is new, crashed
-					MultiSectionSpotlightView(
-						viewModel: viewModel,
-						width    : 600
-					)
-					.focused($focusStateSpotlight, equals: .spotlight)
-					.onAppear { self.focusStateSpotlight = .spotlight }
-					.zIndex(2)
-					.padding(.top, 170)
+                    MultiSectionSpotlightView(
+                        viewModel: viewModel,
+                        width    : 600
+                    )
+                    .focused($focusStateSpotlight, equals: .spotlight)
+                    .onAppear { self.focusStateSpotlight = .spotlight }
+                    .padding(.top, 170)
+                    .onKeyPress(.escape) {
+                        Task { @MainActor in
+                            self.viewModel.isSearchingFile = false
+                        }
+                        
+                        return .handled
+                    }
+                    .zIndex(2)
 					
 					Spacer()
 				}

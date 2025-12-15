@@ -14,21 +14,32 @@ struct DataSectionView: View {
 	var body: some View {
 		VStack(alignment: .leading) {
 			HStack {
-				Text(".data (Globals)")
+				Text(".data")
 					.font(.title2)
+                    .fontDesign(.rounded)
 					.foregroundStyle(.cyan)
 					.fontWeight(.bold)
 				
 				Spacer()
 				
 				if section.size > 0 {
-					Text("0x\(String(format: "%08x", section.startAddress)) - 0x\(String(format: "%08x", section.endAddress))")
-						.font(.caption)
-						.monospacedDigit()
+                    VStack(alignment: .trailing) {
+                        Text("Address range")
+                            .font(.subheadline)
+                            .fontDesign(.rounded)
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                        
+                        Text("0x\(String(format: "%08x", section.startAddress)) - 0x\(String(format: "%08x", section.endAddress))")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
 					
 				} else {
 					Text("Initialised global data")
 						.font(.headline)
+                        .fontDesign(.rounded)
 						.foregroundStyle(.secondary)
 						.monospacedDigit()
 					
@@ -37,17 +48,20 @@ struct DataSectionView: View {
 			.padding()
 			
 			Divider()
-			
-			if section.size > 0 {
-				ForEach(0 ..< Int(section.size / 4), id: \.self) { index in
-					let addr = section.startAddress + UInt32(index * 4)
-					
-					if let ram = ram {
-						let value = read_ram32bit(ram, addr)
-						MemoryWordRow(address: addr, value: value)
-					}
-				}
-			}
+            
+            VStack {
+                if self.section.size > 0 {
+                    ForEach(0 ..< Int(section.size / 4), id: \.self) { index in
+                        let addr = section.startAddress + UInt32(index * 4)
+                        
+                        if let ram = ram {
+                            let value = read_ram32bit(ram, addr)
+                            MemoryWordRow(address: addr, value: value)
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal)
 		}
 	}
 }
