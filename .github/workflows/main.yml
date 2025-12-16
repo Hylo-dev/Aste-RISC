@@ -1,0 +1,57 @@
+name: Release macOS App
+
+on:
+  push:
+    tags:
+      - 'v*' # Parte SOLO quando crei un tag (es. v1.0)
+
+jobs:
+  build:
+    name: Build and Create DMG
+    runs-on: macos-latest # Usa l'ultima versione di macOS disponibile su GitHub
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Questo setup è meglio di quello standard di Swift per le app GUI
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      # 1. Compila l'App usando xcodebuild (non swift build!)
+      - name: Build App
+        run: |
+          xcodebuild -scheme "Aste-RISC" \
+            -configuration Release \
+            -destination 'platform=macOS' \
+            -derivedDataPath build \
+            -archivePath build/AsteRISC.xcarchive \
+            archive
+
+      # 2. Estrae l'App dall'archivio (diventa un file .app)
+      - name: Export App
+        run: |
+          # Crea un file plist al volo per dire a Xcode di esportare senza firma certificata
+          /usr/libexec/PlistBuddy -c "Add :method string mac-application" exportOptions.plist
+          /usr/libexec/PlistBuddy -c "Add :compileBitcode bool false" exportOptions.plist
+          /usr/libexec/PlistBuddy -c "Add :signingStyle string manual" exportOptions.plist
+
+          xcodebuild -exportArchive \
+            -archivePath build/AsteRISC.xcarchive \
+            -exportOptionsPlist exportOptions.plist \
+            -exportPath build/Export
+
+      # 3. Crea il pacchetto DMG installabile
+      - name: Create DMG
+        run: |
+          npm install -g create-dmg
+          # Crea il dmg prendendo la .app dalla cartella di export
+          create-dmg 'Aste-RISC.dmg' build/Export/Aste-RISC.app
+
+      # 4. Carica il DMG nella pagina delle Release
+      - name: Upload Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: Aste-RISC.dmg
